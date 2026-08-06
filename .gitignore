@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+.astro/
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+.vercel
+.turbo
+coverage/
+.cache/
