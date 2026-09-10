@@ -1,4 +1,4 @@
-// Slices halaska-kit-v1.3.jsx into named top-level source blocks and writes
+// Slices halaska-kit-v1.0.jsx into named top-level source blocks and writes
 // public/source-map.json. The site's code pages assemble per-component
 // copyable source from these blocks at runtime (dependency closure), so the
 // pages can never drift from the shipped file. Runs as part of `prebuild`.
@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SRC = join(root, "halaska-kit-v1.3.jsx");
+const SRC = join(root, "halaska-kit-v1.0.jsx");
 const OUT = join(root, "public", "source-map.json");
 
 const src = readFileSync(SRC, "utf8");
@@ -76,6 +76,6 @@ starts.forEach((s, i) => {
 });
 
 mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, JSON.stringify({ generated: "halaska-kit-v1.3", blocks, meta }));
+writeFileSync(OUT, JSON.stringify({ generated: "halaska-kit-v1.0", blocks, meta }));
 const kb = Math.round(JSON.stringify({ blocks, meta }).length / 1024);
 console.log(`source-map.json written: ${Object.keys(blocks).length} blocks, ${kb} KB`);

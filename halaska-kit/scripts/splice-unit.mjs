@@ -1,4 +1,4 @@
-// Replaces a pattern's source unit in halaska-kit-v1.3.jsx with a refactored
+// Replaces a pattern's source unit in halaska-kit-v1.0.jsx with a refactored
 // version. A unit = the contiguous span of top-level blocks that belong to one
 // pattern (data constants, helpers, main function), located via
 // public/source-map.json. Shared helpers (AgentGlyph) are excluded from the span.
@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const KIT = join(root, "halaska-kit-v1.3.jsx");
+const KIT = join(root, "halaska-kit-v1.0.jsx");
 const [main, newPath] = process.argv.slice(2);
 if (!main || !newPath) { console.error("usage: splice-unit <MainPattern> <new.jsx>"); process.exit(1); }
 

@@ -1,10 +1,12 @@
 # UI by Halaska
 
-A single-file React UI kit for AI products, built on shadcn/ui foundations. 38 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
+![The Chat example screen, built entirely from the kit](docs/after.png)
+
+A single-file React UI kit for AI products, built on shadcn/ui foundations. Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop. 38 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
 
 Live: **https://ui.halaska.com**
 
-Made for founders building with coding agents: it gets a prototype 85% of the way to looking designed without a designer in the loop.
+![Before and after: drag the divider between the screen as a coding agent left it and the same screen with the kit applied](docs/before-after.png)
 
 ## Use it
 
@@ -39,7 +41,7 @@ API reference for agents and humans: https://ui.halaska.com/llms.txt (TypeScript
 
 ```
 halaska-kit/
-  halaska-kit-v1.3.jsx   the kit: tokens, components, patterns, showcase page
+  halaska-kit-v1.0.jsx   the kit: tokens, components, patterns, showcase page
   src/main.jsx           Vite entry for the showcase site
   scripts/               generates llms.txt, the .d.ts shim, and the source map on build
   CLAUDE.md              project notes for coding agents
@@ -55,7 +57,8 @@ npm run dev
 
 ## Feedback
 
-Use the Feedback button on the site, or open an issue here.
+- Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new).
+- Design questions about your own prototype: book a short call with the studio from the "Need a hand with yours?" card on https://ui.halaska.com (it links to https://halaska.com/book).
 
 ## Licence
 

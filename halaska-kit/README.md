@@ -1,6 +1,6 @@
 # Showcase site
 
-This folder is the Vite site behind https://ui.halaska.com and the home of the kit itself, `halaska-kit-v1.3.jsx`. See the [root README](../README.md) for what the kit is and how to use it.
+This folder is the Vite site behind https://ui.halaska.com and the home of the kit itself, `halaska-kit-v1.0.jsx`. See the [root README](../README.md) for what the kit is and how to use it.
 
 ```bash
 npm install

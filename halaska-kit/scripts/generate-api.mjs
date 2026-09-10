@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const src = readFileSync(join(root, "halaska-kit-v1.3.jsx"), "utf8");
+const src = readFileSync(join(root, "halaska-kit-v1.0.jsx"), "utf8");
 
 // ── Exports ─────────────────────────────────────────────────────
 const exportBlock = src.slice(src.lastIndexOf("export {"));

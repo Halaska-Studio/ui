@@ -1,7 +1,7 @@
 "use client";
 
 /*!
- * Halaska Kit v1.3: UX patterns & components for AI products
+ * Halaska Kit v1.0: UX patterns & components for AI products
  * (c) Halaska · https://ui.halaska.com · MIT License
  * Single-file React kit: import { Button, Orb, PlanPreviewPattern } from "./halaska-kit"
  */
@@ -14,7 +14,7 @@ import { useState, useRef, useEffect, useCallback, createContext, useContext, Fr
 // Halaska Kit provides styled versions of all the above.
 
 // ═══════════════════════════════════════════════════════════════
-//  HALASKA KIT v1.3: UX patterns & components for AI products
+//  HALASKA KIT v1.0: UX patterns & components for AI products
 //  shadcn/ui foundations · Geist · Lucide 1px
 //  AI interface patterns · Animated selections · Trading-agent theme
 // ═══════════════════════════════════════════════════════════════
@@ -3543,6 +3543,7 @@ function ShowcaseCard({ children, controls, label, theme = "light", height, alig
 
 const STUDIO_URL = "https://halaska.com";
 const REPO_URL = "https://github.com/Halaska-Studio/ui";
+const STUDIO_BOOK_URL = "https://halaska.com/book";
 
 // Quiet inline link for "Halaska" mentions: inherits the surrounding
 // text color, underlines subtly, and brightens on hover.
@@ -3604,6 +3605,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
   // Install prompt: one click copies it and reveals the text below the hero.
   const [installStage, setInstallStage] = useState("idle");
   const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); };
+  const jump = (id, offset = 32) => { const el = document.getElementById(id); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top: y, behavior: "smooth" }); } };
 
   const installPanel = installStage === "revealed" ? (
     <div style={{ marginTop: 28, animation: `halaska-step-in 0.4s ${motion.emphasized} both` }}>
@@ -3647,7 +3649,13 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                 <p style={{ ...tokens.type.md, color: dimColor, margin: "10px 0 0", transition: t("color") }}>by <StudioLink theme={pageTheme} /> · built on top of <StudioLink theme={pageTheme} href="https://ui.shadcn.com">shadcn/ui</StudioLink></p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 20, paddingTop: 8 }}>
-                <LinkButton theme={pageTheme} size="sm" iconRight="↓" onClick={() => (() => { const el = document.getElementById("how-to-use"); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 32; window.scrollTo({ top: y, behavior: "smooth" }); } })()}>More</LinkButton>
+                <DropdownMenu theme={pageTheme} trigger={<LinkButton theme={pageTheme} size="sm" iconRight="↓">More</LinkButton>} items={[
+                  { label: "How to use", onClick: () => jump("how-to-use") },
+                  { label: "Before and after", onClick: () => jump("before-after") },
+                  { label: "FAQ", onClick: () => jump("faq") },
+                  { separator: true },
+                  { label: "GitHub", onClick: () => window.open(REPO_URL, "_blank", "noopener") },
+                ]} />
                 <Button theme={pageTheme} variant="primary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyAndReveal}>
                   {installCopied ? "Copied" : "Copy prompt"}
                 </Button>
@@ -3659,7 +3667,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
               <div style={{ flex: "1 1 260px" }}>
                 <h3 style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: textColor, margin: "0 0 8px", transition: t("color") }}>Intention</h3>
                 <p style={{ ...tokens.type.sm, color: dimColor, margin: 0, lineHeight: 1.65, transition: t("color") }}>
-                  Prototyping tools ship with defaults which look like a designer never touched them. This kit gets you 85% of the way there: considered UI components and UX patterns built for AI products.</p>
+                  Made for founders building with coding agents. Prototyping tools ship with defaults which look like a designer never touched them. This kit gets you 85% of the way there: considered UI components and UX patterns built for AI products.</p>
               </div>
               <div style={{ flex: "1 1 260px" }}>
                 <h3 style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: textColor, margin: "0 0 8px", transition: t("color") }}>Execution</h3>
@@ -3701,7 +3709,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
             ))}
           </div>
 
-          <h3 style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: textColor, margin: "48px 0 20px", transition: t("color") }}>Frequently Asked Questions</h3>
+          <h3 id="faq" style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: textColor, margin: "48px 0 20px", transition: t("color") }}>Frequently Asked Questions</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 40 }}>
             {[
               { q: "Which tools does this work with?", a: "Any coding agent that can fetch a file and edit your project: Claude Code, Cursor, Codex, Windsurf, and similar. For browser builders like Lovable or Bolt, paste the prompt and, if the tool can't fetch, upload the kit file from the link in the prompt." },
@@ -3710,7 +3718,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
               { q: "Can I change the look?", a: "Accent, typeface, and motion are all switchable at runtime: pick an accent in the bar below, a typeface in Foundations, and a motion mode there too. Everything else is a token at the top of the file." },
               { q: "Is this the same as shadcn/ui?", a: "It's built on the same foundations and the same component vocabulary, so it feels familiar. The AI patterns on top, the trading of confirm dialogs for undo, and the opinionated styling are the difference." },
               { q: "Can I use this commercially?", a: "Yes. MIT licensed, use it in anything." },
-              { q: "Where's the source?", a: "On GitHub at github.com/Halaska-Studio/ui. Star it, or open an issue there (the Feedback button does the same)." },
+              { q: "Where's the source?", a: "On GitHub at github.com/Halaska-Studio/ui. Star it, or open an issue there if something's missing or broken." },
             ].map((item, i) => (
               <div key={i}>
                 <div style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: textColor, marginBottom: 4, transition: t("color") }}>{item.q}</div>
@@ -3718,6 +3726,11 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* The page ends on the studio hook, not on a component group */}
+        <div id="studio" style={{ marginTop: isMobile ? 48 : 64 }}>
+          <StudioHookCard theme={pageTheme} />
         </div>
       </div>
     </div>
@@ -4265,7 +4278,7 @@ function InlinePanelPreview({ title, children, actions, theme, shape = "dialog" 
       width: isSheet ? 320 : 400, maxWidth: "100%", boxSizing: "border-box",
       background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      border: `1px solid ${pal.borderSubtle}`,
+      borderTop: `1px solid ${pal.borderSubtle}`, borderLeft: `1px solid ${pal.borderSubtle}`, borderRight: `1px solid ${pal.borderSubtle}`,
       borderBottom: isDrawer ? "none" : `1px solid ${pal.borderSubtle}`,
       borderRadius: isDrawer ? `${tokens.radius.lg}px ${tokens.radius.lg}px 0 0` : tokens.radius.lg,
       padding: 24, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -11602,6 +11615,8 @@ function DemoPatterns({ theme }) {
   const bump = (id) => setReplayKeys(k => ({ ...k, [id]: (k[id] || 0) + 1 }));
   return (
     <Stack gap={isMobile ? 48 : 64}>
+      <BeforeAfterSection theme={theme} />
+
       {/* Two UX paradigms: each a complete example screen built from the kit */}
       <div style={{ paddingLeft: 8 }}>
         <Caption theme={theme}>Two UX paradigms</Caption>
@@ -11750,8 +11765,442 @@ const RAIL_ROWS = [
 const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 
 // ─── BOTTOM-LEFT DOCK ─────────────────────────────────────────
-// BETA chip + Feedback pill above the studio note. The note starts condensed
+// BETA chip beside the GitHub pill; the studio note starts condensed
 // and re-opens whenever the install prompt is copied.
+
+// Studio hook: a calm card with a two-field form. Appears after the
+// paradigms and again at the very end of the page (with the credit line).
+function StudioHookCard({ theme }) {
+  const pal = usePal(theme);
+  const { isMobile } = useViewport();
+  return (
+    <Card theme={theme} padding={isMobile ? 20 : 32} style={{ width: "100%" }}>
+      <Stack gap={isMobile ? 16 : 20}>
+        <div>
+          <Heading level={3} theme={theme} style={{ margin: 0 }}>Need a hand with yours?</Heading>
+          <Text size="base" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 8, lineHeight: 1.65, maxWidth: 620 }}>
+            If you'd rather have a designer take it from here, that's what <StudioLink theme={theme}>Halaska Studio</StudioLink> does. Book a short call, bring your prototype, and we'll tell you the three things we'd change first.
+          </Text>
+        </div>
+        <div>
+          <Button theme={theme} variant="primary" iconRight="↗" onClick={() => window.open(STUDIO_BOOK_URL, "_blank", "noopener")}>Book a call</Button>
+        </div>
+      </Stack>
+    </Card>
+  );
+}
+
+// Before/after comparison: both views fill one box, the After is clipped to
+// the right of a divider you drag. Pointer, touch, and arrow keys.
+function CompareSlider({ before, after, theme: tp, initial = 0.5, labels = ["Before", "After"], style: sp }) {
+  const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const ref = useRef(null);
+  const [pos, setPos] = useState(initial);
+  const [dragging, setDragging] = useState(false);
+  const setFromX = useCallback((clientX) => {
+    const r = ref.current ? ref.current.getBoundingClientRect() : null;
+    if (r && r.width) setPos(Math.min(1, Math.max(0, (clientX - r.left) / r.width)));
+  }, []);
+  // Listeners attach in the down handler itself (not in an effect) so the
+  // first move after the press is never missed; they detach on release.
+  const stopRef = useRef(null);
+  const startDrag = useCallback((clientX) => {
+    setDragging(true); setFromX(clientX);
+    const move = (e) => setFromX(e.touches ? e.touches[0].clientX : e.clientX);
+    const up = () => { setDragging(false); stop(); };
+    const stop = () => {
+      window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+      window.removeEventListener("touchmove", move); window.removeEventListener("touchend", up);
+      stopRef.current = null;
+    };
+    window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    window.addEventListener("touchmove", move, { passive: true }); window.addEventListener("touchend", up);
+    stopRef.current = stop;
+  }, [setFromX]);
+  useEffect(() => () => { if (stopRef.current) stopRef.current(); }, []);
+  const onKey = (e) => {
+    if (e.key === "ArrowLeft") { e.preventDefault(); setPos(p => Math.max(0, p - 0.05)); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); setPos(p => Math.min(1, p + 0.05)); }
+    else if (e.key === "Home") { e.preventDefault(); setPos(0); }
+    else if (e.key === "End") { e.preventDefault(); setPos(1); }
+  };
+  const pct = pos * 100;
+  const isDark = theme === "dark";
+  const tag = (text, side, visible) => (
+    <span aria-hidden="true" style={{
+      position: "absolute", top: 12, [side]: 12, zIndex: 3, pointerEvents: "none",
+      padding: "4px 10px", borderRadius: tokens.radius.pill,
+      background: isDark ? "rgba(20,20,20,0.8)" : "rgba(255,255,255,0.88)",
+      backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+      boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
+      fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
+      color: pal.textSecondary, opacity: visible ? 1 : 0,
+      transition: `opacity ${motion.normal} ${motion.easeInOut}`,
+    }}>{text}</span>
+  );
+  return (
+    <div ref={ref}
+      onMouseDown={(e) => { e.preventDefault(); startDrag(e.clientX); }}
+      onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+      style={{
+        position: "relative", width: "100%", borderRadius: tokens.radius.lg, overflow: "hidden",
+        cursor: dragging ? "grabbing" : "col-resize", userSelect: "none", WebkitUserSelect: "none", touchAction: "pan-y",
+        fontFamily: tokens.font.sans, ...sp,
+      }}>
+      <div style={{ position: "relative" }}>{before}</div>
+      <div style={{
+        position: "absolute", inset: 0, clipPath: `inset(0 0 0 ${pct}%)`,
+        transition: dragging ? "none" : `clip-path ${motion.fast} ${motion.easeOut}`,
+      }}>{after}</div>
+      {tag(labels[0], "left", pos > 0.14)}
+      {tag(labels[1], "right", pos < 0.86)}
+      {/* Divider + handle */}
+      <div style={{
+        position: "absolute", top: 0, bottom: 0, left: `${pct}%`, width: 2, marginLeft: -1, zIndex: 2,
+        background: isDark ? "rgba(255,255,255,0.85)" : "#fff",
+        boxShadow: "0 0 0 1px rgba(0,0,0,0.15), 0 0 12px rgba(0,0,0,0.25)",
+        transition: dragging ? "none" : `left ${motion.fast} ${motion.easeOut}`,
+      }} />
+      <button role="slider" aria-label={`Compare ${labels[0]} and ${labels[1]}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}
+        onKeyDown={onKey}
+        style={{
+          ...interactiveBase, position: "absolute", top: "50%", left: `${pct}%`, zIndex: 3,
+          width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: 20, padding: 0,
+          background: isDark ? "#1c1c1c" : "#fff", color: pal.text,
+          boxShadow: "0 0 0 1px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.25)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: dragging ? "grabbing" : "grab",
+          transform: dragging ? "scale(1.06)" : "scale(1)",
+          transition: dragging ? "transform 0.1s ease" : `left ${motion.fast} ${motion.easeOut}, transform ${motion.fast} ${motion.easeOut}`,
+        }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// A 1200×760 example screen scaled to the column, non-interactive.
+function LiveStage({ scale, theme, children }) {
+  const pal = usePal(theme);
+  return (
+    <div style={{ position: "relative", width: "100%", height: Math.round(PARADIGM_STAGE.h * scale), overflow: "hidden", background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
+      <div style={{ position: "absolute", top: 0, left: 0, width: PARADIGM_STAGE.w, height: PARADIGM_STAGE.h, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Before and after: the Chat screen as an agent left it, then with the kit.
+function BeforeAfterSection({ theme }) {
+  const pal = usePal(theme);
+  const ref = useRef(null);
+  const [scale, setScale] = useState(0.5);
+  useEffect(() => {
+    const measure = () => { if (ref.current) setScale(ref.current.clientWidth / PARADIGM_STAGE.w); };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+  return (
+    <div id="before-after" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ paddingLeft: 8 }}>
+        <Caption theme={theme}>Before and after</Caption>
+        <Text size="sm" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 6, maxWidth: 560 }}>
+          The same screen as a coding agent left it, and after the kit was applied.
+        </Text>
+      </div>
+      <div ref={ref}>
+        <CompareSlider theme={theme}
+          before={<LiveStage scale={scale} theme={theme}><ChatParadigmBefore theme={theme} /></LiveStage>}
+          after={<LiveStage scale={scale} theme={theme}><ChatParadigmExample theme={theme} /></LiveStage>} />
+      </div>
+      <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block", textAlign: "center" }}>
+        Drag the handle. Same components, same data. Only the kit changed.
+      </Text>
+    </div>
+  );
+}
+
+// ─── Chat paradigm · BEFORE (first-pass agent build, no design kit) ─────────
+// Same content and regions as ChatParadigmExample, rendered with plain HTML
+// and browser defaults. Reuses the CHATX_* constants so the copy is identical.
+
+const CHATB_FONT = "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif";
+
+// Tailwind default palette, as an AI first pass would reach for it.
+const CHATB_C = {
+  white: "#ffffff",
+  gray50: "#f9fafb", gray100: "#f3f4f6", gray200: "#e5e7eb", gray300: "#d1d5db",
+  gray400: "#9ca3af", gray500: "#6b7280", gray700: "#374151", gray900: "#111827",
+  blue50: "#eff6ff", blue500: "#3b82f6", blue600: "#2563eb",
+  green500: "#22c55e", yellow100: "#fef9c3", yellow800: "#854d0e",
+};
+
+const CHATB_SHADOW = "0 1px 2px rgba(0,0,0,0.05)";
+
+const CHATB_SUGGESTIONS = [
+  "What's open with Acme?",
+  "Close tickets idle over 30 days",
+  "Summarize overnight tickets",
+];
+
+const CHATB_BTN = {
+  fontFamily: CHATB_FONT, fontSize: 14, fontWeight: 500, lineHeight: "20px",
+  padding: "8px 16px", borderRadius: 6, cursor: "pointer", whiteSpace: "nowrap",
+};
+const CHATB_BTN_PRIMARY = { ...CHATB_BTN, background: CHATB_C.blue500, color: CHATB_C.white, border: "1px solid " + CHATB_C.blue500 };
+const CHATB_BTN_SECONDARY = { ...CHATB_BTN, background: CHATB_C.white, color: CHATB_C.gray700, border: "1px solid " + CHATB_C.gray300 };
+
+const CHATB_FIELD = {
+  fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", color: CHATB_C.gray900,
+  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray300, borderRadius: 6,
+  padding: "8px 12px", boxSizing: "border-box",
+};
+
+const CHATB_PILL = {
+  display: "inline-block", fontFamily: CHATB_FONT, fontSize: 12, lineHeight: "16px",
+  padding: "4px 10px", borderRadius: 9999, background: CHATB_C.gray100,
+  border: "1px solid " + CHATB_C.gray200, color: CHATB_C.gray700, whiteSpace: "nowrap",
+};
+
+function ChatBButton({ variant, onClick, style, children }) {
+  const base = variant === "primary" ? CHATB_BTN_PRIMARY : CHATB_BTN_SECONDARY;
+  return <button type="button" onClick={onClick} style={{ ...base, ...style }}>{children}</button>;
+}
+
+function ChatBModelSelect({ value, onChange, style }) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...CHATB_FIELD, cursor: "pointer", ...style }}>
+      {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+    </select>
+  );
+}
+
+function ChatBSectionLabel({ children, style }) {
+  return (
+    <div style={{ fontSize: 12, fontWeight: 500, color: CHATB_C.gray500, textTransform: "uppercase", letterSpacing: "0.05em", ...style }}>
+      {children}
+    </div>
+  );
+}
+
+function ChatParadigmBefore({ theme }) {
+  const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
+  const [model, setModel] = useState(CHATX_MODELS[0].id);
+  const [search, setSearch] = useState("");
+  const [draft, setDraft] = useState("");
+  const [choice, setChoice] = useState("");
+  const activeTitle = (CHATX_THREADS.find(t => t.id === activeThread) || CHATX_THREADS[0]).title;
+  const visibleThreads = CHATX_THREADS.filter(t => t.title.toLowerCase().includes(search.trim().toLowerCase()));
+
+  return (
+    <div style={{
+      position: "relative", width: "100%", height: "100%", overflow: "hidden",
+      background: CHATB_C.white, color: CHATB_C.gray900, fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
+      display: "flex",
+    }}>
+      {/* Sidebar */}
+      <div style={{
+        width: 260, flexShrink: 0, display: "flex", flexDirection: "column",
+        background: CHATB_C.gray50, borderRight: "1px solid " + CHATB_C.gray200, boxSizing: "border-box",
+      }}>
+        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>✨ Alpha</div>
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search threads" style={{ ...CHATB_FIELD, width: "100%" }} />
+          <ChatBButton variant="primary" onClick={() => {}} style={{ width: "100%" }}>New thread</ChatBButton>
+        </div>
+
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 8px 8px" }}>
+          <ChatBSectionLabel style={{ padding: "8px 8px 4px" }}>Recent</ChatBSectionLabel>
+          {visibleThreads.map(t => {
+            const active = t.id === activeThread;
+            return (
+              <button key={t.id} type="button" onClick={() => setActiveThread(t.id)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                  width: "100%", padding: "8px 12px", borderRadius: 6, border: "none", cursor: "pointer", textAlign: "left",
+                  background: active ? CHATB_C.gray100 : "transparent",
+                  fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
+                  color: active ? CHATB_C.gray900 : CHATB_C.gray700, fontWeight: active ? 500 : 400,
+                }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                <span style={{ fontSize: 12, color: CHATB_C.gray400, flexShrink: 0 }}>{t.time}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+          borderTop: "1px solid " + CHATB_C.gray200,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 9999, background: CHATB_C.gray300, color: CHATB_C.gray700,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, flexShrink: 0,
+          }}>SK</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Sam Keller</div>
+            <div style={{ fontSize: 12, color: CHATB_C.gray500 }}>Team</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main column */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        {/* Top bar */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 16, padding: "12px 24px", flexShrink: 0,
+          background: CHATB_C.white, borderBottom: "1px solid " + CHATB_C.gray200,
+        }}>
+          <div style={{ fontSize: 18, fontWeight: 600, lineHeight: "28px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{activeTitle}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span style={{ color: CHATB_C.gray500 }}>Model:</span>
+            <ChatBModelSelect value={model} onChange={setModel} />
+          </div>
+          <span style={{ color: CHATB_C.gray500, whiteSpace: "nowrap", flexShrink: 0 }}>Context: 132K / 200K</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 9999, background: CHATB_C.green500, display: "inline-block" }} />
+            <span>Online</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <ChatBButton onClick={() => {}}>Share</ChatBButton>
+            <ChatBButton onClick={() => {}}>More</ChatBButton>
+          </div>
+        </div>
+
+        {/* Thread */}
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 24, background: CHATB_C.white }}>
+          <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* User message */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: 4 }}>You</div>
+              <div style={{
+                maxWidth: "75%", padding: "12px 16px", borderRadius: 8,
+                background: CHATB_C.blue50, border: "1px solid " + CHATB_C.gray200,
+              }}>{CHATX_USER_MSG}</div>
+              <div style={{ fontSize: 12, color: CHATB_C.gray400, marginTop: 4 }}>9:41 AM</div>
+            </div>
+
+            {/* Assistant message */}
+            <div style={{ display: "flex", gap: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 9999, background: CHATB_C.blue500, color: CHATB_C.white,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, flexShrink: 0,
+              }}>A</div>
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: -8 }}>Alpha</div>
+
+                {/* Thinking */}
+                <div style={{ background: CHATB_C.gray50, border: "1px solid " + CHATB_C.gray200, borderRadius: 8, padding: "12px 16px" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 8 }}>Thinking...</div>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: CHATB_C.gray700 }}>
+                    {CHATX_THINK_STEPS.map((s, i) => (
+                      <li key={i} style={{ marginBottom: 4 }}>{s.label} ({s.detail})</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Answer bubble */}
+                <div style={{ background: CHATB_C.gray100, borderRadius: 8, padding: "12px 16px" }}>
+                  <p style={{ margin: 0 }}>
+                    {CHATX_ANSWER_SEGMENTS.map((seg, i) => {
+                      if (seg.chip) {
+                        return (
+                          <span key={i} style={{
+                            display: "inline-block", fontSize: 12, lineHeight: "16px", padding: "1px 8px", marginLeft: 4,
+                            borderRadius: 9999, background: CHATB_C.gray200, color: CHATB_C.gray700, verticalAlign: "middle",
+                          }}>{seg.chip}</span>
+                        );
+                      }
+                      return <span key={i}>{seg.t || seg.text}</span>;
+                    })}
+                  </p>
+                </div>
+
+                {/* Sources */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: CHATB_C.gray500, marginBottom: 6 }}>Sources</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {CHATX_ANSWER_SOURCES.map(s => (
+                      <span key={s.name} style={CHATB_PILL}>{s.name}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Follow-ups */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {CHATX_ANSWER_FOLLOWUPS.map(f => (
+                    <button key={f} type="button" onClick={() => setDraft(f)} style={{
+                      fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", padding: "6px 12px", borderRadius: 9999,
+                      background: CHATB_C.white, border: "1px solid " + CHATB_C.blue600, color: CHATB_C.blue600, cursor: "pointer",
+                    }}>{f}</button>
+                  ))}
+                </div>
+
+                {/* Approval card */}
+                <div style={{
+                  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray200, borderRadius: 8,
+                  boxShadow: CHATB_SHADOW, padding: 16,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>How should I reply to Acme?</div>
+                    <span style={{
+                      fontSize: 12, lineHeight: "16px", fontWeight: 500, padding: "2px 8px", borderRadius: 9999,
+                      background: CHATB_C.yellow100, color: CHATB_C.yellow800, whiteSpace: "nowrap",
+                    }}>Paused</span>
+                  </div>
+                  <div style={{ color: CHATB_C.gray500, marginBottom: 12 }}>Needs your call before Alpha continues.</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                    {CHATX_APPROVAL_OPTIONS.map(o => (
+                      <label key={o.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer" }}>
+                        <input type="radio" name="chatb-approval" value={o.id}
+                          checked={choice === o.id} onChange={() => setChoice(o.id)} style={{ marginTop: 3 }} />
+                        <span>
+                          <span style={{ display: "block", fontWeight: 500 }}>{o.title}</span>
+                          <span style={{ display: "block", fontSize: 12, color: CHATB_C.gray500 }}>{o.sub}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <ChatBButton variant="primary" onClick={() => {}}>Confirm</ChatBButton>
+                    <ChatBButton onClick={() => {}}>Skip</ChatBButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Composer */}
+        <div style={{ flexShrink: 0, padding: "16px 24px", background: CHATB_C.white, borderTop: "1px solid " + CHATB_C.gray200 }}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+              {CHATB_SUGGESTIONS.map(s => (
+                <button key={s} type="button" onClick={() => setDraft(s)} style={{ ...CHATB_PILL, cursor: "pointer" }}>{s}</button>
+              ))}
+            </div>
+            <textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)}
+              placeholder="Ask Alpha about your inbox..."
+              style={{ ...CHATB_FIELD, width: "100%", resize: "none", display: "block" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+              <ChatBButton onClick={() => {}}>📎 Attach</ChatBButton>
+              <ChatBModelSelect value={model} onChange={setModel} />
+              <div style={{ flex: 1 }} />
+              <ChatBButton onClick={() => {}}>🎤</ChatBButton>
+              <ChatBButton variant="primary" onClick={() => {}}>Send</ChatBButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function BetaChip({ pageTheme }) {
   const pal = usePal(pageTheme);
@@ -11770,6 +12219,27 @@ function BetaChip({ pageTheme }) {
       <span style={{ width: 5, height: 5, borderRadius: 3, background: pal.accent, transition: `background ${motion.smooth} ${motion.easeInOut}` }} />
       BETA
     </div>
+  );
+}
+
+// Source link pill, opens the public repo.
+function RepoPill({ pageTheme, surface }) {
+  const pal = usePal(pageTheme);
+  const [hover, setHover] = useState(false);
+  return (
+    <a href={REPO_URL} target="_blank" rel="noreferrer" aria-label="Source on GitHub"
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
+        padding: "4px 10px 4px 8px", borderRadius: tokens.radius.pill, ...surface,
+        fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
+        color: hover ? pal.text : pal.textSecondary,
+      }}>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M16 18l6-6-6-6" /><path d="M8 6l-6 6 6 6" />
+      </svg>
+      GitHub
+    </a>
   );
 }
 
@@ -11792,53 +12262,14 @@ function StudioWandIcon({ size = 22, theme }) {
   );
 }
 
-// Source link: same pill idiom as Feedback, opens the public repo.
-function RepoPill({ pageTheme, surface }) {
-  const pal = usePal(pageTheme);
-  const [hover, setHover] = useState(false);
-  return (
-    <a href={REPO_URL} target="_blank" rel="noreferrer" aria-label="Source on GitHub"
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{
-        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
-        padding: "4px 10px 4px 8px", borderRadius: tokens.radius.pill, ...surface,
-        fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
-        color: hover ? pal.text : pal.textSecondary,
-      }}>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M16 18l6-6-6-6" /><path d="M8 6l-6 6 6 6" />
-      </svg>
-      GitHub
-    </a>
-  );
-}
-
-// Minimal feedback: a pill that opens a new issue on the public repo.
-function FeedbackPill({ pageTheme, surface }) {
-  const pal = usePal(pageTheme);
-  const [hover, setHover] = useState(false);
-  return (
-    <a href={`${REPO_URL}/issues/new`} target="_blank" rel="noreferrer" aria-label="Send feedback on GitHub"
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{
-        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
-        padding: "4px 10px 4px 8px", borderRadius: tokens.radius.pill, ...surface,
-        fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
-        color: hover ? pal.text : pal.textSecondary,
-      }}>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-      Feedback
-    </a>
-  );
-}
-
+// Floating studio note, bottom-left: starts as a condensed pill, opens to a
+// short note, re-opens whenever the install prompt is copied. Its action
+// scrolls to the studio card at the end of the page.
 function StudioCta({ pageTheme }) {
   const pal = usePal(pageTheme);
   const isDark = pageTheme === "dark";
   const { isMobile } = useViewport();
-  const [open, setOpen] = useState(false); // starts condensed; copying the prompt opens it
+  const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
   useEffect(() => {
     const reopen = () => setOpen(true);
@@ -11865,7 +12296,7 @@ function StudioCta({ pageTheme }) {
     </button>
   ) : (
     <div role="complementary" aria-label="Studio note" style={{
-      width: 288, maxWidth: "calc(100vw - 40px)",
+      width: 300, maxWidth: "calc(100vw - 40px)",
       padding: 16, borderRadius: tokens.radius.lg, ...surface, fontFamily: tokens.font.sans,
       animation: `halaska-step-in 0.4s ${motion.emphasized} both`,
     }}>
@@ -11874,29 +12305,41 @@ function StudioCta({ pageTheme }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <Text size="sm" weight="semibold" theme={pageTheme} style={{ display: "block" }}>Need a hand with yours?</Text>
           <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", marginTop: 4, lineHeight: 1.6 }}>
-            If you'd rather have a designer take it from here, that's what <StudioLink theme={pageTheme}>Halaska Studio</StudioLink> does. Send your prototype over and we'll take a look.
+            If you'd rather have a designer take it from here, that's what <StudioLink theme={pageTheme}>Halaska Studio</StudioLink> does.
           </Text>
+          <LinkButton theme={pageTheme} size="sm" iconRight="↗" onClick={() => { window.open(STUDIO_BOOK_URL, "_blank", "noopener"); setOpen(false); }} style={{ marginTop: 8 }}>Book a call</LinkButton>
         </div>
         <IconButton icon="–" size={24} theme={pageTheme} label="Minimise" onClick={() => setOpen(false)} style={{ marginTop: -4, marginRight: -6 }} />
       </div>
     </div>
   );
-  // Phones: the docks fold into the section menu (see ActionBar); the note
-  // only appears above the bar once the prompt has been copied.
+  // Phones: the note only appears above the bar once the prompt has been copied.
   if (isMobile) {
     return open ? (
       <div style={{ position: "fixed", bottom: 84, left: 16, right: 16, zIndex: 9998, display: "flex", justifyContent: "center" }}>{note}</div>
     ) : null;
   }
+  return <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>;
+}
+
+// Fixed bottom-right dock: BETA and GitHub. Phones get the same pills inside
+// the section menu instead.
+function PageDock({ pageTheme }) {
+  const pal = usePal(pageTheme);
+  const isDark = pageTheme === "dark";
+  const { isMobile } = useViewport();
+  const surface = {
+    background: isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
+    backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+    boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
+    transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
+  };
+  if (isMobile) return null;
   return (
-    <>
-      <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>
-      <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
-        <BetaChip pageTheme={pageTheme} />
-        <RepoPill pageTheme={pageTheme} surface={surface} />
-        <FeedbackPill pageTheme={pageTheme} surface={surface} />
-      </div>
-    </>
+    <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
+      <BetaChip pageTheme={pageTheme} />
+      <RepoPill pageTheme={pageTheme} surface={surface} />
+    </div>
   );
 }
 
@@ -12028,7 +12471,7 @@ function BarButton({ children, onClick, active, barText, barTextActive, barHover
 // Pattern entries are grouped under clickable section headers.
 // Section menu for viewports without the bookmark rail: a ≡ button in the
 // bar opens a compact list of every section above it. Phones also get the
-// BETA chip and Feedback here so nothing else floats over the content.
+// BETA and GitHub pills here so nothing else floats over the content.
 function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
   const { isMobile } = useViewport();
   const pal = usePal(pageTheme);
@@ -12093,7 +12536,6 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
         }}>
           <BetaChip pageTheme={pageTheme} />
           <RepoPill pageTheme={pageTheme} surface={surface} />
-          <FeedbackPill pageTheme={pageTheme} surface={surface} />
         </div>
       )}
     </div>
@@ -12321,6 +12763,7 @@ export default function HalaskaKit() {
 
       </ShowcasePage>
       <StudioCta pageTheme={pageTheme} />
+      <PageDock pageTheme={pageTheme} />
       <BookmarkRail pageTheme={pageTheme} scrollTo={scrollTo} />
       <ActionBar
         scrollTo={scrollTo}
@@ -12367,7 +12810,7 @@ export {
   Snippet, FileTree, BrowserFrame, PhoneFrame,
   // AI elements
   Orb, StreamingText, ThinkingIndicator, ThinkingSteps, ConfidenceBar,
-  AISuggestionBadge, BeforeAfterToggle, ZoomControl, AgentGlyph,
+  AISuggestionBadge, BeforeAfterToggle, CompareSlider, ZoomControl, AgentGlyph,
   // UX patterns: conversation core
   PromptInputPattern, MessageThreadPattern, StreamingAnswerPattern,
   AgentChatPattern, CodeBlockPattern, ModelContextPattern,
@@ -12386,7 +12829,7 @@ export {
   TaskboardPattern, InlineAssistPattern, NudgePattern, DigestPattern,
   NotificationCenterPattern, CommandSearchPattern, AgentSetupPattern,
   // Example screens (one per UX paradigm)
-  ChatParadigmExample, CanvasParadigmExample,
+  ChatParadigmExample, CanvasParadigmExample, ChatParadigmBefore, BeforeAfterSection,
   // Registries (for building indexes and docs)
   PATTERN_GROUPS, UX_PATTERNS, DESIGN_HEURISTICS,
 };
