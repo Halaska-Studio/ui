@@ -11980,151 +11980,273 @@ function BeforeAfterSection({ theme }) {
 // Same content and regions as ChatParadigmExample, rendered with plain HTML
 // and browser defaults. Reuses the CHATX_* constants so the copy is identical.
 
-const CHATB_FONT = "system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif";
-const CHATB_LINK = { color: "#0000ee", textDecoration: "underline" };
+const CHATB_FONT = "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif";
+
+// Tailwind default palette, as an AI first pass would reach for it.
+const CHATB_C = {
+  white: "#ffffff",
+  gray50: "#f9fafb", gray100: "#f3f4f6", gray200: "#e5e7eb", gray300: "#d1d5db",
+  gray400: "#9ca3af", gray500: "#6b7280", gray700: "#374151", gray900: "#111827",
+  blue50: "#eff6ff", blue500: "#3b82f6", blue600: "#2563eb",
+  green500: "#22c55e", yellow100: "#fef9c3", yellow800: "#854d0e",
+};
+
+const CHATB_SHADOW = "0 1px 2px rgba(0,0,0,0.05)";
+
 const CHATB_SUGGESTIONS = [
   "What's open with Acme?",
   "Close tickets idle over 30 days",
   "Summarize overnight tickets",
 ];
 
-function ChatBLinks({ items }) {
-  return items.map((item, i) => (
-    <span key={i}>
-      {i > 0 ? " · " : null}
-      <a href="#" onClick={(e) => e.preventDefault()} style={CHATB_LINK}>{item}</a>
-    </span>
-  ));
+const CHATB_BTN = {
+  fontFamily: CHATB_FONT, fontSize: 14, fontWeight: 500, lineHeight: "20px",
+  padding: "8px 16px", borderRadius: 6, cursor: "pointer", whiteSpace: "nowrap",
+};
+const CHATB_BTN_PRIMARY = { ...CHATB_BTN, background: CHATB_C.blue500, color: CHATB_C.white, border: "1px solid " + CHATB_C.blue500 };
+const CHATB_BTN_SECONDARY = { ...CHATB_BTN, background: CHATB_C.white, color: CHATB_C.gray700, border: "1px solid " + CHATB_C.gray300 };
+
+const CHATB_FIELD = {
+  fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", color: CHATB_C.gray900,
+  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray300, borderRadius: 6,
+  padding: "8px 12px", boxSizing: "border-box",
+};
+
+const CHATB_PILL = {
+  display: "inline-block", fontFamily: CHATB_FONT, fontSize: 12, lineHeight: "16px",
+  padding: "4px 10px", borderRadius: 9999, background: CHATB_C.gray100,
+  border: "1px solid " + CHATB_C.gray200, color: CHATB_C.gray700, whiteSpace: "nowrap",
+};
+
+function ChatBButton({ variant, onClick, style, children }) {
+  const base = variant === "primary" ? CHATB_BTN_PRIMARY : CHATB_BTN_SECONDARY;
+  return <button type="button" onClick={onClick} style={{ ...base, ...style }}>{children}</button>;
+}
+
+function ChatBModelSelect({ value, onChange, style }) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...CHATB_FIELD, cursor: "pointer", ...style }}>
+      {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+    </select>
+  );
+}
+
+function ChatBSectionLabel({ children, style }) {
+  return (
+    <div style={{ fontSize: 12, fontWeight: 500, color: CHATB_C.gray500, textTransform: "uppercase", letterSpacing: "0.05em", ...style }}>
+      {children}
+    </div>
+  );
 }
 
 function ChatParadigmBefore({ theme }) {
   const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
   const [model, setModel] = useState(CHATX_MODELS[0].id);
+  const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
   const [choice, setChoice] = useState("");
   const activeTitle = (CHATX_THREADS.find(t => t.id === activeThread) || CHATX_THREADS[0]).title;
-
-  let cite = 0;
+  const visibleThreads = CHATX_THREADS.filter(t => t.title.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <div style={{
       position: "relative", width: "100%", height: "100%", overflow: "hidden",
-      background: "#fff", color: "#000", fontFamily: CHATB_FONT, fontSize: 16, lineHeight: 1.4,
+      background: CHATB_C.white, color: CHATB_C.gray900, fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
       display: "flex",
     }}>
-      {/* Left: thread list */}
-      <div style={{ width: 260, flexShrink: 0, borderRight: "1px solid #ccc", overflow: "auto", padding: 10, boxSizing: "border-box" }}>
-        <h3 style={{ margin: "0 0 5px" }}>Alpha</h3>
-        <p style={{ margin: "0 0 10px", fontSize: 14 }}>Status: Online</p>
-        <div style={{ marginBottom: 8 }}>
-          <input type="text" placeholder="Search threads" />
+      {/* Sidebar */}
+      <div style={{
+        width: 260, flexShrink: 0, display: "flex", flexDirection: "column",
+        background: CHATB_C.gray50, borderRight: "1px solid " + CHATB_C.gray200, boxSizing: "border-box",
+      }}>
+        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>✨ Alpha</div>
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search threads" style={{ ...CHATB_FIELD, width: "100%" }} />
+          <ChatBButton variant="primary" onClick={() => {}} style={{ width: "100%" }}>New thread</ChatBButton>
         </div>
-        <div style={{ marginBottom: 15 }}>
-          <button type="button">New thread</button>
+
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 8px 8px" }}>
+          <ChatBSectionLabel style={{ padding: "8px 8px 4px" }}>Recent</ChatBSectionLabel>
+          {visibleThreads.map(t => {
+            const active = t.id === activeThread;
+            return (
+              <button key={t.id} type="button" onClick={() => setActiveThread(t.id)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                  width: "100%", padding: "8px 12px", borderRadius: 6, border: "none", cursor: "pointer", textAlign: "left",
+                  background: active ? CHATB_C.gray100 : "transparent",
+                  fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
+                  color: active ? CHATB_C.gray900 : CHATB_C.gray700, fontWeight: active ? 500 : 400,
+                }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                <span style={{ fontSize: 12, color: CHATB_C.gray400, flexShrink: 0 }}>{t.time}</span>
+              </button>
+            );
+          })}
         </div>
-        <b>Recent</b>
-        <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0 }}>
-          {CHATX_THREADS.map(t => (
-            <li key={t.id}
-              style={{ padding: "6px 8px", background: t.id === activeThread ? "#eee" : "transparent" }}>
-              <a href="#" style={CHATB_LINK}
-                onClick={(e) => { e.preventDefault(); setActiveThread(t.id); }}>{t.title}</a>
-              <span style={{ float: "right", fontSize: 13, color: "#666" }}>{t.time}</span>
-            </li>
-          ))}
-        </ul>
-        <hr style={{ margin: "20px 0 10px" }} />
-        <p style={{ margin: 0, fontSize: 14 }}><b>Sam Keller</b> (Team)</p>
+
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+          borderTop: "1px solid " + CHATB_C.gray200,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 9999, background: CHATB_C.gray300, color: CHATB_C.gray700,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, flexShrink: 0,
+          }}>SK</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Sam Keller</div>
+            <div style={{ fontSize: 12, color: CHATB_C.gray500 }}>Team</div>
+          </div>
+        </div>
       </div>
 
-      {/* Main area */}
+      {/* Main column */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
-        <div style={{ borderBottom: "1px solid #ccc", padding: "10px 15px", flexShrink: 0 }}>
-          <h2 style={{ margin: "0 0 8px", fontSize: 20 }}>{activeTitle}</h2>
-          <div style={{ fontSize: 14 }}>
-            <label>Model: <select value={model} onChange={(e) => setModel(e.target.value)}>
-              {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select></label>
-            <span style={{ marginLeft: 15 }}>Context: 132K / 200K</span>
-            <span style={{ marginLeft: 15 }}>Status: Waiting on you</span>
-            <span style={{ marginLeft: 15 }}>
-              <button type="button">Share</button> <button type="button">More</button>
-            </span>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 16, padding: "12px 24px", flexShrink: 0,
+          background: CHATB_C.white, borderBottom: "1px solid " + CHATB_C.gray200,
+        }}>
+          <div style={{ fontSize: 18, fontWeight: 600, lineHeight: "28px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{activeTitle}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span style={{ color: CHATB_C.gray500 }}>Model:</span>
+            <ChatBModelSelect value={model} onChange={setModel} />
+          </div>
+          <span style={{ color: CHATB_C.gray500, whiteSpace: "nowrap", flexShrink: 0 }}>Context: 132K / 200K</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 9999, background: CHATB_C.green500, display: "inline-block" }} />
+            <span>Online</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <ChatBButton onClick={() => {}}>Share</ChatBButton>
+            <ChatBButton onClick={() => {}}>More</ChatBButton>
           </div>
         </div>
 
         {/* Thread */}
-        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 20 }}>
-          <p style={{ margin: "0 0 5px" }}><b>You:</b> {CHATX_USER_MSG}</p>
-          <p style={{ margin: "0 0 20px", fontSize: 13, color: "#666" }}>9:41 AM</p>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 24, background: CHATB_C.white }}>
+          <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* User message */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: 4 }}>You</div>
+              <div style={{
+                maxWidth: "75%", padding: "12px 16px", borderRadius: 8,
+                background: CHATB_C.blue50, border: "1px solid " + CHATB_C.gray200,
+              }}>{CHATX_USER_MSG}</div>
+              <div style={{ fontSize: 12, color: CHATB_C.gray400, marginTop: 4 }}>9:41 AM</div>
+            </div>
 
-          <p style={{ margin: "0 0 5px" }}><b>Alpha:</b> Reading Acme's thread</p>
-          <ul style={{ margin: "0 0 15px", paddingLeft: 25 }}>
-            {CHATX_THINK_STEPS.map((s, i) => (
-              <li key={i}>{s.label} ({s.detail})</li>
-            ))}
-          </ul>
+            {/* Assistant message */}
+            <div style={{ display: "flex", gap: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 9999, background: CHATB_C.blue500, color: CHATB_C.white,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, flexShrink: 0,
+              }}>A</div>
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: -8 }}>Alpha</div>
 
-          <hr style={{ margin: "15px 0" }} />
+                {/* Thinking */}
+                <div style={{ background: CHATB_C.gray50, border: "1px solid " + CHATB_C.gray200, borderRadius: 8, padding: "12px 16px" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 8 }}>Thinking...</div>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: CHATB_C.gray700 }}>
+                    {CHATX_THINK_STEPS.map((s, i) => (
+                      <li key={i} style={{ marginBottom: 4 }}>{s.label} ({s.detail})</li>
+                    ))}
+                  </ul>
+                </div>
 
-          <p style={{ margin: "0 0 8px" }}><b>Answer</b></p>
-          <p style={{ margin: "0 0 10px" }}>
-            {CHATX_ANSWER_SEGMENTS.map((seg, i) => {
-              if (seg.chip) { cite += 1; return <span key={i}> [{cite}]</span>; }
-              return <span key={i}>{seg.t || seg.text}</span>;
-            })}
-          </p>
-          <p style={{ margin: "0 0 8px", fontSize: 14 }}>
-            <b>Sources ({CHATX_ANSWER_SOURCES.length}):</b>{" "}
-            <ChatBLinks items={CHATX_ANSWER_SOURCES.map(s => s.name)} />
-          </p>
-          <p style={{ margin: "0 0 20px", fontSize: 14 }}>
-            <b>Follow-ups:</b>{" "}
-            <ChatBLinks items={CHATX_ANSWER_FOLLOWUPS} />
-          </p>
+                {/* Answer bubble */}
+                <div style={{ background: CHATB_C.gray100, borderRadius: 8, padding: "12px 16px" }}>
+                  <p style={{ margin: 0 }}>
+                    {CHATX_ANSWER_SEGMENTS.map((seg, i) => {
+                      if (seg.chip) {
+                        return (
+                          <span key={i} style={{
+                            display: "inline-block", fontSize: 12, lineHeight: "16px", padding: "1px 8px", marginLeft: 4,
+                            borderRadius: 9999, background: CHATB_C.gray200, color: CHATB_C.gray700, verticalAlign: "middle",
+                          }}>{seg.chip}</span>
+                        );
+                      }
+                      return <span key={i}>{seg.t || seg.text}</span>;
+                    })}
+                  </p>
+                </div>
 
-          <div style={{ border: "1px solid #ccc", padding: 15, marginBottom: 10 }}>
-            <p style={{ margin: "0 0 4px", fontSize: 13, color: "#666" }}>Needs your call (Paused)</p>
-            <p style={{ margin: "0 0 10px" }}><b>How should I reply to Acme?</b></p>
-            {CHATX_APPROVAL_OPTIONS.map(o => (
-              <div key={o.id} style={{ marginBottom: 8 }}>
-                <label>
-                  <input type="radio" name="chatb-approval" value={o.id}
-                    checked={choice === o.id} onChange={() => setChoice(o.id)} />
-                  {" "}{o.title}
-                </label>
-                <div style={{ fontSize: 14, color: "#666", marginLeft: 22 }}>{o.sub}</div>
+                {/* Sources */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: CHATB_C.gray500, marginBottom: 6 }}>Sources</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {CHATX_ANSWER_SOURCES.map(s => (
+                      <span key={s.name} style={CHATB_PILL}>{s.name}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Follow-ups */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {CHATX_ANSWER_FOLLOWUPS.map(f => (
+                    <button key={f} type="button" onClick={() => setDraft(f)} style={{
+                      fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", padding: "6px 12px", borderRadius: 9999,
+                      background: CHATB_C.white, border: "1px solid " + CHATB_C.blue600, color: CHATB_C.blue600, cursor: "pointer",
+                    }}>{f}</button>
+                  ))}
+                </div>
+
+                {/* Approval card */}
+                <div style={{
+                  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray200, borderRadius: 8,
+                  boxShadow: CHATB_SHADOW, padding: 16,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>How should I reply to Acme?</div>
+                    <span style={{
+                      fontSize: 12, lineHeight: "16px", fontWeight: 500, padding: "2px 8px", borderRadius: 9999,
+                      background: CHATB_C.yellow100, color: CHATB_C.yellow800, whiteSpace: "nowrap",
+                    }}>Paused</span>
+                  </div>
+                  <div style={{ color: CHATB_C.gray500, marginBottom: 12 }}>Needs your call before Alpha continues.</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                    {CHATX_APPROVAL_OPTIONS.map(o => (
+                      <label key={o.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer" }}>
+                        <input type="radio" name="chatb-approval" value={o.id}
+                          checked={choice === o.id} onChange={() => setChoice(o.id)} style={{ marginTop: 3 }} />
+                        <span>
+                          <span style={{ display: "block", fontWeight: 500 }}>{o.title}</span>
+                          <span style={{ display: "block", fontSize: 12, color: CHATB_C.gray500 }}>{o.sub}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <ChatBButton variant="primary" onClick={() => {}}>Confirm</ChatBButton>
+                    <ChatBButton onClick={() => {}}>Skip</ChatBButton>
+                  </div>
+                </div>
               </div>
-            ))}
-            <div style={{ marginTop: 10 }}>
-              <button type="button">Confirm</button> <button type="button">Skip</button>
             </div>
           </div>
         </div>
 
         {/* Composer */}
-        <div style={{ borderTop: "1px solid #ccc", padding: 15, flexShrink: 0 }}>
-          <p style={{ margin: "0 0 8px", fontSize: 14 }}>
-            <b>Suggestions:</b>{" "}
-            {CHATB_SUGGESTIONS.map((s, i) => (
-              <span key={s}>
-                {i > 0 ? " · " : null}
-                <a href="#" style={CHATB_LINK} onClick={(e) => { e.preventDefault(); setDraft(s); }}>{s}</a>
-              </span>
-            ))}
-          </p>
-          <div>
+        <div style={{ flexShrink: 0, padding: "16px 24px", background: CHATB_C.white, borderTop: "1px solid " + CHATB_C.gray200 }}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+              {CHATB_SUGGESTIONS.map(s => (
+                <button key={s} type="button" onClick={() => setDraft(s)} style={{ ...CHATB_PILL, cursor: "pointer" }}>{s}</button>
+              ))}
+            </div>
             <textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ask Alpha about your inbox…" style={{ width: "100%", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ marginTop: 8, fontSize: 14 }}>
-            <button type="button">Attach</button>{" "}
-            <select value={model} onChange={(e) => setModel(e.target.value)}>
-              {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select>{" "}
-            <button type="button">Voice</button>{" "}
-            <button type="button">Send</button>
+              placeholder="Ask Alpha about your inbox..."
+              style={{ ...CHATB_FIELD, width: "100%", resize: "none", display: "block" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+              <ChatBButton onClick={() => {}}>📎 Attach</ChatBButton>
+              <ChatBModelSelect value={model} onChange={setModel} />
+              <div style={{ flex: 1 }} />
+              <ChatBButton onClick={() => {}}>🎤</ChatBButton>
+              <ChatBButton variant="primary" onClick={() => {}}>Send</ChatBButton>
+            </div>
           </div>
         </div>
       </div>
