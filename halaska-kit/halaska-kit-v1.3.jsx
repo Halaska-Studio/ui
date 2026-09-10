@@ -3717,7 +3717,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
               { q: "Can I change the look?", a: "Accent, typeface, and motion are all switchable at runtime: pick an accent in the bar below, a typeface in Foundations, and a motion mode there too. Everything else is a token at the top of the file." },
               { q: "Is this the same as shadcn/ui?", a: "It's built on the same foundations and the same component vocabulary, so it feels familiar. The AI patterns on top, the trading of confirm dialogs for undo, and the opinionated styling are the difference." },
               { q: "Can I use this commercially?", a: "Yes. MIT licensed, use it in anything." },
-              { q: "Where's the source?", a: "On GitHub at github.com/Halaska-Studio/ui. Star it, or open an issue there (the Feedback button does the same)." },
+              { q: "Where's the source?", a: "On GitHub at github.com/Halaska-Studio/ui. Star it, or open an issue there if something's missing or broken." },
             ].map((item, i) => (
               <div key={i}>
                 <div style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: textColor, marginBottom: 4, transition: t("color") }}>{item.q}</div>
@@ -11764,7 +11764,7 @@ const RAIL_ROWS = [
 const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 
 // ─── BOTTOM-LEFT DOCK ─────────────────────────────────────────
-// BETA chip + Feedback pill above the studio note. The note starts condensed
+// BETA chip beside the GitHub pill; the studio note starts condensed
 // and re-opens whenever the install prompt is copied.
 
 const SUBMIT_ENDPOINT = "/api/submit";
@@ -12272,7 +12272,7 @@ function BetaChip({ pageTheme }) {
   );
 }
 
-// Source link: same pill idiom as Feedback, opens the public repo.
+// Source link pill, opens the public repo.
 function RepoPill({ pageTheme, surface }) {
   const pal = usePal(pageTheme);
   const [hover, setHover] = useState(false);
@@ -12290,98 +12290,6 @@ function RepoPill({ pageTheme, surface }) {
       </svg>
       GitHub
     </a>
-  );
-}
-
-// Feedback: a small modal with one text box (and an optional email for a
-// reply). Posts to the site endpoint, which emails the studio.
-function FeedbackDialog({ open, onClose, pageTheme }) {
-  const pal = usePal(pageTheme);
-  const { isMobile } = useViewport();
-  const [text, setText] = useState("");
-  const [email, setEmail] = useState("");
-  const [state, setState] = useState("idle");
-  const [error, setError] = useState("");
-  const timer = useRef(null);
-  useEffect(() => () => clearTimeout(timer.current), []);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-  if (!open) return null;
-  const send = async () => {
-    const note = text.trim();
-    if (note.length < 2) { setError("Write a line first."); return; }
-    if (email.trim() && !EMAIL_RE.test(email.trim())) { setError("That email doesn't look right."); return; }
-    setState("sending"); setError("");
-    try {
-      await kitSubmit({ kind: "feedback", text: note, email: email.trim(), page: window.location.href });
-      setState("done"); setText(""); setEmail("");
-      timer.current = setTimeout(() => { setState("idle"); onClose(); }, 1600);
-    } catch (e) {
-      setState("idle");
-      setError("Couldn't send just now. Try again, or open an issue on GitHub.");
-    }
-  };
-  return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10003, padding: 16,
-      animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
-    }}>
-      <div role="dialog" aria-modal="true" aria-label="Feedback" onClick={(e) => e.stopPropagation()} style={{
-        width: 440, maxWidth: "100%",
-        background: pageTheme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
-        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-        borderRadius: tokens.radius.lg, padding: isMobile ? 20 : 24,
-        border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
-        animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
-      }}>
-        <div style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text, marginBottom: 6 }}>Feedback</div>
-        {state === "done" ? (
-          <Text size="base" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", padding: "8px 0 4px" }}>Thanks, got it.</Text>
-        ) : (
-          <Stack gap={12}>
-            <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block" }}>What's missing, or what broke? A line is plenty.</Text>
-            <TextArea theme={pageTheme} rows={4} placeholder="The stepper skips a step on mobile…" value={text} onChange={(v) => { setText(v); setError(""); }} />
-            <TextInput theme={pageTheme} type="email" size="sm" placeholder="Email, if you'd like a reply (optional)" value={email} onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} />
-            <Stack direction="row" gap={8} justify="flex-end">
-              <Button theme={pageTheme} variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-              <Button theme={pageTheme} variant="primary" size="sm" loading={state === "sending"} onClick={send}>Send</Button>
-            </Stack>
-          </Stack>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// The Feedback pill. Opens the dialog itself, or hands off through `onOpen`
-// when it sits inside a transformed container (the phone section menu).
-function FeedbackPill({ pageTheme, surface, onOpen }) {
-  const pal = usePal(pageTheme);
-  const [hover, setHover] = useState(false);
-  const [open, setOpen] = useState(false);
-  const close = useCallback(() => setOpen(false), []);
-  return (
-    <>
-      <button onClick={() => (onOpen ? onOpen() : setOpen(true))} aria-label="Send feedback"
-        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-        style={{
-          ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "4px 10px 4px 8px", borderRadius: tokens.radius.pill, ...surface,
-          fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
-          color: hover ? pal.text : pal.textSecondary,
-        }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-        Feedback
-      </button>
-      {!onOpen && <FeedbackDialog open={open} onClose={close} pageTheme={pageTheme} />}
-    </>
   );
 }
 
@@ -12469,8 +12377,8 @@ function StudioCta({ pageTheme }) {
   return <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>;
 }
 
-// Fixed bottom-right dock: BETA, version, GitHub, Feedback. Phones get the
-// same pills inside the section menu instead.
+// Fixed bottom-right dock: BETA and GitHub. Phones get the same pills inside
+// the section menu instead.
 function PageDock({ pageTheme }) {
   const pal = usePal(pageTheme);
   const isDark = pageTheme === "dark";
@@ -12486,7 +12394,6 @@ function PageDock({ pageTheme }) {
     <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
       <BetaChip pageTheme={pageTheme} />
       <RepoPill pageTheme={pageTheme} surface={surface} />
-      <FeedbackPill pageTheme={pageTheme} surface={surface} />
     </div>
   );
 }
@@ -12619,8 +12526,8 @@ function BarButton({ children, onClick, active, barText, barTextActive, barHover
 // Pattern entries are grouped under clickable section headers.
 // Section menu for viewports without the bookmark rail: a ≡ button in the
 // bar opens a compact list of every section above it. Phones also get the
-// BETA chip and Feedback here so nothing else floats over the content.
-function SectionMenu({ open, onClose, scrollTo, pageTheme, bar, onFeedback }) {
+// BETA and GitHub pills here so nothing else floats over the content.
+function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
   const { isMobile } = useViewport();
   const pal = usePal(pageTheme);
   const [activeId, setActiveId] = useState(null);
@@ -12684,7 +12591,6 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar, onFeedback }) {
         }}>
           <BetaChip pageTheme={pageTheme} />
           <RepoPill pageTheme={pageTheme} surface={surface} />
-          <FeedbackPill pageTheme={pageTheme} surface={surface} onOpen={onFeedback} />
         </div>
       )}
     </div>
@@ -12694,10 +12600,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar, onFeedback }) {
 function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentChange }) {
   const [colorOpen, setColorOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
-  const closeFeedback = useCallback(() => setFeedbackOpen(false), []);
-  const openFeedback = useCallback(() => { setMenuOpen(false); setFeedbackOpen(true); }, []);
   const { isMobile, compact } = useViewport();
   const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
   const isDark = pageTheme === "dark";
@@ -12721,8 +12624,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
 
   return (
     <>
-    <FeedbackDialog open={feedbackOpen} onClose={closeFeedback} pageTheme={pageTheme} />
-    {compact && <SectionMenu open={menuOpen} onClose={closeMenu} scrollTo={scrollTo} pageTheme={pageTheme} onFeedback={openFeedback}
+    {compact && <SectionMenu open={menuOpen} onClose={closeMenu} scrollTo={scrollTo} pageTheme={pageTheme}
       bar={{ bg: barBg, border: barBorder, text: barText, textActive: barTextActive, activeBg: barActiveBg, shadow }} />}
     <div style={{
       position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
