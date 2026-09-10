@@ -57,7 +57,8 @@ npm run dev
 
 ## Feedback
 
-- Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new). The Feedback button on the site goes to the same place.
+- Quick notes: the Feedback button on the site opens a one-box form that goes straight to the studio.
+- Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new).
 - Design questions about your own prototype: use the "Need a hand with yours?" form on https://ui.halaska.com and the studio will reply with the three things it would change first.
 
 ## Site forms

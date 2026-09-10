@@ -12,6 +12,16 @@ const FROM = process.env.SUBMIT_FROM || "UI by Halaska <kit@halaska.com>";
 
 function compose(body) {
   const email = String(body.email || "").trim();
+  if (body.kind === "feedback") {
+    const text = String(body.text || "").trim();
+    if (text.length < 2 || text.length > 4000) return { error: "Write a line first." };
+    if (email && (!EMAIL_RE.test(email) || email.length > 200)) return { error: "That email doesn't look right." };
+    return {
+      type: "feedback", project: "halaska-kit", email: email || undefined, text,
+      subject: "Kit feedback",
+      body: [text, "", email ? `From: ${email}` : "No email left", `Sent from ${body.page || "ui.halaska.com"}`].join("\n"),
+    };
+  }
   if (!EMAIL_RE.test(email) || email.length > 200) return { error: "Enter a valid email." };
   if (body.kind === "review") {
     const url = String(body.url || "").trim();
@@ -30,7 +40,7 @@ async function deliver(msg) {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [TO], reply_to: msg.email, subject: msg.subject, text: msg.text }),
+      body: JSON.stringify({ from: FROM, to: [TO], reply_to: msg.email || undefined, subject: msg.subject, text: msg.body || msg.text }),
     });
     if (!r.ok) throw new Error(`resend ${r.status}`);
     return;
