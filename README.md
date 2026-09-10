@@ -1,10 +1,12 @@
 # UI by Halaska
 
-A single-file React UI kit for AI products, built on shadcn/ui foundations. 38 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
+![The Chat example screen, built entirely from the kit](docs/after.png)
+
+A single-file React UI kit for AI products, built on shadcn/ui foundations. Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop. 38 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
 
 Live: **https://ui.halaska.com**
 
-Made for founders building with coding agents: it gets a prototype 85% of the way to looking designed without a designer in the loop.
+![Before and after: the same screen as a coding agent left it, and with the kit applied](docs/before-after.png)
 
 ## Use it
 
@@ -55,7 +57,20 @@ npm run dev
 
 ## Feedback
 
-Use the Feedback button on the site, or open an issue here.
+- Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new). The Feedback button on the site goes to the same place.
+- Design questions about your own prototype: use the "Need a hand with yours?" form on https://ui.halaska.com and the studio will reply with the three things it would change first.
+
+## Site forms
+
+The two forms on the showcase (the studio review request and the updates signup) post to `halaska-kit/api/submit.js`, a Vercel serverless function that emails the submission. It needs one of these environment variables on the Vercel project:
+
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Send through [Resend](https://resend.com) (with `SUBMIT_FROM` as the verified sender) |
+| `SUBMIT_WEBHOOK_URL` | Or forward the JSON payload to any webhook |
+| `SUBMIT_TO` | Recipient, defaults to chris@halaska.com |
+
+Locally, `npm run dev` answers the endpoint with a stub that logs submissions to the terminal. No tracking, no third-party marketing platform.
 
 ## Licence
 

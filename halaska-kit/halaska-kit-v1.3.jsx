@@ -3603,7 +3603,9 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
   const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
   // Install prompt: one click copies it and reveals the text below the hero.
   const [installStage, setInstallStage] = useState("idle");
-  const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); };
+  const [updates, setUpdates] = useState(null); // null | "copied" | "menu"
+  const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); if (updatesAllowed()) setUpdates("copied"); };
+  const jump = (id, offset = 32) => { const el = document.getElementById(id); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top: y, behavior: "smooth" }); } };
 
   const installPanel = installStage === "revealed" ? (
     <div style={{ marginTop: 28, animation: `halaska-step-in 0.4s ${motion.emphasized} both` }}>
@@ -3647,12 +3649,27 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                 <p style={{ ...tokens.type.md, color: dimColor, margin: "10px 0 0", transition: t("color") }}>by <StudioLink theme={pageTheme} /> · built on top of <StudioLink theme={pageTheme} href="https://ui.shadcn.com">shadcn/ui</StudioLink></p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 20, paddingTop: 8 }}>
-                <LinkButton theme={pageTheme} size="sm" iconRight="↓" onClick={() => (() => { const el = document.getElementById("how-to-use"); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 32; window.scrollTo({ top: y, behavior: "smooth" }); } })()}>More</LinkButton>
+                <DropdownMenu theme={pageTheme} trigger={<LinkButton theme={pageTheme} size="sm" iconRight="↓">More</LinkButton>} items={[
+                  { label: "How to use", onClick: () => jump("how-to-use") },
+                  { label: "Before and after", onClick: () => jump("before-after") },
+                  { label: "FAQ", onClick: () => jump("faq") },
+                  { separator: true },
+                  { label: "GitHub", onClick: () => window.open(REPO_URL, "_blank", "noopener") },
+                  { label: "Updates", onClick: () => setUpdates("menu") },
+                ]} />
                 <Button theme={pageTheme} variant="primary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyAndReveal}>
                   {installCopied ? "Copied" : "Copy prompt"}
                 </Button>
               </div>
             </div>
+
+            <p style={{ ...tokens.type.md, color: dimColor, margin: "24px 0 0", maxWidth: 560, lineHeight: 1.65, transition: t("color") }}>
+              Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop.
+            </p>
+
+            {updates && (
+              <UpdatesPanel pageTheme={pageTheme} copied={updates === "copied"} onClose={() => setUpdates(null)} style={{ marginTop: 24, maxWidth: 520 }} />
+            )}
 
             {/* Two-column bio: stacks below ~600px */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: isMobile ? 28 : 40, marginTop: isMobile ? 36 : 48 }}>
@@ -3701,7 +3718,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
             ))}
           </div>
 
-          <h3 style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: textColor, margin: "48px 0 20px", transition: t("color") }}>Frequently Asked Questions</h3>
+          <h3 id="faq" style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: textColor, margin: "48px 0 20px", transition: t("color") }}>Frequently Asked Questions</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 40 }}>
             {[
               { q: "Which tools does this work with?", a: "Any coding agent that can fetch a file and edit your project: Claude Code, Cursor, Codex, Windsurf, and similar. For browser builders like Lovable or Bolt, paste the prompt and, if the tool can't fetch, upload the kit file from the link in the prompt." },
@@ -3718,6 +3735,11 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* The page ends on the studio hook, not on a component group */}
+        <div id="studio" style={{ marginTop: isMobile ? 48 : 64 }}>
+          <StudioHookCard theme={pageTheme} credit />
         </div>
       </div>
     </div>
@@ -11602,6 +11624,8 @@ function DemoPatterns({ theme }) {
   const bump = (id) => setReplayKeys(k => ({ ...k, [id]: (k[id] || 0) + 1 }));
   return (
     <Stack gap={isMobile ? 48 : 64}>
+      <BeforeAfterSection theme={theme} />
+
       {/* Two UX paradigms: each a complete example screen built from the kit */}
       <div style={{ paddingLeft: 8 }}>
         <Caption theme={theme}>Two UX paradigms</Caption>
@@ -11631,6 +11655,8 @@ function DemoPatterns({ theme }) {
         </div>
       ))}
       {openParadigm && <ParadigmFullscreen paradigm={openParadigm} theme={theme} onClose={closeParadigm} />}
+
+      <StudioHookCard theme={theme} />
 
       {PATTERN_GROUPS.map((group, gi) => (
         <div key={group.id} id={group.id} style={{ display: "flex", flexDirection: "column", gap: isMobile ? 40 : 56 }}>
@@ -11753,6 +11779,359 @@ const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 // BETA chip + Feedback pill above the studio note. The note starts condensed
 // and re-opens whenever the install prompt is copied.
 
+const KIT_VERSION = "1.3";
+const SUBMIT_ENDPOINT = "/api/submit";
+const UPDATES_KEY = "halaska:updates-done";
+const REVIEW_KEY = "halaska:review-sent";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Showcase-only session memory (never in the kit's components).
+const kitSession = {
+  get(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { window.sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
+};
+const updatesAllowed = () => !kitSession.get(UPDATES_KEY) && !kitSession.get(REVIEW_KEY);
+async function kitSubmit(payload) {
+  const r = await fetch(SUBMIT_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  if (!r.ok) throw new Error(`submit ${r.status}`);
+  return r.json().catch(() => ({}));
+}
+
+// Kit version, linked to its release on the public repo.
+function VersionChip({ pageTheme }) {
+  const pal = usePal(pageTheme);
+  const isDark = pageTheme === "dark";
+  const [hover, setHover] = useState(false);
+  return (
+    <a href={`${REPO_URL}/releases/tag/v${KIT_VERSION}`} target="_blank" rel="noreferrer" aria-label={`Version ${KIT_VERSION}, release notes`}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "inline-flex", alignItems: "center", textDecoration: "none",
+        padding: "4px 10px", borderRadius: tokens.radius.pill,
+        background: isDark ? "rgba(30,30,30,0.85)" : "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+        boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
+        fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em",
+        color: hover ? pal.text : pal.textSecondary,
+      }}>v{KIT_VERSION}</a>
+  );
+}
+
+// Post-copy updates capture: additive, never blocks the copy, remembers a
+// dismissal or a signup for the session. Escape dismisses; focus is not moved.
+function UpdatesPanel({ pageTheme, copied = true, onClose, style: sp }) {
+  const pal = usePal(pageTheme);
+  const { isMobile } = useViewport();
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState("idle");
+  const [error, setError] = useState("");
+  const timer = useRef(null);
+  const dismiss = useCallback(() => { kitSession.set(UPDATES_KEY, "1"); onClose?.(); }, [onClose]);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") dismiss(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [dismiss]);
+  const submit = async () => {
+    const value = email.trim();
+    if (!EMAIL_RE.test(value)) { setError("Enter a valid email."); return; }
+    setState("sending");
+    try {
+      await kitSubmit({ kind: "updates", list: "kit-updates", email: value, page: window.location.href });
+      setState("done");
+      kitSession.set(UPDATES_KEY, "1");
+      timer.current = setTimeout(() => onClose?.(), 2000);
+    } catch (e) {
+      setState("idle");
+      setError("Couldn't send just now. Try again in a moment.");
+    }
+  };
+  return (
+    <div role="region" aria-label="Updates" style={{
+      display: "flex", flexDirection: "column", gap: 10, padding: "14px 16px",
+      background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
+      boxShadow: `0 12px 32px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
+      animation: `halaska-step-in ${motion.smooth} ${motion.emphasized} both`,
+      transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+      ...sp,
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <Text size="sm" theme={pageTheme} style={{ flex: 1, lineHeight: 1.55 }}>
+          {copied ? "Copied. " : ""}New patterns land roughly monthly. One email when they do.
+        </Text>
+        <IconButton icon="✕" size={24} theme={pageTheme} label="Dismiss" onClick={dismiss} style={{ marginTop: -2, marginRight: -6 }} />
+      </div>
+      {state === "done" ? (
+        <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary }}>Done.</Text>
+      ) : (
+        <div style={{ display: "flex", gap: 8, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-start" }}>
+          <TextInput theme={pageTheme} type="email" size="sm" placeholder="you@company.com" value={email}
+            onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1 }} />
+          <Button theme={pageTheme} variant="primary" size="sm" loading={state === "sending"} onClick={submit}>Notify me</Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Studio hook: a calm card with a two-field form. Appears after the
+// paradigms and again at the very end of the page (with the credit line).
+function StudioHookCard({ theme, credit }) {
+  const pal = usePal(theme);
+  const { isMobile } = useViewport();
+  const [url, setUrl] = useState("");
+  const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState({});
+  const [state, setState] = useState(() => (kitSession.get(REVIEW_KEY) ? "done" : "idle"));
+  const submit = async () => {
+    const next = {};
+    let link = url.trim();
+    if (link && !/^https?:\/\//i.test(link)) link = `https://${link}`;
+    if (!link || !/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(link)) next.url = "Enter the link to your prototype.";
+    if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email.";
+    setErrors(next);
+    if (Object.keys(next).length) return;
+    setState("sending");
+    try {
+      await kitSubmit({ kind: "review", url: link, email: email.trim(), page: window.location.href });
+      kitSession.set(REVIEW_KEY, "1");
+      setState("done");
+    } catch (e) {
+      setState("idle");
+      setErrors({ email: "Couldn't send just now. Try again, or email the studio directly." });
+    }
+  };
+  return (
+    <Card theme={theme} padding={isMobile ? 20 : 32} style={{ width: "100%" }}>
+      <Stack gap={isMobile ? 16 : 20}>
+        <div>
+          <Heading level={3} theme={theme} style={{ margin: 0 }}>Need a hand with yours?</Heading>
+          <Text size="base" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 8, lineHeight: 1.65, maxWidth: 620 }}>
+            If you'd rather have a designer take it from here, that's what <StudioLink theme={theme}>Halaska Studio</StudioLink> does. Send us a link to your prototype and we'll reply with the three things we'd change first.
+          </Text>
+        </div>
+        {credit && (
+          <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>From the team behind product design at Retell AI and Pascal.</Text>
+        )}
+        {state === "done" ? (
+          <Text size="base" theme={theme} style={{ display: "block" }}>Got it. We'll reply within two working days.</Text>
+        ) : (
+          <div style={{ display: "flex", gap: 12, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-end" }}>
+            <TextInput theme={theme} label="Prototype URL" placeholder="https://your-prototype.vercel.app" value={url}
+              onChange={(v) => { setUrl(v); setErrors(e => ({ ...e, url: undefined })); }} error={errors.url} style={{ flex: "1.4 1 0" }} />
+            <TextInput theme={theme} label="Email" type="email" placeholder="you@company.com" value={email}
+              onChange={(v) => { setEmail(v); setErrors(e => ({ ...e, email: undefined })); }} error={errors.email} style={{ flex: "1 1 0" }} />
+            <Button theme={theme} variant="primary" loading={state === "sending"} onClick={submit}
+              style={{ flexShrink: 0, marginBottom: errors.url || errors.email ? 22 : 0 }}>Send it over</Button>
+          </div>
+        )}
+        <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>
+          Reviewed by the studio, not an agent. No newsletter, no sales call unless you ask for one.
+        </Text>
+      </Stack>
+    </Card>
+  );
+}
+
+// A 1200×760 example screen scaled to the column, non-interactive.
+function LiveStage({ scale, theme, children }) {
+  const pal = usePal(theme);
+  return (
+    <div style={{ position: "relative", width: "100%", height: Math.round(PARADIGM_STAGE.h * scale), overflow: "hidden", background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
+      <div style={{ position: "absolute", top: 0, left: 0, width: PARADIGM_STAGE.w, height: PARADIGM_STAGE.h, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Before and after: the Chat screen as an agent left it, then with the kit.
+function BeforeAfterSection({ theme }) {
+  const pal = usePal(theme);
+  const ref = useRef(null);
+  const [scale, setScale] = useState(0.5);
+  useEffect(() => {
+    const measure = () => { if (ref.current) setScale(ref.current.clientWidth / PARADIGM_STAGE.w); };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+  return (
+    <div id="before-after" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ paddingLeft: 8 }}>
+        <Caption theme={theme}>Before and after</Caption>
+        <Text size="sm" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 6, maxWidth: 560 }}>
+          The same screen as a coding agent left it, and after the kit was applied.
+        </Text>
+      </div>
+      <div ref={ref}>
+        <BeforeAfterToggle theme={theme}
+          before={<LiveStage scale={scale} theme={theme}><ChatParadigmBefore theme={theme} /></LiveStage>}
+          after={<LiveStage scale={scale} theme={theme}><ChatParadigmExample theme={theme} /></LiveStage>} />
+      </div>
+      <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block", textAlign: "center" }}>
+        Same components, same data. Only the kit changed.
+      </Text>
+    </div>
+  );
+}
+
+// ─── Chat paradigm · BEFORE (first-pass agent build, no design kit) ─────────
+// Same content and regions as ChatParadigmExample, rendered with plain HTML
+// and browser defaults. Reuses the CHATX_* constants so the copy is identical.
+
+const CHATB_FONT = "system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif";
+const CHATB_LINK = { color: "#0000ee", textDecoration: "underline" };
+const CHATB_SUGGESTIONS = [
+  "What's open with Acme?",
+  "Close tickets idle over 30 days",
+  "Summarize overnight tickets",
+];
+
+function ChatBLinks({ items }) {
+  return items.map((item, i) => (
+    <span key={i}>
+      {i > 0 ? " · " : null}
+      <a href="#" onClick={(e) => e.preventDefault()} style={CHATB_LINK}>{item}</a>
+    </span>
+  ));
+}
+
+function ChatParadigmBefore({ theme }) {
+  const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
+  const [model, setModel] = useState(CHATX_MODELS[0].id);
+  const [draft, setDraft] = useState("");
+  const [choice, setChoice] = useState("");
+  const activeTitle = (CHATX_THREADS.find(t => t.id === activeThread) || CHATX_THREADS[0]).title;
+
+  let cite = 0;
+
+  return (
+    <div style={{
+      position: "relative", width: "100%", height: "100%", overflow: "hidden",
+      background: "#fff", color: "#000", fontFamily: CHATB_FONT, fontSize: 16, lineHeight: 1.4,
+      display: "flex",
+    }}>
+      {/* Left: thread list */}
+      <div style={{ width: 260, flexShrink: 0, borderRight: "1px solid #ccc", overflow: "auto", padding: 10, boxSizing: "border-box" }}>
+        <h3 style={{ margin: "0 0 5px" }}>Alpha</h3>
+        <p style={{ margin: "0 0 10px", fontSize: 14 }}>Status: Online</p>
+        <div style={{ marginBottom: 8 }}>
+          <input type="text" placeholder="Search threads" />
+        </div>
+        <div style={{ marginBottom: 15 }}>
+          <button type="button">New thread</button>
+        </div>
+        <b>Recent</b>
+        <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0 }}>
+          {CHATX_THREADS.map(t => (
+            <li key={t.id}
+              style={{ padding: "6px 8px", background: t.id === activeThread ? "#eee" : "transparent" }}>
+              <a href="#" style={CHATB_LINK}
+                onClick={(e) => { e.preventDefault(); setActiveThread(t.id); }}>{t.title}</a>
+              <span style={{ float: "right", fontSize: 13, color: "#666" }}>{t.time}</span>
+            </li>
+          ))}
+        </ul>
+        <hr style={{ margin: "20px 0 10px" }} />
+        <p style={{ margin: 0, fontSize: 14 }}><b>Sam Keller</b> (Team)</p>
+      </div>
+
+      {/* Main area */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        {/* Top bar */}
+        <div style={{ borderBottom: "1px solid #ccc", padding: "10px 15px", flexShrink: 0 }}>
+          <h2 style={{ margin: "0 0 8px", fontSize: 20 }}>{activeTitle}</h2>
+          <div style={{ fontSize: 14 }}>
+            <label>Model: <select value={model} onChange={(e) => setModel(e.target.value)}>
+              {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select></label>
+            <span style={{ marginLeft: 15 }}>Context: 132K / 200K</span>
+            <span style={{ marginLeft: 15 }}>Status: Waiting on you</span>
+            <span style={{ marginLeft: 15 }}>
+              <button type="button">Share</button> <button type="button">More</button>
+            </span>
+          </div>
+        </div>
+
+        {/* Thread */}
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 20 }}>
+          <p style={{ margin: "0 0 5px" }}><b>You:</b> {CHATX_USER_MSG}</p>
+          <p style={{ margin: "0 0 20px", fontSize: 13, color: "#666" }}>9:41 AM</p>
+
+          <p style={{ margin: "0 0 5px" }}><b>Alpha:</b> Reading Acme's thread</p>
+          <ul style={{ margin: "0 0 15px", paddingLeft: 25 }}>
+            {CHATX_THINK_STEPS.map((s, i) => (
+              <li key={i}>{s.label} ({s.detail})</li>
+            ))}
+          </ul>
+
+          <hr style={{ margin: "15px 0" }} />
+
+          <p style={{ margin: "0 0 8px" }}><b>Answer</b></p>
+          <p style={{ margin: "0 0 10px" }}>
+            {CHATX_ANSWER_SEGMENTS.map((seg, i) => {
+              if (seg.chip) { cite += 1; return <span key={i}> [{cite}]</span>; }
+              return <span key={i}>{seg.t || seg.text}</span>;
+            })}
+          </p>
+          <p style={{ margin: "0 0 8px", fontSize: 14 }}>
+            <b>Sources ({CHATX_ANSWER_SOURCES.length}):</b>{" "}
+            <ChatBLinks items={CHATX_ANSWER_SOURCES.map(s => s.name)} />
+          </p>
+          <p style={{ margin: "0 0 20px", fontSize: 14 }}>
+            <b>Follow-ups:</b>{" "}
+            <ChatBLinks items={CHATX_ANSWER_FOLLOWUPS} />
+          </p>
+
+          <div style={{ border: "1px solid #ccc", padding: 15, marginBottom: 10 }}>
+            <p style={{ margin: "0 0 4px", fontSize: 13, color: "#666" }}>Needs your call (Paused)</p>
+            <p style={{ margin: "0 0 10px" }}><b>How should I reply to Acme?</b></p>
+            {CHATX_APPROVAL_OPTIONS.map(o => (
+              <div key={o.id} style={{ marginBottom: 8 }}>
+                <label>
+                  <input type="radio" name="chatb-approval" value={o.id}
+                    checked={choice === o.id} onChange={() => setChoice(o.id)} />
+                  {" "}{o.title}
+                </label>
+                <div style={{ fontSize: 14, color: "#666", marginLeft: 22 }}>{o.sub}</div>
+              </div>
+            ))}
+            <div style={{ marginTop: 10 }}>
+              <button type="button">Confirm</button> <button type="button">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Composer */}
+        <div style={{ borderTop: "1px solid #ccc", padding: 15, flexShrink: 0 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 14 }}>
+            <b>Suggestions:</b>{" "}
+            {CHATB_SUGGESTIONS.map((s, i) => (
+              <span key={s}>
+                {i > 0 ? " · " : null}
+                <a href="#" style={CHATB_LINK} onClick={(e) => { e.preventDefault(); setDraft(s); }}>{s}</a>
+              </span>
+            ))}
+          </p>
+          <div>
+            <textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)}
+              placeholder="Ask Alpha about your inbox…" style={{ width: "100%", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ marginTop: 8, fontSize: 14 }}>
+            <button type="button">Attach</button>{" "}
+            <select value={model} onChange={(e) => setModel(e.target.value)}>
+              {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>{" "}
+            <button type="button">Voice</button>{" "}
+            <button type="button">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BetaChip({ pageTheme }) {
   const pal = usePal(pageTheme);
   const isDark = pageTheme === "dark";
@@ -11770,25 +12149,6 @@ function BetaChip({ pageTheme }) {
       <span style={{ width: 5, height: 5, borderRadius: 3, background: pal.accent, transition: `background ${motion.smooth} ${motion.easeInOut}` }} />
       BETA
     </div>
-  );
-}
-
-// Lucide-style wand at 1px stroke, in a soft accent tile.
-function StudioWandIcon({ size = 22, theme }) {
-  const pal = usePal(theme);
-  return (
-    <span aria-hidden="true" style={{
-      width: size, height: size, borderRadius: size / 2, flexShrink: 0,
-      display: "inline-flex", alignItems: "center", justifyContent: "center",
-      background: pal.accentBg, color: pal.accent,
-      transition: `background ${motion.smooth} ${motion.easeInOut}, color ${motion.smooth} ${motion.easeInOut}`,
-    }}>
-      <svg width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 21l9.5-9.5" /><path d="M14.5 7.5 16.5 9.5" />
-        <path d="M15 3v2" /><path d="M15 12v2" /><path d="M10.5 8.5h2" /><path d="M19.5 8.5h2" />
-        <path d="M18.2 5.3 19.5 4" /><path d="M18.2 11.7 19.5 13" />
-      </svg>
-    </span>
   );
 }
 
@@ -11834,69 +12194,26 @@ function FeedbackPill({ pageTheme, surface }) {
   );
 }
 
-function StudioCta({ pageTheme }) {
+// Fixed bottom-right dock: BETA, version, GitHub, Feedback. Phones get the
+// same pills inside the section menu instead.
+function PageDock({ pageTheme }) {
   const pal = usePal(pageTheme);
   const isDark = pageTheme === "dark";
   const { isMobile } = useViewport();
-  const [open, setOpen] = useState(false); // starts condensed; copying the prompt opens it
-  const [hover, setHover] = useState(false);
-  useEffect(() => {
-    const reopen = () => setOpen(true);
-    window.addEventListener("halaska:prompt-copied", reopen);
-    return () => window.removeEventListener("halaska:prompt-copied", reopen);
-  }, []);
   const surface = {
     background: isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
     backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
     boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
     transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
   };
-  const note = !open ? (
-    <button onClick={() => setOpen(true)} aria-label="Open studio note"
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{
-        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px 8px 10px",
-        borderRadius: tokens.radius.pill, ...surface,
-        ...tokens.type.sm, fontWeight: tokens.weight.medium, color: hover ? pal.text : pal.textSecondary,
-        animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
-      }}>
-      <StudioWandIcon size={18} theme={pageTheme} />
-      Need a hand with yours?
-    </button>
-  ) : (
-    <div role="complementary" aria-label="Studio note" style={{
-      width: 288, maxWidth: "calc(100vw - 40px)",
-      padding: 16, borderRadius: tokens.radius.lg, ...surface, fontFamily: tokens.font.sans,
-      animation: `halaska-step-in 0.4s ${motion.emphasized} both`,
-    }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-        <StudioWandIcon size={22} theme={pageTheme} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Text size="sm" weight="semibold" theme={pageTheme} style={{ display: "block" }}>Need a hand with yours?</Text>
-          <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", marginTop: 4, lineHeight: 1.6 }}>
-            If you'd rather have a designer take it from here, that's what <StudioLink theme={pageTheme}>Halaska Studio</StudioLink> does. Send your prototype over and we'll take a look.
-          </Text>
-        </div>
-        <IconButton icon="–" size={24} theme={pageTheme} label="Minimise" onClick={() => setOpen(false)} style={{ marginTop: -4, marginRight: -6 }} />
-      </div>
-    </div>
-  );
-  // Phones: the docks fold into the section menu (see ActionBar); the note
-  // only appears above the bar once the prompt has been copied.
-  if (isMobile) {
-    return open ? (
-      <div style={{ position: "fixed", bottom: 84, left: 16, right: 16, zIndex: 9998, display: "flex", justifyContent: "center" }}>{note}</div>
-    ) : null;
-  }
+  if (isMobile) return null;
   return (
-    <>
-      <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>
-      <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
-        <BetaChip pageTheme={pageTheme} />
-        <RepoPill pageTheme={pageTheme} surface={surface} />
-        <FeedbackPill pageTheme={pageTheme} surface={surface} />
-      </div>
-    </>
+    <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
+      <BetaChip pageTheme={pageTheme} />
+      <VersionChip pageTheme={pageTheme} />
+      <RepoPill pageTheme={pageTheme} surface={surface} />
+      <FeedbackPill pageTheme={pageTheme} surface={surface} />
+    </div>
   );
 }
 
@@ -12092,6 +12409,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
           background: bar.bg, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         }}>
           <BetaChip pageTheme={pageTheme} />
+          <VersionChip pageTheme={pageTheme} />
           <RepoPill pageTheme={pageTheme} surface={surface} />
           <FeedbackPill pageTheme={pageTheme} surface={surface} />
         </div>
@@ -12103,7 +12421,9 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
 function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentChange }) {
   const [colorOpen, setColorOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [updatesOpen, setUpdatesOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeUpdates = useCallback(() => setUpdatesOpen(false), []);
   const { isMobile, compact } = useViewport();
   const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
   const isDark = pageTheme === "dark";
@@ -12127,6 +12447,11 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
 
   return (
     <>
+    {updatesOpen && (
+      <div style={{ position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)", zIndex: 9999, width: isMobile ? "calc(100vw - 32px)" : 400 }}>
+        <UpdatesPanel pageTheme={pageTheme} onClose={closeUpdates} />
+      </div>
+    )}
     {compact && <SectionMenu open={menuOpen} onClose={closeMenu} scrollTo={scrollTo} pageTheme={pageTheme}
       bar={{ bg: barBg, border: barBorder, text: barText, textActive: barTextActive, activeBg: barActiveBg, shadow }} />}
     <div style={{
@@ -12145,7 +12470,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
         {/* Sections: only where the bookmark rail is hidden */}
         {compact && (
           <>
-            <button onClick={() => { setColorOpen(false); setMenuOpen(o => !o); }} aria-label="Sections" aria-expanded={menuOpen}
+            <button onClick={() => { setColorOpen(false); setUpdatesOpen(false); setMenuOpen(o => !o); }} aria-label="Sections" aria-expanded={menuOpen}
               style={{
                 ...interactiveBase, width: 32, height: 32, padding: 0, flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -12162,7 +12487,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
         )}
         {/* Copy install prompt: one click, straight to the clipboard.
             Section nav lives in the bookmark rail (or the ≡ menu). */}
-        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); copyInstallPrompt(); }} active={installCopied}
+        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); copyInstallPrompt(); if (updatesAllowed()) setUpdatesOpen(true); }} active={installCopied}
           barText={barText} barTextActive={barTextActive}
           barHoverBg={barBarButtonHoverBg} barActiveBg={barBarButtonActiveBg}
           style={isMobile ? { padding: "8px 12px" } : undefined}>
@@ -12320,7 +12645,7 @@ export default function HalaskaKit() {
 
 
       </ShowcasePage>
-      <StudioCta pageTheme={pageTheme} />
+      <PageDock pageTheme={pageTheme} />
       <BookmarkRail pageTheme={pageTheme} scrollTo={scrollTo} />
       <ActionBar
         scrollTo={scrollTo}
@@ -12386,7 +12711,7 @@ export {
   TaskboardPattern, InlineAssistPattern, NudgePattern, DigestPattern,
   NotificationCenterPattern, CommandSearchPattern, AgentSetupPattern,
   // Example screens (one per UX paradigm)
-  ChatParadigmExample, CanvasParadigmExample,
+  ChatParadigmExample, CanvasParadigmExample, ChatParadigmBefore, BeforeAfterSection,
   // Registries (for building indexes and docs)
   PATTERN_GROUPS, UX_PATTERNS, DESIGN_HEURISTICS,
 };
