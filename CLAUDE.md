@@ -137,6 +137,9 @@ emphasized: cubic-bezier(0.2, 0, 0, 1)        — Dramatic deceleration, landing
 springCurve: cubic-bezier(0.34, 1.56, 0.64, 1) — Apple-style overshoot bounce
 ```
 
+### Depth (2026-09-10)
+`DEPTH` + `withDepth(base, layer)` (exported) layer alpha-only gradients over a base colour so `background-color` still animates on theme changes: `surface` (faint top light, faint bottom shade) on Card, Dialog, Popover, Sheet, Toast, the SegmentedControl thumb, the Orb pill and the action bar; `fill` (stronger top light) plus the `ring` inset hairline on solid Buttons (primary, accent, danger), the checked SwitchToggle track and the Progress fill; `well` (top shade) on recessed tracks; `glow` (off-centre radial) on initials Avatars. `ShowcaseCard` stages get a soft radial spotlight at the top; `PhoneFrame` bezels a diagonal sheen. Keep it subtle: the point is depth, not gloss.
+
 ### Glass Effects
 - ShowcaseCard: rgba bg + subtle 1px border (no blur: it must not become a containing block)
 - Card: rgba bg + blur(16px)

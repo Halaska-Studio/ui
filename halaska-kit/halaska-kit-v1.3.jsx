@@ -355,6 +355,22 @@ const interactiveBase = {
   transition: `all ${motion.normal} ${motion.easeInOut}`,
 };
 
+// Subtle depth. Alpha-only overlays layered over a base colour, so the colour
+// underneath keeps animating on theme changes (background-image never does).
+//   DEPTH.surface  a faint top highlight and bottom shade for raised surfaces
+//   DEPTH.fill     a stronger highlight for solid fills (buttons, tracks, bars)
+//   DEPTH.well     a top shade for recessed tracks and wells
+//   DEPTH.glow     an off-centre highlight for round things (avatars)
+//   DEPTH.ring     an inset hairline that catches the light on solid fills
+const DEPTH = {
+  surface: "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.025) 100%)",
+  fill: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 55%, rgba(0,0,0,0.08) 100%)",
+  well: "linear-gradient(180deg, rgba(0,0,0,0.07) 0%, rgba(0,0,0,0) 70%)",
+  glow: "radial-gradient(circle at 30% 25%, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) 62%)",
+  ring: "inset 0 1px 0 rgba(255,255,255,0.14)",
+};
+const withDepth = (base, layer = DEPTH.surface) => `${layer}, ${base}`;
+
 // ─── AVATAR COLORS ────────────────────────────────────────────
 // Deterministic palette from name hash: soft, muted tones
 
@@ -541,11 +557,11 @@ function Button({
 
   const variants = {
     primary: {
-      background: disabled ? pal.bgMuted : pal.text,
+      background: disabled ? pal.bgMuted : withDepth(pal.text, DEPTH.fill),
       color: disabled ? pal.textMuted : pal.textInverse,
     },
     secondary: {
-      background: disabled ? "transparent" : pal.bgMuted,
+      background: disabled ? "transparent" : withDepth(pal.bgMuted),
       color: disabled ? pal.textMuted : pal.text,
     },
     outline: {
@@ -558,11 +574,11 @@ function Button({
       color: disabled ? pal.textMuted : pal.textSecondary,
     },
     accent: {
-      background: disabled ? pal.bgMuted : pal.accent,
+      background: disabled ? pal.bgMuted : withDepth(pal.accent, DEPTH.fill),
       color: disabled ? pal.textMuted : "#ffffff",
     },
     danger: {
-      background: disabled ? pal.bgMuted : pal.danger,
+      background: disabled ? pal.bgMuted : withDepth(pal.danger, DEPTH.fill),
       color: disabled ? pal.textMuted : "#ffffff",
     },
   };
@@ -571,6 +587,7 @@ function Button({
   const isHover = hover && !disabled && !loading;
   const shadow = shadowColors[variant] || shadowColors.primary;
   const brightness = brightnessMap[variant] || 1.12;
+  const solid = !disabled && (variant === "primary" || variant === "accent" || variant === "danger");
 
   return (
     <button
@@ -588,7 +605,7 @@ function Button({
         transform: pressed && !disabled ? "scale(0.97)" : "scale(1)",
         opacity: loading ? 0.7 : 1, pointerEvents: disabled || loading ? "none" : "auto",
         letterSpacing: "-0.01em",
-        boxShadow: isHover ? shadow : "none",
+        boxShadow: isHover ? (solid ? `${DEPTH.ring}, ${shadow}` : shadow) : (solid ? DEPTH.ring : "none"),
         filter: isHover ? `brightness(${brightness})` : "brightness(1)",
         transition: `all ${motion.normal} ${motion.easeInOut}, box-shadow ${motion.fast} ${motion.easeOut}, filter ${motion.fast} ${motion.easeOut}`,
         ...sp,
@@ -925,13 +942,15 @@ function SwitchToggle({ checked, onChange, label, theme: tp }) {
       <button onClick={() => onChange?.(!checked)} role="switch" aria-checked={checked}
         style={{
           ...interactiveBase, width: 44, height: 24, borderRadius: 12,
-          background: checked ? pal.accent : pal.bgMuted, position: "relative", padding: 0, flexShrink: 0,
+          background: checked ? withDepth(pal.accent, DEPTH.fill) : withDepth(pal.bgMuted, DEPTH.well),
+          boxShadow: checked ? DEPTH.ring : "inset 0 1px 2px rgba(0,0,0,0.08)",
+          position: "relative", padding: 0, flexShrink: 0,
         }}>
         <div style={{
           width: 20, height: 20, borderRadius: 10,
-          background: checked ? "#fff" : pal.bgElevated,
+          background: withDepth(checked ? "#fff" : pal.bgElevated),
           position: "absolute", top: 2, left: checked ? 22 : 2,
-          transition: `left ${motion.spring} ${motion.springCurve}`, boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+          transition: `left ${motion.spring} ${motion.springCurve}`, boxShadow: "0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6)",
         }} />
       </button>
       {label && <Text size="base" theme={theme}>{label}</Text>}
@@ -1006,13 +1025,13 @@ function SegmentedControl({ options, value, onChange, theme: tp }) {
   return (
     <div ref={containerRef} style={{
       display: "flex", alignItems: "center",
-      background: theme === "dark" ? "rgba(51,51,51,0.5)" : "rgba(238,238,238,0.6)",
+      background: withDepth(theme === "dark" ? "rgba(51,51,51,0.5)" : "rgba(238,238,238,0.6)", DEPTH.well),
       backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
       borderRadius: tokens.radius.md, padding: 3, position: "relative", transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
       <div style={{
-        position: "absolute", top: 3, height: "calc(100% - 6px)", background: pal.bgElevated,
-        borderRadius: tokens.radius.sm + 2, boxShadow: `0 1px 3px ${pal.shadow}`,
+        position: "absolute", top: 3, height: "calc(100% - 6px)", background: withDepth(pal.bgElevated),
+        borderRadius: tokens.radius.sm + 2, boxShadow: `0 1px 3px ${pal.shadow}, ${DEPTH.ring}`,
         transition: `left ${motion.smooth} ${motion.emphasized}, width ${motion.normal} ${motion.easeInOut}, background ${motion.smooth} ${motion.easeInOut}`,
         ...indicator,
       }} />
@@ -1037,7 +1056,7 @@ function Card({ children, theme: tp, padding, hover, onClick, style: sp }) {
   return (
     <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
-        background: theme === "dark" ? "rgba(42,42,42,0.7)" : "rgba(255,255,255,0.8)",
+        background: withDepth(theme === "dark" ? "rgba(42,42,42,0.7)" : "rgba(255,255,255,0.8)"),
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"}`,
         borderRadius: tokens.radius.lg, padding: padding ?? 24,
@@ -1138,8 +1157,8 @@ function Spinner({ size = 16, color }) {
 function Progress({ value, theme: tp, height = 6 }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ width: "100%", height, background: pal.bgMuted, borderRadius: height / 2, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
-      <div style={{ width: `${Math.min(100, Math.max(0, value))}%`, height: "100%", background: pal.accent, borderRadius: height / 2, transition: `width 0.6s cubic-bezier(0.34,1.56,0.64,1), background ${motion.smooth} ${motion.easeInOut}` }} />
+    <div style={{ width: "100%", height, background: withDepth(pal.bgMuted, DEPTH.well), borderRadius: height / 2, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
+      <div style={{ width: `${Math.min(100, Math.max(0, value))}%`, height: "100%", background: withDepth(pal.accent, DEPTH.fill), borderRadius: height / 2, transition: `width 0.6s cubic-bezier(0.34,1.56,0.64,1), background ${motion.smooth} ${motion.easeInOut}` }} />
     </div>
   );
 }
@@ -1162,7 +1181,7 @@ function Toast({ message, variant = "default", icon, theme: tp }) {
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 12,
-      padding: `${12}px ${16}px`, background: bgMap[variant],
+      padding: `${12}px ${16}px`, background: withDepth(bgMap[variant]),
       borderRadius: tokens.radius.lg, boxShadow: `0 2px 8px ${pal.shadow}`,
       fontFamily: tokens.font.sans, transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
@@ -1181,7 +1200,7 @@ function Avatar({ name, src, size = 32, theme: tp }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: size / 2,
-      background: src ? "transparent" : colors.bg,
+      background: src ? "transparent" : withDepth(colors.bg, DEPTH.glow),
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", flexShrink: 0, transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
@@ -1482,7 +1501,7 @@ function Orb({ variant = "pulse", size = 20, label, pill, color, theme: tp, styl
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 7,
       height: 30, padding: "0 12px 0 6px", borderRadius: tokens.radius.pill,
-      background: pal.bgElevated,
+      background: withDepth(pal.bgElevated),
       boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 1px 2px ${pal.shadow}`,
       fontFamily: tokens.font.sans,
       transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
@@ -1914,7 +1933,7 @@ function CommandPalette({ items = [], placeholder = "Type a command or search…
   return (
     <div style={{
       width: 420, maxWidth: "100%", fontFamily: tokens.font.sans,
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
       boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -1982,7 +2001,7 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: 520, maxWidth: "92vw", fontFamily: tokens.font.sans,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
         boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2119,7 +2138,7 @@ function Combobox({ options = [], value, onChange, placeholder = "Select…", la
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100,
-          background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+          background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
           boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2254,7 +2273,7 @@ function ContextMenu({ items, children, theme: tp }) {
       {menu && (
         <div onClick={(e) => e.stopPropagation()} style={{
           position: "fixed", top: menu.y, left: menu.x, zIndex: 10000,
-          background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+          background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
           padding: 4, minWidth: 180, boxShadow: `0 8px 24px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
@@ -2303,7 +2322,7 @@ function Menubar({ menus, theme: tp }) {
               <div onClick={() => setOpen(null)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
               <div style={{
                 position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
-                background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+                background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md, padding: 4, minWidth: 180,
                 boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2448,7 +2467,7 @@ function AlertDialog({ open, onClose, title, description, variant = "danger", co
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 420,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2480,7 +2499,7 @@ function FormDialog({ open, onClose, title, description, children, submitLabel =
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 360, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2510,7 +2529,7 @@ function CardDialog({ open, onClose, cover, title, description, children, action
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, overflow: "hidden", minWidth: 360, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2572,7 +2591,7 @@ function Dialog({ open, onClose, title, children, theme: tp }) {
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2617,7 +2636,7 @@ function Popover({ trigger, children, theme: tp }) {
       {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
       <div style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 10000,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 200, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2638,7 +2657,7 @@ function Sheet({ open, onClose, title, children, side = "right", theme: tp }) {
       <div style={{
         position: "fixed", top: 0, bottom: 0, [isRight ? "right" : "left"]: 0,
         width: 320, zIndex: 10001,
-        background: theme === "dark" ? "rgba(26,26,26,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(26,26,26,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         border: `1px solid ${pal.borderSubtle}`, padding: 24,
         transform: open ? "translateX(0)" : `translateX(${isRight ? "100%" : "-100%"})`,
@@ -2820,7 +2839,7 @@ function Breadcrumb({ items, maxVisible, home, theme: tp }) {
               }}>…</span>
               <div style={{
                 position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
-                background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+                background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
                 padding: "8px 10px", boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2863,7 +2882,7 @@ function HoverCard({ trigger, children, theme: tp }) {
       {trigger}
       <div style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 100,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 240, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2976,7 +2995,7 @@ function DropdownMenu({ trigger, items, theme: tp }) {
       {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
       <div style={{
         position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 10000,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 4, minWidth: 180, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3126,7 +3145,7 @@ function SplitButton({ children, onClick, items = [], variant = "primary", size 
           <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90 }} />
           <div style={{
             position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 91, minWidth: 200,
-            background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+            background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
             backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
             border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
             padding: 4, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3349,7 +3368,7 @@ function PhoneFrame({ children, width = 300, height = 560, theme: tp, style: sp 
   return (
     <div style={{
       width, height, borderRadius: 40, padding: 10, boxSizing: "border-box",
-      background: theme === "dark" ? "#0d0d0d" : "#1a1a1a",
+      background: `linear-gradient(165deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0.25) 100%), ${theme === "dark" ? "#0d0d0d" : "#1a1a1a"}`,
       boxShadow: `0 0 0 1px ${theme === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.25)"}, 0 24px 48px ${pal.shadowLg}`,
       position: "relative", ...sp,
     }}>
@@ -3511,7 +3530,7 @@ function ShowcaseCard({ children, controls, label, theme = "light", height, alig
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {label && <span style={{ ...tokens.type.base, color: theme === "dark" ? "#555" : "#bbb", fontFamily: tokens.font.sans, paddingLeft: 8 }}>{label}</span>}
         <div style={{
-          background: theme === "dark" ? "rgba(26,26,26,0.85)" : "rgba(250,250,250,0.75)",
+          background: `radial-gradient(120% 70% at 50% 0%, ${theme === "dark" ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.7)"} 0%, rgba(255,255,255,0) 70%), ${theme === "dark" ? "rgba(26,26,26,0.85)" : "rgba(250,250,250,0.75)"}`,
           borderRadius: isMobile ? tokens.radius.lg : tokens.radius.xl,
           border: theme === "dark" ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.04)",
           padding: `${padT}px ${padX}px ${padB}px`,
@@ -4285,7 +4304,7 @@ function InlinePanelPreview({ title, children, actions, theme, shape = "dialog" 
   return (
     <div style={{
       width: isSheet ? 320 : 400, maxWidth: "100%", boxSizing: "border-box",
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${pal.borderSubtle}`,
       borderBottom: isDrawer ? "none" : `1px solid ${pal.borderSubtle}`,
@@ -6527,7 +6546,7 @@ function CommandSearchPattern({ theme }) {
   return (
     <div style={{
       width: 440, maxWidth: "100%", fontFamily: tokens.font.sans,
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: withDepth(theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)"),
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
       boxShadow: `0 16px 48px ${pal.shadowLg}`, overflow: "hidden",
@@ -12579,7 +12598,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
     <div style={{
       position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
       maxWidth: "calc(100vw - 24px)",
-      background: barBg, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      background: withDepth(barBg), backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${barBorder}`,
       borderRadius: tokens.radius.md, padding: "0 6px 6px",
       display: "flex", flexDirection: "column",
@@ -12785,7 +12804,7 @@ export default function HalaskaKit() {
 
 export {
   // Foundations
-  tokens, motion, interactiveBase,
+  tokens, motion, interactiveBase, DEPTH, withDepth,
   usePal, useThemeContext, ThemeProvider, AccentContext, useAccent,
   injectStyles, getAvatarColor, setKitMotion, setKitFont, KIT_MOTION_PRESETS, KIT_FONT_PRESETS,
   // Typography
