@@ -3543,6 +3543,7 @@ function ShowcaseCard({ children, controls, label, theme = "light", height, alig
 
 const STUDIO_URL = "https://halaska.com";
 const REPO_URL = "https://github.com/Halaska-Studio/ui";
+const STUDIO_BOOK_URL = "https://halaska.com/book";
 
 // Quiet inline link for "Halaska" mentions: inherits the surrounding
 // text color, underlines subtly, and brightens on hover.
@@ -11767,73 +11768,28 @@ const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 // BETA chip beside the GitHub pill; the studio note starts condensed
 // and re-opens whenever the install prompt is copied.
 
-const SUBMIT_ENDPOINT = "/api/submit";
-const REVIEW_KEY = "halaska:review-sent";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Showcase-only session memory (never in the kit's components).
-const kitSession = {
-  get(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } },
-  set(k, v) { try { window.sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
-};
-async function kitSubmit(payload) {
-  const r = await fetch(SUBMIT_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-  if (!r.ok) throw new Error(`submit ${r.status}`);
-  return r.json().catch(() => ({}));
-}
-
 // Studio hook: a calm card with a two-field form. Appears after the
 // paradigms and again at the very end of the page (with the credit line).
 function StudioHookCard({ theme, credit }) {
   const pal = usePal(theme);
   const { isMobile } = useViewport();
-  const [url, setUrl] = useState("");
-  const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState({});
-  const [state, setState] = useState(() => (kitSession.get(REVIEW_KEY) ? "done" : "idle"));
-  const submit = async () => {
-    const next = {};
-    let link = url.trim();
-    if (link && !/^https?:\/\//i.test(link)) link = `https://${link}`;
-    if (!link || !/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(link)) next.url = "Enter the link to your prototype.";
-    if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email.";
-    setErrors(next);
-    if (Object.keys(next).length) return;
-    setState("sending");
-    try {
-      await kitSubmit({ kind: "review", url: link, email: email.trim(), page: window.location.href });
-      kitSession.set(REVIEW_KEY, "1");
-      setState("done");
-    } catch (e) {
-      setState("idle");
-      setErrors({ email: "Couldn't send just now. Try again, or email the studio directly." });
-    }
-  };
   return (
     <Card theme={theme} padding={isMobile ? 20 : 32} style={{ width: "100%" }}>
       <Stack gap={isMobile ? 16 : 20}>
         <div>
           <Heading level={3} theme={theme} style={{ margin: 0 }}>Need a hand with yours?</Heading>
           <Text size="base" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 8, lineHeight: 1.65, maxWidth: 620 }}>
-            If you'd rather have a designer take it from here, that's what <StudioLink theme={theme}>Halaska Studio</StudioLink> does. Send us a link to your prototype and we'll reply with the three things we'd change first.
+            If you'd rather have a designer take it from here, that's what <StudioLink theme={theme}>Halaska Studio</StudioLink> does. Book a short call, bring your prototype, and we'll tell you the three things we'd change first.
           </Text>
         </div>
         {credit && (
           <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>From the team behind product design at Retell AI and Pascal.</Text>
         )}
-        {state === "done" ? (
-          <Text size="base" theme={theme} style={{ display: "block" }}>Got it. We'll reply within two working days.</Text>
-        ) : (
-          <div style={{ display: "flex", gap: 12, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-end" }}>
-            <TextInput theme={theme} label="Prototype URL" placeholder="https://your-prototype.vercel.app" value={url}
-              onChange={(v) => { setUrl(v); setErrors(e => ({ ...e, url: undefined })); }} error={errors.url} style={{ flex: "1.4 1 0" }} />
-            <TextInput theme={theme} label="Email" type="email" placeholder="you@company.com" value={email}
-              onChange={(v) => { setEmail(v); setErrors(e => ({ ...e, email: undefined })); }} error={errors.email} style={{ flex: "1 1 0" }} />
-            <Button theme={theme} variant="primary" loading={state === "sending"} onClick={submit}
-              style={{ flexShrink: 0, marginBottom: errors.url || errors.email ? 22 : 0 }}>Send it over</Button>
-          </div>
-        )}
+        <div>
+          <Button theme={theme} variant="primary" iconRight="↗" onClick={() => window.open(STUDIO_BOOK_URL, "_blank", "noopener")}>Book a call</Button>
+        </div>
         <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>
-          Reviewed by the studio, not an agent. No newsletter, no sales call unless you ask for one.
+          A conversation with the studio, not an agent. No newsletter, no pitch unless you ask for one.
         </Text>
       </Stack>
     </Card>
@@ -12332,11 +12288,6 @@ function StudioCta({ pageTheme }) {
     boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
     transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
   };
-  const goToCard = () => {
-    const el = document.getElementById("studio");
-    if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 48; window.scrollTo({ top: y, behavior: "smooth" }); }
-    setOpen(false);
-  };
   const note = !open ? (
     <button onClick={() => setOpen(true)} aria-label="Open studio note"
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
@@ -12362,7 +12313,7 @@ function StudioCta({ pageTheme }) {
           <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", marginTop: 4, lineHeight: 1.6 }}>
             If you'd rather have a designer take it from here, that's what <StudioLink theme={pageTheme}>Halaska Studio</StudioLink> does.
           </Text>
-          <LinkButton theme={pageTheme} size="sm" iconRight="↓" onClick={goToCard} style={{ marginTop: 8 }}>Send your prototype over</LinkButton>
+          <LinkButton theme={pageTheme} size="sm" iconRight="↗" onClick={() => { window.open(STUDIO_BOOK_URL, "_blank", "noopener"); setOpen(false); }} style={{ marginTop: 8 }}>Book a call</LinkButton>
         </div>
         <IconButton icon="–" size={24} theme={pageTheme} label="Minimise" onClick={() => setOpen(false)} style={{ marginTop: -4, marginRight: -6 }} />
       </div>

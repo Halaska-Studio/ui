@@ -58,19 +58,7 @@ npm run dev
 ## Feedback
 
 - Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new).
-- Design questions about your own prototype: use the "Need a hand with yours?" form on https://ui.halaska.com and the studio will reply with the three things it would change first.
-
-## Site forms
-
-The studio review form on the showcase ("Need a hand with yours?") posts to `halaska-kit/api/submit.js`, a Vercel serverless function that emails the submission. It needs one of these environment variables on the Vercel project:
-
-| Variable | Purpose |
-|---|---|
-| `RESEND_API_KEY` | Send through [Resend](https://resend.com) (with `SUBMIT_FROM` as the verified sender) |
-| `SUBMIT_WEBHOOK_URL` | Or forward the JSON payload to any webhook |
-| `SUBMIT_TO` | Recipient, defaults to chris@halaska.com |
-
-Locally, `npm run dev` answers the endpoint with a stub that logs submissions to the terminal. No tracking, no third-party marketing platform.
+- Design questions about your own prototype: book a short call with the studio from the "Need a hand with yours?" card on https://ui.halaska.com (it links to https://halaska.com/book).
 
 ## Licence
 
