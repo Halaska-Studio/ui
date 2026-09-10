@@ -3603,8 +3603,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
   const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
   // Install prompt: one click copies it and reveals the text below the hero.
   const [installStage, setInstallStage] = useState("idle");
-  const [updates, setUpdates] = useState(null); // null | "copied" | "menu"
-  const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); if (updatesAllowed()) setUpdates("copied"); };
+  const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); };
   const jump = (id, offset = 32) => { const el = document.getElementById(id); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top: y, behavior: "smooth" }); } };
 
   const installPanel = installStage === "revealed" ? (
@@ -3655,7 +3654,6 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                   { label: "FAQ", onClick: () => jump("faq") },
                   { separator: true },
                   { label: "GitHub", onClick: () => window.open(REPO_URL, "_blank", "noopener") },
-                  { label: "Updates", onClick: () => setUpdates("menu") },
                 ]} />
                 <Button theme={pageTheme} variant="primary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyAndReveal}>
                   {installCopied ? "Copied" : "Copy prompt"}
@@ -3666,10 +3664,6 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
             <p style={{ ...tokens.type.md, color: dimColor, margin: "24px 0 0", maxWidth: 560, lineHeight: 1.65, transition: t("color") }}>
               Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop.
             </p>
-
-            {updates && (
-              <UpdatesPanel pageTheme={pageTheme} copied={updates === "copied"} onClose={() => setUpdates(null)} style={{ marginTop: 24, maxWidth: 520 }} />
-            )}
 
             {/* Two-column bio: stacks below ~600px */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: isMobile ? 28 : 40, marginTop: isMobile ? 36 : 48 }}>
@@ -11656,8 +11650,6 @@ function DemoPatterns({ theme }) {
       ))}
       {openParadigm && <ParadigmFullscreen paradigm={openParadigm} theme={theme} onClose={closeParadigm} />}
 
-      <StudioHookCard theme={theme} />
-
       {PATTERN_GROUPS.map((group, gi) => (
         <div key={group.id} id={group.id} style={{ display: "flex", flexDirection: "column", gap: isMobile ? 40 : 56 }}>
           <PatternGroupHeader index={gi} title={group.title} blurb={group.blurb} count={group.patterns.length} theme={theme} />
@@ -11781,7 +11773,6 @@ const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 
 const KIT_VERSION = "1.3";
 const SUBMIT_ENDPOINT = "/api/submit";
-const UPDATES_KEY = "halaska:updates-done";
 const REVIEW_KEY = "halaska:review-sent";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Showcase-only session memory (never in the kit's components).
@@ -11789,7 +11780,6 @@ const kitSession = {
   get(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { window.sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
 };
-const updatesAllowed = () => !kitSession.get(UPDATES_KEY) && !kitSession.get(REVIEW_KEY);
 async function kitSubmit(payload) {
   const r = await fetch(SUBMIT_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
   if (!r.ok) throw new Error(`submit ${r.status}`);
@@ -11813,64 +11803,6 @@ function VersionChip({ pageTheme }) {
         fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em",
         color: hover ? pal.text : pal.textSecondary,
       }}>v{KIT_VERSION}</a>
-  );
-}
-
-// Post-copy updates capture: additive, never blocks the copy, remembers a
-// dismissal or a signup for the session. Escape dismisses; focus is not moved.
-function UpdatesPanel({ pageTheme, copied = true, onClose, style: sp }) {
-  const pal = usePal(pageTheme);
-  const { isMobile } = useViewport();
-  const [email, setEmail] = useState("");
-  const [state, setState] = useState("idle");
-  const [error, setError] = useState("");
-  const timer = useRef(null);
-  const dismiss = useCallback(() => { kitSession.set(UPDATES_KEY, "1"); onClose?.(); }, [onClose]);
-  useEffect(() => () => clearTimeout(timer.current), []);
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") dismiss(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [dismiss]);
-  const submit = async () => {
-    const value = email.trim();
-    if (!EMAIL_RE.test(value)) { setError("Enter a valid email."); return; }
-    setState("sending");
-    try {
-      await kitSubmit({ kind: "updates", list: "kit-updates", email: value, page: window.location.href });
-      setState("done");
-      kitSession.set(UPDATES_KEY, "1");
-      timer.current = setTimeout(() => onClose?.(), 2000);
-    } catch (e) {
-      setState("idle");
-      setError("Couldn't send just now. Try again in a moment.");
-    }
-  };
-  return (
-    <div role="region" aria-label="Updates" style={{
-      display: "flex", flexDirection: "column", gap: 10, padding: "14px 16px",
-      background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
-      boxShadow: `0 12px 32px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
-      animation: `halaska-step-in ${motion.smooth} ${motion.emphasized} both`,
-      transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
-      ...sp,
-    }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-        <Text size="sm" theme={pageTheme} style={{ flex: 1, lineHeight: 1.55 }}>
-          {copied ? "Copied. " : ""}New patterns land roughly monthly. One email when they do.
-        </Text>
-        <IconButton icon="✕" size={24} theme={pageTheme} label="Dismiss" onClick={dismiss} style={{ marginTop: -2, marginRight: -6 }} />
-      </div>
-      {state === "done" ? (
-        <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary }}>Done.</Text>
-      ) : (
-        <div style={{ display: "flex", gap: 8, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-start" }}>
-          <TextInput theme={pageTheme} type="email" size="sm" placeholder="you@company.com" value={email}
-            onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1 }} />
-          <Button theme={pageTheme} variant="primary" size="sm" loading={state === "sending"} onClick={submit}>Notify me</Button>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -12316,6 +12248,90 @@ function FeedbackPill({ pageTheme, surface }) {
   );
 }
 
+// Lucide-style wand at 1px stroke, in a soft accent tile.
+function StudioWandIcon({ size = 22, theme }) {
+  const pal = usePal(theme);
+  return (
+    <span aria-hidden="true" style={{
+      width: size, height: size, borderRadius: size / 2, flexShrink: 0,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      background: pal.accentBg, color: pal.accent,
+      transition: `background ${motion.smooth} ${motion.easeInOut}, color ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <svg width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21l9.5-9.5" /><path d="M14.5 7.5 16.5 9.5" />
+        <path d="M15 3v2" /><path d="M15 12v2" /><path d="M10.5 8.5h2" /><path d="M19.5 8.5h2" />
+        <path d="M18.2 5.3 19.5 4" /><path d="M18.2 11.7 19.5 13" />
+      </svg>
+    </span>
+  );
+}
+
+// Floating studio note, bottom-left: starts as a condensed pill, opens to a
+// short note, re-opens whenever the install prompt is copied. Its action
+// scrolls to the studio card at the end of the page.
+function StudioCta({ pageTheme }) {
+  const pal = usePal(pageTheme);
+  const isDark = pageTheme === "dark";
+  const { isMobile } = useViewport();
+  const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState(false);
+  useEffect(() => {
+    const reopen = () => setOpen(true);
+    window.addEventListener("halaska:prompt-copied", reopen);
+    return () => window.removeEventListener("halaska:prompt-copied", reopen);
+  }, []);
+  const surface = {
+    background: isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
+    backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+    boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
+    transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
+  };
+  const goToCard = () => {
+    const el = document.getElementById("studio");
+    if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 48; window.scrollTo({ top: y, behavior: "smooth" }); }
+    setOpen(false);
+  };
+  const note = !open ? (
+    <button onClick={() => setOpen(true)} aria-label="Open studio note"
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px 8px 10px",
+        borderRadius: tokens.radius.pill, ...surface,
+        ...tokens.type.sm, fontWeight: tokens.weight.medium, color: hover ? pal.text : pal.textSecondary,
+        animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
+      }}>
+      <StudioWandIcon size={18} theme={pageTheme} />
+      Need a hand with yours?
+    </button>
+  ) : (
+    <div role="complementary" aria-label="Studio note" style={{
+      width: 300, maxWidth: "calc(100vw - 40px)",
+      padding: 16, borderRadius: tokens.radius.lg, ...surface, fontFamily: tokens.font.sans,
+      animation: `halaska-step-in 0.4s ${motion.emphasized} both`,
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <StudioWandIcon size={22} theme={pageTheme} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Text size="sm" weight="semibold" theme={pageTheme} style={{ display: "block" }}>Need a hand with yours?</Text>
+          <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", marginTop: 4, lineHeight: 1.6 }}>
+            If you'd rather have a designer take it from here, that's what <StudioLink theme={pageTheme}>Halaska Studio</StudioLink> does.
+          </Text>
+          <LinkButton theme={pageTheme} size="sm" iconRight="↓" onClick={goToCard} style={{ marginTop: 8 }}>Send your prototype over</LinkButton>
+        </div>
+        <IconButton icon="–" size={24} theme={pageTheme} label="Minimise" onClick={() => setOpen(false)} style={{ marginTop: -4, marginRight: -6 }} />
+      </div>
+    </div>
+  );
+  // Phones: the note only appears above the bar once the prompt has been copied.
+  if (isMobile) {
+    return open ? (
+      <div style={{ position: "fixed", bottom: 84, left: 16, right: 16, zIndex: 9998, display: "flex", justifyContent: "center" }}>{note}</div>
+    ) : null;
+  }
+  return <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>;
+}
+
 // Fixed bottom-right dock: BETA, version, GitHub, Feedback. Phones get the
 // same pills inside the section menu instead.
 function PageDock({ pageTheme }) {
@@ -12543,9 +12559,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
 function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentChange }) {
   const [colorOpen, setColorOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [updatesOpen, setUpdatesOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
-  const closeUpdates = useCallback(() => setUpdatesOpen(false), []);
   const { isMobile, compact } = useViewport();
   const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
   const isDark = pageTheme === "dark";
@@ -12569,11 +12583,6 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
 
   return (
     <>
-    {updatesOpen && (
-      <div style={{ position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)", zIndex: 9999, width: isMobile ? "calc(100vw - 32px)" : 400 }}>
-        <UpdatesPanel pageTheme={pageTheme} onClose={closeUpdates} />
-      </div>
-    )}
     {compact && <SectionMenu open={menuOpen} onClose={closeMenu} scrollTo={scrollTo} pageTheme={pageTheme}
       bar={{ bg: barBg, border: barBorder, text: barText, textActive: barTextActive, activeBg: barActiveBg, shadow }} />}
     <div style={{
@@ -12592,7 +12601,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
         {/* Sections: only where the bookmark rail is hidden */}
         {compact && (
           <>
-            <button onClick={() => { setColorOpen(false); setUpdatesOpen(false); setMenuOpen(o => !o); }} aria-label="Sections" aria-expanded={menuOpen}
+            <button onClick={() => { setColorOpen(false); setMenuOpen(o => !o); }} aria-label="Sections" aria-expanded={menuOpen}
               style={{
                 ...interactiveBase, width: 32, height: 32, padding: 0, flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -12609,7 +12618,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
         )}
         {/* Copy install prompt: one click, straight to the clipboard.
             Section nav lives in the bookmark rail (or the ≡ menu). */}
-        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); copyInstallPrompt(); if (updatesAllowed()) setUpdatesOpen(true); }} active={installCopied}
+        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); copyInstallPrompt(); }} active={installCopied}
           barText={barText} barTextActive={barTextActive}
           barHoverBg={barBarButtonHoverBg} barActiveBg={barBarButtonActiveBg}
           style={isMobile ? { padding: "8px 12px" } : undefined}>
@@ -12767,6 +12776,7 @@ export default function HalaskaKit() {
 
 
       </ShowcasePage>
+      <StudioCta pageTheme={pageTheme} />
       <PageDock pageTheme={pageTheme} />
       <BookmarkRail pageTheme={pageTheme} scrollTo={scrollTo} />
       <ActionBar

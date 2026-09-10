@@ -1,6 +1,5 @@
 // Form endpoint for the showcase site (Vercel serverless function).
-// Receives the studio review request and the updates signup, and delivers
-// them by email. Delivery is configured with environment variables:
+// Receives the studio review request and delivers it by email. Delivery is configured with environment variables:
 //   RESEND_API_KEY      send through Resend (https://resend.com), or
 //   SUBMIT_WEBHOOK_URL  forward the JSON payload to any webhook instead
 //   SUBMIT_TO           recipient (default chris@halaska.com)
@@ -21,13 +20,6 @@ function compose(body) {
       type: "kit-review", email, url,
       subject: `Kit review request: ${url}`,
       text: [`Prototype: ${url}`, `From: ${email}`, "", "Reply with the three things you'd change first.", "", `Sent from ${body.page || "ui.halaska.com"}`].join("\n"),
-    };
-  }
-  if (body.kind === "updates") {
-    return {
-      type: "kit-updates", email, list: "kit-updates",
-      subject: `Kit updates signup: ${email}`,
-      text: [`Add to the kit-updates list: ${email}`, "", `Sent from ${body.page || "ui.halaska.com"}`].join("\n"),
     };
   }
   return { error: "Unknown request." };

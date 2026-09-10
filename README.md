@@ -62,7 +62,7 @@ npm run dev
 
 ## Site forms
 
-The two forms on the showcase (the studio review request and the updates signup) post to `halaska-kit/api/submit.js`, a Vercel serverless function that emails the submission. It needs one of these environment variables on the Vercel project:
+The studio review form on the showcase ("Need a hand with yours?") posts to `halaska-kit/api/submit.js`, a Vercel serverless function that emails the submission. It needs one of these environment variables on the Vercel project:
 
 | Variable | Purpose |
 |---|---|
