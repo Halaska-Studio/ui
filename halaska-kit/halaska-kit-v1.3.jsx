@@ -3647,7 +3647,6 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                 <p style={{ ...tokens.type.md, color: dimColor, margin: "10px 0 0", transition: t("color") }}>by <StudioLink theme={pageTheme} /> · built on top of <StudioLink theme={pageTheme} href="https://ui.shadcn.com">shadcn/ui</StudioLink></p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 20, paddingTop: 8 }}>
-                <LinkButton theme={pageTheme} size="sm" iconRight="↗" onClick={() => window.open(REPO_URL, "_blank", "noopener")}>GitHub</LinkButton>
                 <LinkButton theme={pageTheme} size="sm" iconRight="↓" onClick={() => (() => { const el = document.getElementById("how-to-use"); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 32; window.scrollTo({ top: y, behavior: "smooth" }); } })()}>More</LinkButton>
                 <Button theme={pageTheme} variant="primary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyAndReveal}>
                   {installCopied ? "Copied" : "Copy prompt"}
@@ -11793,6 +11792,27 @@ function StudioWandIcon({ size = 22, theme }) {
   );
 }
 
+// Source link: same pill idiom as Feedback, opens the public repo.
+function RepoPill({ pageTheme, surface }) {
+  const pal = usePal(pageTheme);
+  const [hover, setHover] = useState(false);
+  return (
+    <a href={REPO_URL} target="_blank" rel="noreferrer" aria-label="Source on GitHub"
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
+        padding: "4px 10px 4px 8px", borderRadius: tokens.radius.pill, ...surface,
+        fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
+        color: hover ? pal.text : pal.textSecondary,
+      }}>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M16 18l6-6-6-6" /><path d="M8 6l-6 6 6 6" />
+      </svg>
+      GitHub
+    </a>
+  );
+}
+
 // Minimal feedback: a pill that opens a new issue on the public repo.
 function FeedbackPill({ pageTheme, surface }) {
   const pal = usePal(pageTheme);
@@ -11873,6 +11893,7 @@ function StudioCta({ pageTheme }) {
       <div style={{ position: "fixed", bottom: 20, left: 20, zIndex: 9998 }}>{note}</div>
       <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9998, display: "flex", alignItems: "center", gap: 6 }}>
         <BetaChip pageTheme={pageTheme} />
+        <RepoPill pageTheme={pageTheme} surface={surface} />
         <FeedbackPill pageTheme={pageTheme} surface={surface} />
       </div>
     </>
@@ -12067,6 +12088,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
       {isMobile && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "14px 6px 2px", marginTop: 6, borderTop: `1px solid ${bar.border}`, flexWrap: "wrap" }}>
           <BetaChip pageTheme={pageTheme} />
+          <RepoPill pageTheme={pageTheme} surface={surface} />
           <FeedbackPill pageTheme={pageTheme} surface={surface} />
         </div>
       )}
