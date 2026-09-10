@@ -11865,6 +11865,97 @@ function StudioHookCard({ theme, credit }) {
   );
 }
 
+// Before/after comparison: both views fill one box, the After is clipped to
+// the right of a divider you drag. Pointer, touch, and arrow keys.
+function CompareSlider({ before, after, theme: tp, initial = 0.5, labels = ["Before", "After"], style: sp }) {
+  const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const ref = useRef(null);
+  const [pos, setPos] = useState(initial);
+  const [dragging, setDragging] = useState(false);
+  const setFromX = useCallback((clientX) => {
+    const r = ref.current ? ref.current.getBoundingClientRect() : null;
+    if (r && r.width) setPos(Math.min(1, Math.max(0, (clientX - r.left) / r.width)));
+  }, []);
+  // Listeners attach in the down handler itself (not in an effect) so the
+  // first move after the press is never missed; they detach on release.
+  const stopRef = useRef(null);
+  const startDrag = useCallback((clientX) => {
+    setDragging(true); setFromX(clientX);
+    const move = (e) => setFromX(e.touches ? e.touches[0].clientX : e.clientX);
+    const up = () => { setDragging(false); stop(); };
+    const stop = () => {
+      window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+      window.removeEventListener("touchmove", move); window.removeEventListener("touchend", up);
+      stopRef.current = null;
+    };
+    window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    window.addEventListener("touchmove", move, { passive: true }); window.addEventListener("touchend", up);
+    stopRef.current = stop;
+  }, [setFromX]);
+  useEffect(() => () => { if (stopRef.current) stopRef.current(); }, []);
+  const onKey = (e) => {
+    if (e.key === "ArrowLeft") { e.preventDefault(); setPos(p => Math.max(0, p - 0.05)); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); setPos(p => Math.min(1, p + 0.05)); }
+    else if (e.key === "Home") { e.preventDefault(); setPos(0); }
+    else if (e.key === "End") { e.preventDefault(); setPos(1); }
+  };
+  const pct = pos * 100;
+  const isDark = theme === "dark";
+  const tag = (text, side, visible) => (
+    <span aria-hidden="true" style={{
+      position: "absolute", top: 12, [side]: 12, zIndex: 3, pointerEvents: "none",
+      padding: "4px 10px", borderRadius: tokens.radius.pill,
+      background: isDark ? "rgba(20,20,20,0.8)" : "rgba(255,255,255,0.88)",
+      backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+      boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
+      fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase",
+      color: pal.textSecondary, opacity: visible ? 1 : 0,
+      transition: `opacity ${motion.normal} ${motion.easeInOut}`,
+    }}>{text}</span>
+  );
+  return (
+    <div ref={ref}
+      onMouseDown={(e) => { e.preventDefault(); startDrag(e.clientX); }}
+      onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+      style={{
+        position: "relative", width: "100%", borderRadius: tokens.radius.lg, overflow: "hidden",
+        cursor: dragging ? "grabbing" : "col-resize", userSelect: "none", WebkitUserSelect: "none", touchAction: "pan-y",
+        fontFamily: tokens.font.sans, ...sp,
+      }}>
+      <div style={{ position: "relative" }}>{before}</div>
+      <div style={{
+        position: "absolute", inset: 0, clipPath: `inset(0 0 0 ${pct}%)`,
+        transition: dragging ? "none" : `clip-path ${motion.fast} ${motion.easeOut}`,
+      }}>{after}</div>
+      {tag(labels[0], "left", pos > 0.14)}
+      {tag(labels[1], "right", pos < 0.86)}
+      {/* Divider + handle */}
+      <div style={{
+        position: "absolute", top: 0, bottom: 0, left: `${pct}%`, width: 2, marginLeft: -1, zIndex: 2,
+        background: isDark ? "rgba(255,255,255,0.85)" : "#fff",
+        boxShadow: "0 0 0 1px rgba(0,0,0,0.15), 0 0 12px rgba(0,0,0,0.25)",
+        transition: dragging ? "none" : `left ${motion.fast} ${motion.easeOut}`,
+      }} />
+      <button role="slider" aria-label={`Compare ${labels[0]} and ${labels[1]}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}
+        onKeyDown={onKey}
+        style={{
+          ...interactiveBase, position: "absolute", top: "50%", left: `${pct}%`, zIndex: 3,
+          width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: 20, padding: 0,
+          background: isDark ? "#1c1c1c" : "#fff", color: pal.text,
+          boxShadow: "0 0 0 1px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.25)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: dragging ? "grabbing" : "grab",
+          transform: dragging ? "scale(1.06)" : "scale(1)",
+          transition: dragging ? "transform 0.1s ease" : `left ${motion.fast} ${motion.easeOut}, transform ${motion.fast} ${motion.easeOut}`,
+        }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 // A 1200×760 example screen scaled to the column, non-interactive.
 function LiveStage({ scale, theme, children }) {
   const pal = usePal(theme);
@@ -11897,12 +11988,12 @@ function BeforeAfterSection({ theme }) {
         </Text>
       </div>
       <div ref={ref}>
-        <BeforeAfterToggle theme={theme}
+        <CompareSlider theme={theme}
           before={<LiveStage scale={scale} theme={theme}><ChatParadigmBefore theme={theme} /></LiveStage>}
           after={<LiveStage scale={scale} theme={theme}><ChatParadigmExample theme={theme} /></LiveStage>} />
       </div>
       <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block", textAlign: "center" }}>
-        Same components, same data. Only the kit changed.
+        Drag the handle. Same components, same data. Only the kit changed.
       </Text>
     </div>
   );
@@ -12824,7 +12915,7 @@ export {
   Snippet, FileTree, BrowserFrame, PhoneFrame,
   // AI elements
   Orb, StreamingText, ThinkingIndicator, ThinkingSteps, ConfidenceBar,
-  AISuggestionBadge, BeforeAfterToggle, ZoomControl, AgentGlyph,
+  AISuggestionBadge, BeforeAfterToggle, CompareSlider, ZoomControl, AgentGlyph,
   // UX patterns: conversation core
   PromptInputPattern, MessageThreadPattern, StreamingAnswerPattern,
   AgentChatPattern, CodeBlockPattern, ModelContextPattern,

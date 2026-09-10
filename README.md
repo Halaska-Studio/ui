@@ -6,7 +6,7 @@ A single-file React UI kit for AI products, built on shadcn/ui foundations. Made
 
 Live: **https://ui.halaska.com**
 
-![Before and after: the same screen as a coding agent left it, and with the kit applied](docs/before-after.png)
+![Before and after: drag the divider between the screen as a coding agent left it and the same screen with the kit applied](docs/before-after.png)
 
 ## Use it
 
