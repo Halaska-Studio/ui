@@ -41,7 +41,7 @@ API reference for agents and humans: https://ui.halaska.com/llms.txt (TypeScript
 
 ```
 halaska-kit/
-  halaska-kit-v1.3.jsx   the kit: tokens, components, patterns, showcase page
+  halaska-kit-v1.0.jsx   the kit: tokens, components, patterns, showcase page
   src/main.jsx           Vite entry for the showcase site
   scripts/               generates llms.txt, the .d.ts shim, and the source map on build
   CLAUDE.md              project notes for coding agents

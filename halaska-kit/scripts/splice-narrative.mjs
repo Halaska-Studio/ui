@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const KIT = join(root, "halaska-kit-v1.3.jsx");
+const KIT = join(root, "halaska-kit-v1.0.jsx");
 const { blocks } = JSON.parse(readFileSync(join(root, "public", "source-map.json"), "utf8"));
 let src = readFileSync(KIT, "utf8");
 let replaced = 0, skipped = [];

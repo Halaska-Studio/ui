@@ -1,7 +1,7 @@
 "use client";
 
 /*!
- * Halaska Kit v1.3: UX patterns & components for AI products
+ * Halaska Kit v1.0: UX patterns & components for AI products
  * (c) Halaska · https://ui.halaska.com · MIT License
  * Single-file React kit: import { Button, Orb, PlanPreviewPattern } from "./halaska-kit"
  */
@@ -14,7 +14,7 @@ import { useState, useRef, useEffect, useCallback, createContext, useContext, Fr
 // Halaska Kit provides styled versions of all the above.
 
 // ═══════════════════════════════════════════════════════════════
-//  HALASKA KIT v1.3: UX patterns & components for AI products
+//  HALASKA KIT v1.0: UX patterns & components for AI products
 //  shadcn/ui foundations · Geist · Lucide 1px
 //  AI interface patterns · Animated selections · Trading-agent theme
 // ═══════════════════════════════════════════════════════════════

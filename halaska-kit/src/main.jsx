@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import HalaskaKit, { ChatParadigmExample, BeforeAfterSection, ThemeProvider } from "../halaska-kit-v1.3.jsx";
+import HalaskaKit, { ChatParadigmExample, BeforeAfterSection, ThemeProvider } from "../halaska-kit-v1.0.jsx";
 
 // ?shot=after | ?shot=before-after | ?shot=og render one piece on its own, for the
 // README screenshots (see scripts/shots.sh). Everything else is the showcase.
