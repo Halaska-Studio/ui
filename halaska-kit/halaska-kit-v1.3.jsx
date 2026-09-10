@@ -12063,7 +12063,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
     <div ref={ref} role="menu" aria-label="Sections" style={{
       position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)",
       width: isMobile ? "calc(100vw - 32px)" : 320, maxHeight: "min(64vh, 560px)", overflowY: "auto",
-      zIndex: 9999, padding: "10px 8px", borderRadius: tokens.radius.lg,
+      zIndex: 9999, padding: isMobile ? "10px 8px 0" : "10px 8px", borderRadius: tokens.radius.lg,
       background: bar.bg, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${bar.border}`, boxShadow: bar.shadow, fontFamily: tokens.font.sans,
       animation: `halaska-step-in ${motion.normal} ${motion.emphasized} both`,
@@ -12086,7 +12086,11 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
         </button>
       ))}
       {isMobile && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "14px 6px 2px", marginTop: 6, borderTop: `1px solid ${bar.border}`, flexWrap: "wrap" }}>
+        <div style={{
+          position: "sticky", bottom: 0, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap",
+          padding: "12px 6px 10px", marginTop: 6, borderTop: `1px solid ${bar.border}`,
+          background: bar.bg, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+        }}>
           <BetaChip pageTheme={pageTheme} />
           <RepoPill pageTheme={pageTheme} surface={surface} />
           <FeedbackPill pageTheme={pageTheme} surface={surface} />
