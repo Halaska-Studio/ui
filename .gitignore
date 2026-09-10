@@ -14,3 +14,11 @@ npm-debug.log*
 .turbo
 coverage/
 .cache/
+
+# local tooling and generated files
+.claude/
+*.zip
+halaska-kit/public/halaska-kit.jsx
+halaska-kit/public/halaska-kit.d.ts
+halaska-kit/public/llms.txt
+halaska-kit/public/source-map.json

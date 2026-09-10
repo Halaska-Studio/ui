@@ -1,7 +1,7 @@
 {
   "name": "halaska-kit",
   "version": "1.3.0",
-  "description": "UX patterns and styled components for AI products \u2014 agents, copilots, and chat. Built on shadcn/ui foundations.",
+  "description": "UX patterns and styled components for AI products \u2014 one file, react + react-dom only.",
   "author": "Halaska Studio",
   "license": "MIT",
   "main": "src/components/index.js",
@@ -9,12 +9,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prebuild": "cp halaska-kit-v1.3.jsx public/halaska-kit.jsx"
+    "prebuild": "node scripts/generate-api.mjs && node scripts/extract-source.mjs && cp halaska-kit-v1.3.jsx public/halaska-kit.jsx"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "^3.8.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
