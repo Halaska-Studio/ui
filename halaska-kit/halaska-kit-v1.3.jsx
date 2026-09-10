@@ -4281,7 +4281,7 @@ function InlinePanelPreview({ title, children, actions, theme, shape = "dialog" 
       width: isSheet ? 320 : 400, maxWidth: "100%", boxSizing: "border-box",
       background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      border: `1px solid ${pal.borderSubtle}`,
+      borderTop: `1px solid ${pal.borderSubtle}`, borderLeft: `1px solid ${pal.borderSubtle}`, borderRight: `1px solid ${pal.borderSubtle}`,
       borderBottom: isDrawer ? "none" : `1px solid ${pal.borderSubtle}`,
       borderRadius: isDrawer ? `${tokens.radius.lg}px ${tokens.radius.lg}px 0 0` : tokens.radius.lg,
       padding: 24, boxShadow: `0 16px 48px ${pal.shadowLg}`,
