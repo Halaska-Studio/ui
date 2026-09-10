@@ -3730,7 +3730,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
 
         {/* The page ends on the studio hook, not on a component group */}
         <div id="studio" style={{ marginTop: isMobile ? 48 : 64 }}>
-          <StudioHookCard theme={pageTheme} credit />
+          <StudioHookCard theme={pageTheme} />
         </div>
       </div>
     </div>
@@ -11770,7 +11770,7 @@ const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 
 // Studio hook: a calm card with a two-field form. Appears after the
 // paradigms and again at the very end of the page (with the credit line).
-function StudioHookCard({ theme, credit }) {
+function StudioHookCard({ theme }) {
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   return (
@@ -11782,15 +11782,9 @@ function StudioHookCard({ theme, credit }) {
             If you'd rather have a designer take it from here, that's what <StudioLink theme={theme}>Halaska Studio</StudioLink> does. Book a short call, bring your prototype, and we'll tell you the three things we'd change first.
           </Text>
         </div>
-        {credit && (
-          <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>From the team behind product design at Retell AI and Pascal.</Text>
-        )}
         <div>
           <Button theme={theme} variant="primary" iconRight="↗" onClick={() => window.open(STUDIO_BOOK_URL, "_blank", "noopener")}>Book a call</Button>
         </div>
-        <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>
-          A conversation with the studio, not an agent. No newsletter, no pitch unless you ask for one.
-        </Text>
       </Stack>
     </Card>
   );
