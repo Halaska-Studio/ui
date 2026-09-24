@@ -5,7 +5,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: "127.0.0.1",
-    port: 3000,
+    // The desktop app assigns a port through PORT when 3000 is taken.
+    port: Number(process.env.PORT) || 3000,
+    strictPort: false,
     open: true,
   },
 });
