@@ -4,7 +4,7 @@ You are a coding agent setting up UI by Halaska (halaska-kit.jsx) in a project. 
 
 ## What it is
 
-A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 38 UX patterns and about 100 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
+A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 40 UX patterns and about 100 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
 
 ## Setup
 
@@ -38,6 +38,7 @@ e. When every screen is done, give the user a short summary of what changed per 
 - UX patterns, agentic control: PlanPreviewPattern, ApprovalCardPattern, AutonomyPattern, PermissionScopePattern, QueuePattern, AgentStatusPattern, ToolStreamPattern, AgentTasksPattern, HandoffPattern, ActionReceiptPattern, CheckpointPattern, AuditLogPattern, ErrorRepairPattern
 - UX patterns, output: ArtifactPattern, DiffViewPattern, DiffTablePattern, StructuredDataPattern, InsightCardsPattern, ComparisonPattern
 - UX patterns, ambient: TaskboardPattern, InlineAssistPattern, NudgePattern, DigestPattern, NotificationCenterPattern, CommandSearchPattern, AgentSetupPattern
+- UX patterns, agentic navigation: ContextBarPattern (a bar whose suggestions follow the on-screen context), SpaceDeckPattern (a card deck of agents; sideways between agents, up and down between spaces)
 - AI elements: Orb (variants pulse, orbit, sweep, globe, spark; pill option), StreamingText, ThinkingIndicator, ThinkingSteps, ConfidenceBar, AISuggestionBadge, BeforeAfterToggle, CompareSlider, ZoomControl, AgentGlyph
 - Components: Text, Heading, Label, Caption, Code, Button, IconButton, ButtonGroup, LinkButton, SplitButton, TextInput, TextArea, Select, Checkbox, Radio, RadioGroup, SwitchToggle, Slider, SpringSlider, SpringToggle, SegmentedControl, InputOTP, InputGroup, Combobox, Calendar, DatePicker, Chip, Toggle, ToggleGroup, SearchInput, Choicebox, CopyInput, Rating, Card, CardHeader, Divider, Stack, Badge, Tag, StatusBadge, StatusDot, Avatar, AvatarGroup, ListItem, Stat, Table, DataTable, ScrollArea, Pagination, MiddleTruncate, Kbd, Progress, ProgressCircle, Skeleton, Spinner, Toast, AlertBanner, EmptyState, Stepper, Breadcrumb, Tabs, SubtleTabs, Accordion, Collapsible, ContextMenu, Menubar, CommandPalette, CommandMenu, Dialog, AlertDialog, FormDialog, CardDialog, Sheet, Popover, DropdownMenu, Tooltip, HoverCard, Snippet, FileTree, BrowserFrame, PhoneFrame, Sparkline
 

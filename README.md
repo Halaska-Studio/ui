@@ -2,7 +2,7 @@
 
 ![The Chat example screen, built entirely from the kit](docs/after.png)
 
-A single-file React UI kit for AI products, built on shadcn/ui foundations. Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop. 38 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
+A single-file React UI kit for AI products, built on shadcn/ui foundations. Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop. 40 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and around 100 styled components underneath them.
 
 Live: **https://ui.halaska.com**
 
@@ -33,7 +33,7 @@ Agent guide: https://ui.halaska.com/install.md. API reference: https://ui.halask
 ## What's inside
 
 - **Two UX paradigms**: a Chat screen and a Canvas (workflow builder) screen, each built only from the kit.
-- **38 UX patterns** in five lifecycle groups: Conversation core, Trust & transparency, Agentic control, Output & generative UI, Ambient & beyond chat. Eight of them are prop-driven (`ThinkingTracePattern`, `StreamingAnswerPattern`, `PlanPreviewPattern`, `ApprovalCardPattern`, `AgentStatusPattern`, `HandoffPattern`, `ActionReceiptPattern`, `ErrorRepairPattern`); the rest are reference implementations to copy and adapt.
+- **40 UX patterns** in six groups: Conversation core, Trust & transparency, Agentic control, Output & generative UI, Ambient & beyond chat, Agentic navigation. Eight of them are prop-driven (`ThinkingTracePattern`, `StreamingAnswerPattern`, `PlanPreviewPattern`, `ApprovalCardPattern`, `AgentStatusPattern`, `HandoffPattern`, `ActionReceiptPattern`, `ErrorRepairPattern`); the rest are reference implementations to copy and adapt.
 - **Components**: buttons, inputs, selectors, navigation, overlays, feedback, data display, AI elements (orbs, streaming text, confidence), and dev surfaces (snippet, file tree, browser and phone frames).
 - **Foundations**: Geist type, 1px icons, an 8px spacing scale, iOS-style radii, light and dark themes, a swappable accent, and runtime switches for typeface (`setKitFont`) and motion (`setKitMotion`).
 
