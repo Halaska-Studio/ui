@@ -115,7 +115,7 @@ xs: 4, sm: 8, md: 16, lg: 24, xl: 32, pill: 999
 
 ### Color System
 - Single neutral grey theme with light + dark mode
-- Accent color is swappable via AccentContext (Blue, Violet, Emerald, Rose, Amber, Neutral)
+- Default accent is violet (#8b5cf6 light / #a78bfa dark, since 2026-09-25 at Chris's request; was blue). Swappable via AccentContext (Violet, Blue, Emerald, Rose, Amber, Neutral); the showcase starts on Violet
 - usePal(theme) hook returns palette with accent overrides applied
 - Components read from pal.accent, pal.accentText, pal.accentBg, pal.accentHover
 

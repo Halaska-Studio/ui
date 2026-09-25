@@ -206,10 +206,10 @@ const tokens = {
     shadow: "rgba(0,0,0,0.04)",
     shadowMd: "rgba(0,0,0,0.06)",
     shadowLg: "rgba(0,0,0,0.1)",
-    accent: "#3b82f6",
-    accentHover: "#2563eb",
-    accentBg: "#eff6ff",
-    accentText: "#3b82f6",
+    accent: "#8b5cf6",
+    accentHover: "#7c3aed",
+    accentBg: "#f5f3ff",
+    accentText: "#8b5cf6",
     success: "#22c55e",
     successHover: "#16a34a",
     successBg: "#f0fdf4",
@@ -239,10 +239,10 @@ const tokens = {
     shadow: "rgba(0,0,0,0.2)",
     shadowMd: "rgba(0,0,0,0.3)",
     shadowLg: "rgba(0,0,0,0.4)",
-    accent: "#60a5fa",
-    accentHover: "#3b82f6",
-    accentBg: "rgba(96,165,250,0.12)",
-    accentText: "#60a5fa",
+    accent: "#a78bfa",
+    accentHover: "#8b5cf6",
+    accentBg: "rgba(167,139,250,0.12)",
+    accentText: "#a78bfa",
     success: "#4ade80",
     successHover: "#22c55e",
     successBg: "rgba(74,222,128,0.1)",
@@ -11803,8 +11803,8 @@ const INSTALL_PROMPT = `Set up UI by Halaska in this project and use it for all 
 It's one React file, react and react-dom only, inline styles, no config.`;
 
 const ACCENT_COLORS = [
-  { name: "Blue", value: "#3b82f6" },
   { name: "Violet", value: "#8b5cf6" },
+  { name: "Blue", value: "#3b82f6" },
   { name: "Emerald", value: "#10b981" },
   { name: "Rose", value: "#f43f5e" },
   { name: "Amber", value: "#f59e0b" },
@@ -12753,7 +12753,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
 
 export default function HalaskaKit() {
   const [pageTheme, setPageTheme] = useState("light");
-  const [accentColor, setAccentColor] = useState("#555555");
+  const [accentColor, setAccentColor] = useState("#8b5cf6");
 
   useEffect(() => { injectStyles(); }, []);
   const { isMobile } = useViewport();
