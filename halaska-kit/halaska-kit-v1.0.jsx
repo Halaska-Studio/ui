@@ -3597,39 +3597,135 @@ function useCopyPrompt() {
   return { copied, copy };
 }
 
+// Email capture for the install prompt. The address goes to the studio's
+// Kit (ConvertKit) form; the browser only remembers a yes/no flag so the
+// gate shows once. Both "Copy prompt" buttons open this.
+const KIT_FORM_URL = "https://app.kit.com/forms/9960761/subscriptions";
+const SUBSCRIBED_KEY = "halaska:subscribed";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const hasSubscribed = () => { try { return window.localStorage.getItem(SUBSCRIBED_KEY) === "1"; } catch (e) { return false; } };
+const rememberSubscribed = () => { try { window.localStorage.setItem(SUBSCRIBED_KEY, "1"); } catch (e) { /* private mode */ } };
+async function subscribeToKit(email) {
+  const body = new FormData();
+  body.append("email_address", email);
+  const r = await fetch(KIT_FORM_URL, { method: "POST", headers: { Accept: "application/json" }, body });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || data.status === "failed") {
+    const msg = data.errors && data.errors.messages ? data.errors.messages[0] : "Couldn't sign you up just now.";
+    throw new Error(msg);
+  }
+  return data;
+}
+
+function InstallPromptModal({ open, onClose, pageTheme }) {
+  const pal = usePal(pageTheme);
+  const { isMobile } = useViewport();
+  const { copied, copy } = useCopyPrompt();
+  const [step, setStep] = useState("email");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  // Returning subscribers skip the gate: copy on open and show the prompt.
+  useEffect(() => {
+    if (!open) return;
+    if (hasSubscribed()) { setStep("prompt"); copy(); } else { setStep("email"); }
+    setError("");
+  }, [open, copy]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [open, onClose]);
+  if (!open) return null;
+  const submit = async () => {
+    const value = email.trim();
+    if (!EMAIL_RE.test(value)) { setError("Enter a valid email."); return; }
+    setSending(true); setError("");
+    try {
+      await subscribeToKit(value);
+      rememberSubscribed();
+      copy();
+      setStep("prompt");
+    } catch (e) {
+      setError(e.message || "Couldn't sign you up just now.");
+    } finally {
+      setSending(false);
+    }
+  };
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10003, padding: 16,
+      animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
+    }}>
+      <div role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
+        width: step === "prompt" ? 640 : 440, maxWidth: "100%", maxHeight: "calc(100vh - 32px)", display: "flex", flexDirection: "column",
+        background: pageTheme === "dark" ? "rgba(30,30,30,0.97)" : "rgba(255,255,255,0.97)",
+        backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+        borderRadius: tokens.radius.lg, padding: isMobile ? 20 : 24,
+        border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
+        animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
+        transition: `width ${motion.smooth} ${motion.emphasized}`,
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+          <div style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text, flex: 1 }}>
+            {step === "prompt" ? "Your install prompt" : "Get the install prompt"}
+          </div>
+          <IconButton icon="✕" size={28} theme={pageTheme} label="Close" onClick={onClose} style={{ marginTop: -4, marginRight: -8 }} />
+        </div>
+        {step === "email" ? (
+          <Stack gap={12}>
+            <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", lineHeight: 1.6 }}>
+              Leave your email and the prompt is copied to your clipboard. New patterns land roughly monthly, and you'll get one email when they do.
+            </Text>
+            <div style={{ display: "flex", gap: 8, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-start" }}>
+              <TextInput theme={pageTheme} type="email" placeholder="you@company.com" value={email}
+                onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1 }} />
+              <Button theme={pageTheme} variant="primary" loading={sending} onClick={submit} style={{ flexShrink: 0 }}>Get the prompt</Button>
+            </div>
+            <Text size="xs" theme={pageTheme} style={{ color: pal.textTertiary, display: "block" }}>
+              No newsletter, no selling on. Unsubscribe from the first email if it's not for you.
+            </Text>
+          </Stack>
+        ) : (
+          <Stack gap={12} style={{ minHeight: 0 }}>
+            <Text size="sm" theme={pageTheme} style={{ color: pal.textSecondary, display: "block", lineHeight: 1.6 }}>
+              {copied ? "Copied to your clipboard. " : ""}Paste it as the first message to Claude Code, Cursor, or any agent that can fetch a file. It downloads the kit, wires it in, and applies it to what you've already built.
+            </Text>
+            <pre style={{
+              margin: 0, maxHeight: isMobile ? "40vh" : 340, overflow: "auto", padding: 16,
+              borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}`,
+              ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary,
+              whiteSpace: "pre-wrap", lineHeight: 1.6,
+            }}>{INSTALL_PROMPT}</pre>
+            <Stack direction="row" gap={8} justify="flex-end">
+              <Button theme={pageTheme} variant="ghost" size="sm" onClick={onClose}>Done</Button>
+              <Button theme={pageTheme} variant="primary" size="sm" icon={copied ? "✓" : "⧉"} onClick={copy}>{copied ? "Copied" : "Copy again"}</Button>
+            </Stack>
+          </Stack>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
   const isDark = pageTheme === "dark";
   const pal = usePal(pageTheme);
   const { isMobile } = useViewport();
-  const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
-  // Install prompt: one click copies it and reveals the text below the hero.
-  const [installStage, setInstallStage] = useState("idle");
-  const copyAndReveal = () => { copyInstallPrompt(); setInstallStage("revealed"); };
+  // Install prompt: both Copy prompt buttons open the gated modal.
+  const [promptOpen, setPromptOpen] = useState(false);
+  const closePrompt = useCallback(() => setPromptOpen(false), []);
+  useEffect(() => {
+    const openIt = () => setPromptOpen(true);
+    window.addEventListener("halaska:open-prompt", openIt);
+    return () => window.removeEventListener("halaska:open-prompt", openIt);
+  }, []);
   const jump = (id, offset = 32) => { const el = document.getElementById(id); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top: y, behavior: "smooth" }); } };
 
-  const installPanel = installStage === "revealed" ? (
-    <div style={{ marginTop: 28, animation: `halaska-step-in 0.4s ${motion.emphasized} both` }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
-        <Text size="sm" weight="medium" theme={pageTheme}>Your install prompt</Text>
-        <Stack direction="row" gap={8}>
-          <Button theme={pageTheme} variant="ghost" size="sm" onClick={() => setInstallStage("idle")}>Hide</Button>
-          <Button theme={pageTheme} variant="secondary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyInstallPrompt}>
-            {installCopied ? "Copied" : "Copy again"}
-          </Button>
-        </Stack>
-      </div>
-      <pre style={{
-        margin: 0, maxHeight: 260, overflow: "auto", padding: 16,
-        borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}`,
-        ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary,
-        whiteSpace: "pre-wrap", lineHeight: 1.6,
-        transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
-      }}>{INSTALL_PROMPT}</pre>
-      <Text size="xs" theme={pageTheme} style={{ color: pal.textTertiary, display: "block", marginTop: 8 }}>
-        It's on your clipboard. Paste it as the first message to Claude Code or Cursor: it downloads the kit, wires it in, and applies it to what you've already built.
-      </Text>
-    </div>
-  ) : null;
   const bg = isDark
     ? "linear-gradient(180deg, #111 0%, #0a0a0a 50%, #111 100%)"
     : "linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%)";
@@ -3656,9 +3752,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                   { separator: true },
                   { label: "GitHub", onClick: () => window.open(REPO_URL, "_blank", "noopener") },
                 ]} />
-                <Button theme={pageTheme} variant="primary" size="sm" icon={installCopied ? "✓" : "⧉"} onClick={copyAndReveal}>
-                  {installCopied ? "Copied" : "Copy prompt"}
-                </Button>
+                <Button theme={pageTheme} variant="primary" size="sm" icon="⧉" onClick={() => setPromptOpen(true)}>Copy prompt</Button>
               </div>
             </div>
 
@@ -3675,7 +3769,6 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
                   Copy the install prompt, paste it into Claude Code or Cursor, and your project picks up the kit plus the rules for using it on what you've already built. It's an evolving resource: new patterns and components land as the work does.</p>
               </div>
             </div>
-            {installPanel}
           </div>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 72 : 112 }}>{children}</div>
@@ -3713,6 +3806,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 40 }}>
             {[
               { q: "Which tools does this work with?", a: "Any coding agent that can fetch a file and edit your project: Claude Code, Cursor, Codex, Windsurf, and similar. For browser builders like Lovable or Bolt, paste the prompt and, if the tool can't fetch, upload the kit file from the link in the prompt." },
+              { q: "Why do you ask for an email?", a: "So you hear when new patterns land, roughly once a month. That's all it's used for. The prompt is copied the moment you submit, and you can unsubscribe from the first email." },
               { q: "Do I need to install anything?", a: "No. The kit is a single file with inline styles. It needs react and react-dom, which your project already has. No Tailwind, no CSS setup, no chart library." },
               { q: "Will it work on a project that already has a UI?", a: "Yes, that's the main use. The prompt tells the agent to keep your routing, state, and data, and to swap screens over to the kit one at a time." },
               { q: "Can I change the look?", a: "Accent, typeface, and motion are all switchable at runtime: pick an accent in the bar below, a typeface in Foundations, and a motion mode there too. Everything else is a token at the top of the file." },
@@ -3733,6 +3827,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
           <StudioHookCard theme={pageTheme} />
         </div>
       </div>
+      <InstallPromptModal open={promptOpen} onClose={closePrompt} pageTheme={pageTheme} />
     </div>
   );
 }
@@ -12547,7 +12642,7 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const { isMobile, compact } = useViewport();
-  const { copied: installCopied, copy: copyInstallPrompt } = useCopyPrompt();
+  const openPrompt = () => { try { window.dispatchEvent(new CustomEvent("halaska:open-prompt")); } catch (e) { /* no-op */ } };
   const isDark = pageTheme === "dark";
   // Bar inverts vs page for contrast: dark page → light bar, light page → dark bar
   const barIsDark = !isDark;
@@ -12604,11 +12699,11 @@ function ActionBar({ scrollTo, pageTheme, onThemeChange, accentColor, onAccentCh
         )}
         {/* Copy install prompt: one click, straight to the clipboard.
             Section nav lives in the bookmark rail (or the ≡ menu). */}
-        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); copyInstallPrompt(); }} active={installCopied}
+        <BarButton onClick={() => { setColorOpen(false); setMenuOpen(false); openPrompt(); }}
           barText={barText} barTextActive={barTextActive}
           barHoverBg={barBarButtonHoverBg} barActiveBg={barBarButtonActiveBg}
           style={isMobile ? { padding: "8px 12px" } : undefined}>
-          {installCopied ? (isMobile ? "Copied ✓" : "Copied · paste into Claude Code ✓") : (isMobile ? "Copy prompt" : "Copy install prompt")}
+          {isMobile ? "Copy prompt" : "Copy install prompt"}
         </BarButton>
 
         {/* Divider */}

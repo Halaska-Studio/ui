@@ -12,7 +12,7 @@ Live: **https://ui.halaska.com**
 
 You don't install anything by hand.
 
-1. Open https://ui.halaska.com and press **Copy prompt**.
+1. Open https://ui.halaska.com, press **Copy prompt**, and leave an email (one update a month when new patterns land). The prompt lands on your clipboard.
 2. Paste the prompt into Claude Code, Cursor, Codex, Windsurf, or any agent that can fetch a file, as the first message in the project you want to improve.
 3. The agent downloads the kit, wires it in, and applies it to what you've already built, screen by screen.
 
