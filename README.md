@@ -28,7 +28,7 @@ import { Button, Card, Orb, PlanPreviewPattern, usePal, tokens } from "./halaska
 
 Dependencies: `react` and `react-dom`. No Tailwind, no CSS setup, no chart library. The file starts with `"use client"` and self-injects its fonts and keyframes.
 
-API reference for agents and humans: https://ui.halaska.com/llms.txt (TypeScript shim at `/halaska-kit.d.ts`).
+Agent guide: https://ui.halaska.com/install.md. API reference: https://ui.halaska.com/llms.txt (TypeScript shim at `/halaska-kit.d.ts`).
 
 ## What's inside
 

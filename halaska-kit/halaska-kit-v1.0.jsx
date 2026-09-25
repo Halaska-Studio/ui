@@ -3696,7 +3696,7 @@ function InstallPromptModal({ open, onClose, pageTheme }) {
               {copied ? "Copied to your clipboard. " : ""}Paste it as the first message to Claude Code, Cursor, or any agent that can fetch a file. It downloads the kit, wires it in, and applies it to what you've already built.
             </Text>
             <pre style={{
-              margin: 0, maxHeight: isMobile ? "40vh" : 340, overflow: "auto", padding: 16,
+              margin: 0, maxHeight: isMobile ? "40vh" : 340, overflow: "auto", padding: 16, userSelect: "all",
               borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}`,
               ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary,
               whiteSpace: "pre-wrap", lineHeight: 1.6,
@@ -11794,45 +11794,13 @@ const COMPONENT_GROUPS = COMPONENT_CATEGORIES;
 // Claude Code (or any coding agent) to wire the kit into a project.
 // The raw kit file is served from the deployed site (public/ copy, kept
 // in sync by the prebuild script in package.json).
-const INSTALL_PROMPT = `Set up Halaska Kit in this project and use it for all UI from now on.
+const INSTALL_PROMPT = `Set up UI by Halaska in this project and use it for all UI from now on.
 
-Halaska Kit is a single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 38 UX patterns + ~100 styled components with inline styles: no Tailwind, no CSS setup, no config. Deps: react and react-dom only, no chart library. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it's safe in Next.js app router.
+1. Download the kit: curl -o src/halaska-kit.jsx https://ui.halaska.com/halaska-kit.jsx
+2. Read https://ui.halaska.com/install.md and follow it. It covers usage, theming, the retrofit steps, and links the full API reference.
+3. If this project already has UI, restyle it one screen at a time with the kit's components and patterns. Keep routing, state, and data.
 
-Before writing code, read the API reference: https://ui.halaska.com/llms.txt
-
-SETUP
-1. Download the kit into the source directory (src/ or this framework's equivalent):
-   curl -o src/halaska-kit.jsx https://ui.halaska.com/halaska-kit.jsx
-   TypeScript project? Also: curl -o src/halaska-kit.d.ts https://ui.halaska.com/halaska-kit.d.ts
-   (If the URL is unreachable, ask me to provide the file.)
-2. Verify: render <Button variant="primary">Test</Button> from a named import. It should be Geist type on a dark, rounded button. Then remove the test.
-
-USAGE
-- Named imports for everything: import { Button, Card, Orb, PlanPreviewPattern, usePal, tokens } from "./halaska-kit";
-- Theming: every component accepts theme="light" | "dark", or wrap a subtree in <ThemeProvider theme="dark">. Colors come from usePal(theme) (pal.bg, pal.text, pal.textSecondary, pal.accent, pal.success, pal.danger…). Never hardcode grays or brand colors. Change the accent with <AccentContext.Provider value="#8b5cf6">.
-- Layout: <Stack gap={16} direction="row"> plus tokens.space / tokens.radius / tokens.type. Motion: the motion object has durations (fast/normal/smooth/spring/slow) and easings (easeInOut/easeOut/emphasized/springCurve).
-- If the project uses Tailwind, keep it for page layout. Kit components carry their own styles and need no classes.
-
-IF THIS PROJECT ALREADY HAS UI (most likely), RETROFIT IT
-This is a skin and UX pass, not a rewrite. Keep routing, state, and data. Work one screen at a time and finish each before starting the next:
-a. Swap raw or ad-hoc elements for kit equivalents: buttons → Button/IconButton, inputs → TextInput/TextArea/Select/SwitchToggle/Checkbox, cards → Card + CardHeader, labels/tags → Badge/Tag/StatusBadge, tables → Table/DataTable, modals → Dialog/Sheet, menus → DropdownMenu/CommandPalette, loading → Skeleton/Spinner/ThinkingIndicator, empty screens → EmptyState, toasts → Toast/AlertBanner.
-b. Replace hardcoded colors, radii, spacing, and fonts with usePal(theme), tokens.radius, tokens.space, tokens.font.
-c. Wherever the product has an AI or agent moment, use the matching pattern instead of a spinner or toast: agent thinking → ThinkingTracePattern, streamed reply → StreamingAnswerPattern, chat surface → AgentChatPattern, before the agent acts → PlanPreviewPattern or ApprovalCardPattern, while it works → AgentStatusPattern + ToolStreamPattern, after it acts → ActionReceiptPattern, when it fails → ErrorRepairPattern, handing off to a human → HandoffPattern.
-d. The lifecycle patterns take props, so use them directly with this product's copy, data, and callbacks: ThinkingTracePattern, StreamingAnswerPattern, PlanPreviewPattern, ApprovalCardPattern, AgentStatusPattern, HandoffPattern, ActionReceiptPattern, ErrorRepairPattern (props and shapes are in llms.txt; every prop has a demo default, so start with none and override what matters). The remaining patterns are demo-driven: copy the source out of halaska-kit.jsx, swap the data, keep the structure, states, and motion.
-e. When every screen is done, give me a short summary of what changed per screen.
-
-WHAT'S IN THE KIT (all named exports; props are in llms.txt)
-- UX patterns, conversation: PromptInputPattern, MessageThreadPattern, StreamingAnswerPattern, AgentChatPattern, CodeBlockPattern, ModelContextPattern
-- UX patterns, trust: ThinkingTracePattern, CitationsPattern, ContextSourcesPattern, ConfidencePattern, RecommendationPattern, FeedbackPattern
-- UX patterns, agentic control: PlanPreviewPattern, ApprovalCardPattern, AutonomyPattern, PermissionScopePattern, QueuePattern, AgentStatusPattern, ToolStreamPattern, AgentTasksPattern, HandoffPattern, ActionReceiptPattern, CheckpointPattern, AuditLogPattern, ErrorRepairPattern
-- UX patterns, output: ArtifactPattern, DiffViewPattern, DiffTablePattern, StructuredDataPattern, InsightCardsPattern, ComparisonPattern
-- UX patterns, ambient: TaskboardPattern, InlineAssistPattern, NudgePattern, DigestPattern, NotificationCenterPattern, CommandSearchPattern, AgentSetupPattern
-- AI elements: Orb (variants pulse/orbit/sweep/globe/spark, pill option), StreamingText, ThinkingIndicator, ThinkingSteps, ConfidenceBar, AISuggestionBadge, BeforeAfterToggle, ZoomControl, AgentGlyph
-- Components: Text, Heading, Label, Caption, Code, Button, IconButton, ButtonGroup, LinkButton, SplitButton, TextInput, TextArea, Select, Checkbox, Radio, RadioGroup, SwitchToggle, Slider, SpringSlider, SpringToggle, SegmentedControl, InputOTP, InputGroup, Combobox, Calendar, DatePicker, Chip, Toggle, ToggleGroup, SearchInput, Choicebox, CopyInput, Rating, Card, CardHeader, Divider, Stack, Badge, Tag, StatusBadge, StatusDot, Avatar, AvatarGroup, ListItem, Stat, Table, DataTable, ScrollArea, Pagination, MiddleTruncate, Kbd, Progress, ProgressCircle, Skeleton, Spinner, Toast, AlertBanner, EmptyState, Stepper, Breadcrumb, Tabs, SubtleTabs, Accordion, Collapsible, ContextMenu, Menubar, CommandPalette, CommandMenu, Dialog, AlertDialog, FormDialog, CardDialog, Sheet, Popover, DropdownMenu, Tooltip, HoverCard, Snippet, FileTree, BrowserFrame, Sparkline
-
-RULES
-- Prefer a kit pattern over building a flow from scratch, and a kit component over raw HTML.
-- Follow the kit's design heuristics: show what the agent is doing (Orb, AgentStatusPattern); consent before consequential actions (PlanPreviewPattern, ApprovalCardPattern); undo over confirmation dialogs (ActionReceiptPattern); recognition over recall (DigestPattern, AuditLogPattern, not transcript archaeology); calm error recovery (ErrorRepairPattern). Full list: https://ui.halaska.com`;
+It's one React file, react and react-dom only, inline styles, no config.`;
 
 const ACCENT_COLORS = [
   { name: "Blue", value: "#3b82f6" },
