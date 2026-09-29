@@ -5287,7 +5287,7 @@ const CTXBAR_EVENTS = [
 const CTXBAR_DAY_HOURS = 8;
 const CTXBAR_DAY_HEIGHT = 150;
 
-const CTXBAR_CYCLE_MS = 3500;
+const CTXBAR_CYCLE_MS = 2400;
 const CTXBAR_BUSY_MS = 1800;
 const CTXBAR_DONE_MS = 1300;
 const CTXBAR_STAGGER_MS = 60;
@@ -5448,9 +5448,9 @@ function ContextBarPattern({ theme }) {
             display: "flex", alignItems: "center", gap: 10,
             borderRadius: tokens.radius.pill,
             background: CTXBAR_alpha(inv.bg, 0.92), border: `1px solid ${inv.border}`,
-            backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-            boxShadow: `0 8px 24px ${pal.shadowLg}`,
-            transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+            backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+            boxShadow: theme === "dark" ? "0 8px 32px rgba(0,0,0,0.12)" : "0 8px 32px rgba(0,0,0,0.3)",
+            transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
           }}>
             <Orb size={16} variant={busy && busy.kind === "agent" ? "orbit" : "pulse"} color={inv.accent} theme={theme} />
             <div style={{
@@ -5539,28 +5539,25 @@ const SPACEDECK_SPACES = [
   {
     id: "personal", name: "Personal", tone: "warning",
     agents: [
-      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", stat: "1 running · 4 done today" },
-      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", stat: "2 running · 8 done today" },
-      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", stat: "0 running · 2 done today" },
-      { name: "Travel", role: "Flights, hotels, the itinerary", orb: "orbit", status: "idle", stat: "1 running · 3 done today" },
+      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", stat: "1 running · 4 done" },
+      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", stat: "2 running · 8 done" },
+      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", stat: "0 running · 2 done" },
     ],
   },
   {
     id: "studio", name: "Studio", tone: "accent",
     agents: [
-      { name: "Ops", role: "Runs support triage and release checks", orb: "pulse", status: "online", stat: "3 running · 12 done today" },
-      { name: "Sales", role: "Keeps renewals and pipeline moving", orb: "orbit", status: "online", stat: "1 running · 6 done today" },
-      { name: "Accounts", role: "Invoices, refunds, month-end", orb: "sweep", status: "idle", stat: "2 running · 9 done today" },
-      { name: "Support", role: "First reply on every Intercom thread", orb: "spark", status: "online", stat: "4 running · 31 done today" },
+      { name: "Ops", role: "Runs support triage and release checks", orb: "pulse", status: "online", stat: "3 running · 12 done" },
+      { name: "Sales", role: "Keeps renewals and pipeline moving", orb: "orbit", status: "online", stat: "1 running · 6 done" },
+      { name: "Accounts", role: "Invoices, refunds, month-end", orb: "sweep", status: "idle", stat: "2 running · 9 done" },
     ],
   },
   {
     id: "side", name: "Side project", tone: "success",
     agents: [
-      { name: "Builder", role: "Ships the weekend backlog", orb: "orbit", status: "online", stat: "2 running · 5 done today" },
-      { name: "Growth", role: "Posts, replies, the waitlist", orb: "spark", status: "idle", stat: "0 running · 3 done today" },
-      { name: "Helpdesk", role: "Answers the first twenty users", orb: "pulse", status: "online", stat: "1 running · 7 done today" },
-      { name: "Finance", role: "Runway, invoices, the domain bill", orb: "sweep", status: "idle", stat: "0 running · 1 done today" },
+      { name: "Builder", role: "Ships the weekend backlog", orb: "orbit", status: "online", stat: "2 running · 5 done" },
+      { name: "Growth", role: "Posts, replies, the waitlist", orb: "spark", status: "idle", stat: "0 running · 3 done" },
+      { name: "Helpdesk", role: "Answers the first twenty users", orb: "pulse", status: "online", stat: "1 running · 7 done" },
     ],
   },
 ];
@@ -5580,7 +5577,7 @@ const SPACEDECK_LOCK_PX = 8;
 const SPACEDECK_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const SPACEDECK_MS = 460;
 
-function SpaceDeckCard({ agent, tone, focused, theme }) {
+function SpaceDeckCard({ agent, tone, spaceName, focused, theme }) {
   const pal = usePal(theme);
   const accent = pal[tone];
   return (
@@ -5595,62 +5592,52 @@ function SpaceDeckCard({ agent, tone, focused, theme }) {
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Orb size={22} variant={agent.orb} color={accent} theme={theme} label={`${agent.name} working`} />
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{agent.status === "online" ? "Online" : "Idle"}</Text>
-          <StatusDot status={agent.status === "online" ? "online" : "offline"} pulse={focused && agent.status === "online"} size={7} theme={theme} />
+        {/* Which space this card belongs to */}
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 9px 3px 7px", borderRadius: tokens.radius.pill,
+          background: CTXBAR_alpha(accent, theme === "dark" ? 0.22 : 0.16),
+          ...tokens.type.xs, fontWeight: tokens.weight.medium, color: pal.text, whiteSpace: "nowrap",
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: 3, background: accent }} />
+          {spaceName}
         </span>
       </div>
       <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 4 }}>
         <Text size="lg" weight="semibold" theme={theme} style={{ letterSpacing: "-0.01em" }}>{agent.name}</Text>
         <Text size="sm" secondary theme={theme} style={{ display: "block" }}>{agent.role}</Text>
       </div>
-      <Text size="xs" mono theme={theme} style={{ marginTop: "auto", color: pal.textTertiary, fontVariantNumeric: "tabular-nums" }}>{agent.stat}</Text>
+      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <Text size="xs" mono theme={theme} style={{ color: pal.textTertiary, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{agent.stat}</Text>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+          <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{agent.status === "online" ? "Online" : "Idle"}</Text>
+          <StatusDot status={agent.status === "online" ? "online" : "offline"} pulse={focused && agent.status === "online"} size={6} theme={theme} />
+        </span>
+      </div>
     </div>
   );
 }
 
-// One indicator for both axes: a small map of the grid where the current row
-// and column light up as a cross, with a chevron at each end that you can tap.
-function SpaceDeckCross({ row, col, rows, cols, accent, onMove, theme }) {
+// One indicator for both axes: a small grid of dots, one per card, always
+// visible. A single lit dot glides to wherever you are.
+function SpaceDeckCross({ row, col, rows, cols, accent, theme }) {
   const pal = usePal(theme);
-  const [hot, setHot] = useState(null);
-  const DOT = 7, GAP = 9, STEP = DOT + GAP;
+  const DOT = 4, GAP = 6, STEP = DOT + GAP;
   const mapW = cols * DOT + (cols - 1) * GAP, mapH = rows * DOT + (rows - 1) * GAP;
-  const arrow = (dir, dr, dc, off, d) => (
-    <button type="button" aria-label={`Move ${dir}`} disabled={off} onClick={() => onMove(dr, dc)}
-      onMouseEnter={() => setHot(dir)} onMouseLeave={() => setHot(null)}
-      style={{
-        ...interactiveBase, width: 26, height: 26, padding: 0, borderRadius: 13, flexShrink: 0,
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        background: hot === dir && !off ? pal.bgMuted : "transparent",
-        color: pal.textSecondary, opacity: off ? 0.25 : 1, cursor: off ? "default" : "pointer",
-        transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${motion.fast} ${motion.easeOut}`,
-      }}>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
-    </button>
-  );
   return (
     <div style={{ display: "flex", justifyContent: "center" }}>
-      <div role="group" aria-label="Move between agents and spaces" style={{ display: "grid", gridTemplateColumns: "26px auto 26px", gridTemplateRows: "26px auto 26px", alignItems: "center", justifyItems: "center", gap: 4 }}>
-        <span />{arrow("up", -1, 0, row === 0, "M6 15l6-6 6 6")}<span />
-        {arrow("left", 0, -1, col === 0, "M15 6l-6 6 6 6")}
-        <div aria-hidden="true" style={{ position: "relative", width: mapW, height: mapH, margin: "2px 6px" }}>
-          {Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => {
-            const here = r === row && c === col;
-            const onCross = r === row || c === col;
-            return (
-              <span key={`${r}-${c}`} style={{
-                position: "absolute", left: c * STEP, top: r * STEP, width: DOT, height: DOT, borderRadius: DOT / 2,
-                background: here ? accent : pal.textMuted,
-                opacity: here ? 1 : onCross ? 0.55 : 0,
-                transform: here ? "scale(1.5)" : "scale(1)",
-                transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
-              }} />
-            );
-          }))}
-        </div>
-        {arrow("right", 0, 1, col === cols - 1, "M9 6l6 6-6 6")}
-        <span />{arrow("down", 1, 0, row === rows - 1, "M6 9l6 6 6-6")}<span />
+      <div role="img" aria-label={`Row ${row + 1} of ${rows}, column ${col + 1} of ${cols}`} style={{ position: "relative", width: mapW, height: mapH }}>
+        {Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => (
+          <span key={`${r}-${c}`} style={{
+            position: "absolute", left: c * STEP, top: r * STEP, width: DOT, height: DOT, borderRadius: DOT / 2,
+            background: pal.textMuted, opacity: 0.45,
+            transition: `background ${motion.smooth} ${motion.easeInOut}`,
+          }} />
+        )))}
+        <span style={{
+          position: "absolute", left: 0, top: 0, width: DOT, height: DOT, borderRadius: DOT / 2, background: accent,
+          transform: `translate3d(${col * STEP}px, ${row * STEP}px, 0) scale(1.6)`,
+          transition: `transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
+        }} />
       </div>
     </div>
   );
@@ -5741,7 +5728,7 @@ function SpaceDeckPattern({ theme }) {
             display: "grid", gridTemplateColumns: `repeat(${cols}, ${SPACEDECK_CARD_W}px)`, gap: SPACEDECK_GAP,
           }}>
             {SPACEDECK_SPACES.map((s, r) => s.agents.map((a, c) => (
-              <SpaceDeckCard key={`${s.id}-${a.name}`} agent={a} tone={s.tone} focused={r === row && c === col} theme={theme} />
+              <SpaceDeckCard key={`${s.id}-${a.name}`} agent={a} tone={s.tone} spaceName={s.name} focused={r === row && c === col} theme={theme} />
             )))}
           </div>
 
@@ -5766,8 +5753,8 @@ function SpaceDeckPattern({ theme }) {
             <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{space.agents[col].name}</Text>
           </div>
         </div>
-        <SpaceDeckCross row={row} col={col} rows={rows} cols={cols} accent={accent} onMove={move} theme={theme} />
-        <Caption theme={theme} style={{ textAlign: "center", display: "block" }}>The frame stays put. Left and right for agents, up and down for spaces.</Caption>
+        <SpaceDeckCross row={row} col={col} rows={rows} cols={cols} accent={accent} theme={theme} />
+        <Caption theme={theme} style={{ textAlign: "center", display: "block" }}>Swipe left and right for agents, up and down for spaces.</Caption>
       </Stack>
     </div>
   );
@@ -5853,7 +5840,7 @@ const PATTERN_GROUPS = [
     blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
     patterns: [
       { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 500 },
-      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 704 },
+      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 630 },
     ],
   },
 ];
