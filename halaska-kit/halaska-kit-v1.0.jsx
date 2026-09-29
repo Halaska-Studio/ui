@@ -5225,18 +5225,42 @@ const CTXBAR_ITEMS = {
     { kind: "agent", label: "Summarize this" },
     { kind: "agent", label: "Draft a reply" },
     { kind: "user", label: "Send", done: "Sent to Priya" },
+    { kind: "icon", icon: "check", label: "Mark resolved", done: "Marked resolved" },
+    { kind: "icon", icon: "clock", label: "Snooze", done: "Snoozed until tomorrow" },
   ],
   Doc: [
     { kind: "agent", label: "Read me the summary" },
     { kind: "agent", label: "Tighten the copy" },
     { kind: "user", label: "Save draft", done: "Draft saved" },
+    { kind: "icon", icon: "edit", label: "Edit", done: "Editing" },
+    { kind: "icon", icon: "share", label: "Share", done: "Link copied" },
   ],
   Calendar: [
     { kind: "agent", label: "Find the next free slot" },
     { kind: "agent", label: "Move to Thursday" },
     { kind: "user", label: "Send invites", done: "Invites sent" },
+    { kind: "icon", icon: "edit", label: "Edit event", done: "Editing" },
+    { kind: "icon", icon: "check", label: "Accept", done: "Accepted" },
   ],
 };
+
+// What the heading above the surface says for each context.
+const CTXBAR_TITLES = { Thread: "Support thread", Doc: "Document", Calendar: "Calendar" };
+
+// 1px-stroke icons for the bar's quick actions.
+function CtxBarIcon({ name }) {
+  const paths = {
+    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></>,
+    check: <path d="M20 6 9 17l-5-5" />,
+    clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+    share: <><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="M16 6l-4-4-4 4" /><path d="M12 2v13" /></>,
+  };
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {paths[name] || paths.check}
+    </svg>
+  );
+}
 
 const CTXBAR_THREAD = [
   { who: "Priya Nair", org: "Acme", text: "Checkout is timing out for our EU users since this morning. Every attempt fails after about ten seconds." },
@@ -5349,7 +5373,6 @@ function ContextBarPattern({ theme }) {
   const [visibleFor, setVisibleFor] = useState(null);   // which context's items have finished entering
   const [busy, setBusy] = useState(null);               // { kind: "agent" | "user", label }
   const [hovered, setHovered] = useState(-1);
-  const [auto, setAuto] = useState(true);
   const [barW, setBarW] = useState(0);                  // measured content width, animated
   const rowRef = useRef(null);
   const statusRef = useRef(null);
@@ -5361,14 +5384,15 @@ function ContextBarPattern({ theme }) {
     cancels.current.push(() => clearTimeout(t));
   }, []);
 
-  // Autoplay: cycle the contexts until the first click, then never again.
+  // Always playing: the context moves on every few seconds. It only waits
+  // while a status line is showing, then carries on.
   useEffect(() => {
-    if (!auto || busy) return;
+    if (busy) return;
     const t = setTimeout(() => {
       setContext(c => CTXBAR_CONTEXTS[(CTXBAR_CONTEXTS.indexOf(c) + 1) % CTXBAR_CONTEXTS.length]);
     }, CTXBAR_CYCLE_MS);
     return () => clearTimeout(t);
-  }, [auto, busy, context]);
+  }, [busy, context]);
 
   // New items mount hidden, then enter with a stagger on the next frame.
   useEffect(() => {
@@ -5384,10 +5408,9 @@ function ContextBarPattern({ theme }) {
     if (el) setBarW(Math.ceil(el.scrollWidth));
   }, [context, busy]);
 
-  const pick = (ctx) => { setAuto(false); setContext(ctx); };
   const run = (item) => {
-    setAuto(false); setHovered(-1); setBusy(item);
-    later(() => setBusy(null), item.kind === "user" ? CTXBAR_DONE_MS : CTXBAR_BUSY_MS);
+    setHovered(-1); setBusy(item);
+    later(() => setBusy(null), item.kind === "agent" ? CTXBAR_BUSY_MS : CTXBAR_DONE_MS);
   };
 
   const shown = visibleFor === context && !busy;
@@ -5402,8 +5425,12 @@ function ContextBarPattern({ theme }) {
           background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
           transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
         }}>
-          <div style={{ width: 260 }}>
-            <SegmentedControl theme={theme} options={CTXBAR_CONTEXTS} value={context} onChange={pick} />
+          {/* A heading, not a control: it changes as the context does. */}
+          <div style={{ position: "relative", height: 38 }}>
+            <Caption theme={theme} style={{ display: "block" }}>On screen</Caption>
+            <div key={context} style={{ position: "absolute", left: 0, top: 16, animation: `halaska-step-in ${motion.smooth} ${motion.emphasized} both` }}>
+              <Text size="base" weight="semibold" theme={theme} style={{ letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>{CTXBAR_TITLES[context]}</Text>
+            </div>
           </div>
           {/* Fixed-height content box: each context fills the same space. */}
           <div style={{ position: "relative", height: CTXBAR_CONTENT_H, marginTop: 12 }}>
@@ -5435,6 +5462,21 @@ function ContextBarPattern({ theme }) {
                 {items.map((item, i) => {
                   const agent = item.kind === "agent";
                   const hot = hovered === i;
+                  if (item.kind === "icon") {
+                    return (
+                      <button key={item.label} type="button" onClick={() => run(item)} aria-label={item.label} title={item.label}
+                        onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(-1)}
+                        style={{
+                          ...interactiveBase, width: 30, height: 30, padding: 0, flexShrink: 0, borderRadius: 15,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          background: CTXBAR_alpha(inv.text, hot ? 0.2 : 0.1), color: inv.text,
+                          opacity: shown ? 1 : 0, transform: shown ? "translateY(0)" : "translateY(4px)",
+                          transition: enter(i),
+                        }}>
+                        <CtxBarIcon name={item.icon} />
+                      </button>
+                    );
+                  }
                   return (
                     <Fragment key={item.label}>
                       {!agent && (
@@ -5469,7 +5511,7 @@ function ContextBarPattern({ theme }) {
                 pointerEvents: "none", opacity: busy ? 1 : 0, transform: busy ? "translateY(0)" : "translateY(4px)",
                 transition: `opacity ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms, transform ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms`,
               }}>
-                {busy && busy.kind === "user" ? (
+                {busy && busy.kind !== "agent" ? (
                   <>
                     <span style={{ ...tokens.type.sm, color: inv.success }}>✓</span>
                     <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text }}>{busy.done}</span>
@@ -5484,7 +5526,7 @@ function ContextBarPattern({ theme }) {
             </div>
           </div>
         </div>
-        <Caption theme={theme}>Tinted with a spark: Alpha suggests it. Solid: your own action. The bar resizes to fit.</Caption>
+        <Caption theme={theme}>Tinted with a spark: Alpha suggests it. Solid and icons: your own actions. The bar resizes to fit.</Caption>
       </Stack>
     </div>
   );
@@ -5563,6 +5605,53 @@ function SpaceDeckCard({ agent, tone, focused, theme }) {
         <Text size="sm" secondary theme={theme} style={{ display: "block" }}>{agent.role}</Text>
       </div>
       <Text size="xs" mono theme={theme} style={{ marginTop: "auto", color: pal.textTertiary, fontVariantNumeric: "tabular-nums" }}>{agent.stat}</Text>
+    </div>
+  );
+}
+
+// One indicator for both axes: a small map of the grid where the current row
+// and column light up as a cross, with a chevron at each end that you can tap.
+function SpaceDeckCross({ row, col, rows, cols, accent, onMove, theme }) {
+  const pal = usePal(theme);
+  const [hot, setHot] = useState(null);
+  const DOT = 7, GAP = 9, STEP = DOT + GAP;
+  const mapW = cols * DOT + (cols - 1) * GAP, mapH = rows * DOT + (rows - 1) * GAP;
+  const arrow = (dir, dr, dc, off, d) => (
+    <button type="button" aria-label={`Move ${dir}`} disabled={off} onClick={() => onMove(dr, dc)}
+      onMouseEnter={() => setHot(dir)} onMouseLeave={() => setHot(null)}
+      style={{
+        ...interactiveBase, width: 26, height: 26, padding: 0, borderRadius: 13, flexShrink: 0,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        background: hot === dir && !off ? pal.bgMuted : "transparent",
+        color: pal.textSecondary, opacity: off ? 0.25 : 1, cursor: off ? "default" : "pointer",
+        transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${motion.fast} ${motion.easeOut}`,
+      }}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+    </button>
+  );
+  return (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div role="group" aria-label="Move between agents and spaces" style={{ display: "grid", gridTemplateColumns: "26px auto 26px", gridTemplateRows: "26px auto 26px", alignItems: "center", justifyItems: "center", gap: 4 }}>
+        <span />{arrow("up", -1, 0, row === 0, "M6 15l6-6 6 6")}<span />
+        {arrow("left", 0, -1, col === 0, "M15 6l-6 6 6 6")}
+        <div aria-hidden="true" style={{ position: "relative", width: mapW, height: mapH, margin: "2px 6px" }}>
+          {Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => {
+            const here = r === row && c === col;
+            const onCross = r === row || c === col;
+            return (
+              <span key={`${r}-${c}`} style={{
+                position: "absolute", left: c * STEP, top: r * STEP, width: DOT, height: DOT, borderRadius: DOT / 2,
+                background: here ? accent : pal.textMuted,
+                opacity: here ? 1 : onCross ? 0.55 : 0,
+                transform: here ? "scale(1.5)" : "scale(1)",
+                transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
+              }} />
+            );
+          }))}
+        </div>
+        {arrow("right", 0, 1, col === cols - 1, "M9 6l6 6-6 6")}
+        <span />{arrow("down", 1, 0, row === rows - 1, "M6 9l6 6 6-6")}<span />
+      </div>
     </div>
   );
 }
@@ -5676,24 +5765,9 @@ function SpaceDeckPattern({ theme }) {
             <Text size="sm" weight="medium" theme={theme}>{space.name}</Text>
             <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{space.agents[col].name}</Text>
           </div>
-          <div aria-hidden="true" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap: 5, pointerEvents: "none", padding: 6, borderRadius: tokens.radius.pill, background: CTXBAR_alpha(pal.bgElevated, 0.85), boxShadow: `0 0 0 1px ${pal.borderSubtle}`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", }}>
-            {SPACEDECK_SPACES.map((s, r) => (
-              <span key={s.id} style={{
-                width: 5, height: r === row ? 18 : 5, borderRadius: 3, background: r === row ? accent : pal.textMuted, opacity: r === row ? 1 : 0.5,
-                transition: `height ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
-              }} />
-            ))}
-          </div>
-          <div aria-hidden="true" style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 5, pointerEvents: "none", padding: 6, borderRadius: tokens.radius.pill, background: CTXBAR_alpha(pal.bgElevated, 0.85), boxShadow: `0 0 0 1px ${pal.borderSubtle}`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", }}>
-            {space.agents.map((a, c) => (
-              <span key={a.name} style={{
-                height: 5, width: c === col ? 18 : 5, borderRadius: 3, background: c === col ? accent : pal.textMuted, opacity: c === col ? 1 : 0.5,
-                transition: `width ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
-              }} />
-            ))}
-          </div>
         </div>
-        <Caption theme={theme}>The frame stays put. Swipe left and right for agents, up and down for spaces.</Caption>
+        <SpaceDeckCross row={row} col={col} rows={rows} cols={cols} accent={accent} onMove={move} theme={theme} />
+        <Caption theme={theme} style={{ textAlign: "center", display: "block" }}>The frame stays put. Left and right for agents, up and down for spaces.</Caption>
       </Stack>
     </div>
   );
@@ -5779,7 +5853,7 @@ const PATTERN_GROUPS = [
     blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
     patterns: [
       { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 500 },
-      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 580 },
+      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 704 },
     ],
   },
 ];
