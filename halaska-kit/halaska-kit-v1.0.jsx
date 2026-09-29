@@ -1018,8 +1018,8 @@ function SegmentedControl({ options, value, onChange, theme: tp }) {
       }} />
       {options.map((opt) => (
         <button key={opt} ref={(el) => (btnRefs.current[opt] = el)} onClick={() => onChange(opt)} style={{
-          ...interactiveBase, position: "relative", zIndex: 1, padding: `6px 0`,
-          background: "transparent", ...tokens.type.sm, flex: 1,
+          ...interactiveBase, position: "relative", zIndex: 1, padding: "6px 14px",
+          background: "transparent", ...tokens.type.sm, flex: "1 0 auto",
           fontWeight: value === opt ? tokens.weight.medium : tokens.weight.regular,
           color: value === opt ? pal.text : pal.textTertiary, borderRadius: tokens.radius.sm + 2, whiteSpace: "nowrap",
           textAlign: "center",
@@ -3916,7 +3916,7 @@ function DemoMotion({ theme }) {
   const [demo, setDemo] = useState(false);
   const pick = (m) => { setMode(m); setKitMotion(m); };
   return (
-    <ShowcaseCard theme={theme} label="Motion" height={392} align="top">
+    <ShowcaseCard theme={theme} label="Motion" height={350} align="top">
       <Stack gap={24} align="center" style={{ width: 360 }}>
         <SegmentedControl theme={theme} options={["spring", "smooth", "instant"]} value={mode} onChange={pick} />
         <Text size="sm" theme={theme} style={{ color: pal.textSecondary, textAlign: "center", display: "block" }}>
@@ -3935,7 +3935,6 @@ function DemoMotion({ theme }) {
             <div style={{ height: "100%", width: demo ? "100%" : "24%", background: pal.accent, borderRadius: 3, transition: `width ${motion.smooth} ${motion.emphasized}` }} />
           </div>
         </Card>
-        <Caption theme={theme}>Applies to every component on this page. setKitMotion(mode) does the same in your project.</Caption>
       </Stack>
     </ShowcaseCard>
   );
@@ -3998,7 +3997,6 @@ function DemoTypography({ theme }) {
             <Text size="sm" mono theme={theme}>Acme · Enterprise</Text>
             <Caption theme={theme}>CSAT 4.8</Caption>
           </div>
-          <Caption theme={theme}>Applies to every component on this page. setKitFont(name) does the same in your project.</Caption>
         </Stack>
       </Stack>
     </ShowcaseCard>
@@ -4559,7 +4557,6 @@ function DemoNavigation({ theme }) {
               { label: "Alpha" }, { label: "Settings" }, { label: "Guardrails" },
             ]} />
           ))}
-          {row("", <Caption theme={theme}>Hover the … to reveal the full path.</Caption>)}
         </Stack>
       </ShowcaseCard>
 
@@ -4625,7 +4622,6 @@ function DemoNavigation({ theme }) {
               transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
             }}>
             <Text size="sm" weight="medium" theme={theme} style={{ color: pal.textSecondary, display: "block" }}>Right-click here</Text>
-            <Caption theme={theme} style={{ display: "block", marginTop: 4 }}>A normal click opens the same menu</Caption>
           </div>
         </ContextMenu>
       </ShowcaseCard>
@@ -4669,9 +4665,6 @@ function DemoTable({ theme }) {
               ? <Table theme={theme} columns={DEMOTBL_COLUMNS} rows={DEMOTBL_ROWS} />
               : <DataTable theme={theme} columns={DEMOTBL_COLUMNS} rows={DEMOTBL_ROWS} />}
           </div>
-          <Caption theme={theme}>
-            {view === "Simple" ? "Plain rows with hover." : "Adds row selection and sortable column headers."}
-          </Caption>
         </Stack>
       </ShowcaseCard>
 
@@ -5294,7 +5287,7 @@ const CTXBAR_STAGGER_MS = 60;
 
 // Panel geometry: the content box is fixed so no context can move the bar.
 const CTXBAR_PANEL_H = 360;
-const CTXBAR_CONTENT_H = 210;
+const CTXBAR_CONTENT_H = 200;
 const CTXBAR_BAR_H = 44;
 
 function CtxBarThread({ theme }) {
@@ -5443,7 +5436,7 @@ function ContextBarPattern({ theme }) {
 
           {/* The contextual bar: docked bottom centre, fixed height, width follows its content. */}
           <div style={{
-            position: "absolute", left: "50%", bottom: 16, transform: "translateX(-50%)",
+            position: "absolute", left: "50%", bottom: 28, transform: "translateX(-50%)",
             height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 7px 0 12px",
             display: "flex", alignItems: "center", gap: 10,
             borderRadius: tokens.radius.pill,
@@ -5526,7 +5519,6 @@ function ContextBarPattern({ theme }) {
             </div>
           </div>
         </div>
-        <Caption theme={theme}>Tinted with a spark: Alpha suggests it. Solid and icons: your own actions. The bar resizes to fit.</Caption>
       </Stack>
     </div>
   );
@@ -5539,25 +5531,25 @@ const SPACEDECK_SPACES = [
   {
     id: "personal", name: "Personal", tone: "warning",
     agents: [
-      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", stat: "1 running · 4 done" },
-      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", stat: "2 running · 8 done" },
-      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", stat: "0 running · 2 done" },
+      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", scheduled: 3, recurring: 2 },
+      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", scheduled: 6, recurring: 4 },
+      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", scheduled: 2, recurring: 5 },
     ],
   },
   {
     id: "studio", name: "Studio", tone: "accent",
     agents: [
-      { name: "Ops", role: "Runs support triage and release checks", orb: "pulse", status: "online", stat: "3 running · 12 done" },
-      { name: "Sales", role: "Keeps renewals and pipeline moving", orb: "orbit", status: "online", stat: "1 running · 6 done" },
-      { name: "Accounts", role: "Invoices, refunds, month-end", orb: "sweep", status: "idle", stat: "2 running · 9 done" },
+      { name: "Ops", role: "Runs support triage and release checks", orb: "pulse", status: "online", scheduled: 5, recurring: 3 },
+      { name: "Sales", role: "Keeps renewals and pipeline moving", orb: "orbit", status: "online", scheduled: 4, recurring: 2 },
+      { name: "Accounts", role: "Invoices, refunds, month-end", orb: "sweep", status: "idle", scheduled: 3, recurring: 6 },
     ],
   },
   {
     id: "side", name: "Side project", tone: "success",
     agents: [
-      { name: "Builder", role: "Ships the weekend backlog", orb: "orbit", status: "online", stat: "2 running · 5 done" },
-      { name: "Growth", role: "Posts, replies, the waitlist", orb: "spark", status: "idle", stat: "0 running · 3 done" },
-      { name: "Helpdesk", role: "Answers the first twenty users", orb: "pulse", status: "online", stat: "1 running · 7 done" },
+      { name: "Builder", role: "Ships the weekend backlog", orb: "orbit", status: "online", scheduled: 2, recurring: 1 },
+      { name: "Growth", role: "Posts, replies, the waitlist", orb: "spark", status: "idle", scheduled: 5, recurring: 2 },
+      { name: "Helpdesk", role: "Answers the first twenty users", orb: "pulse", status: "online", scheduled: 1, recurring: 3 },
     ],
   },
 ];
@@ -5571,23 +5563,34 @@ const SPACEDECK_CARD_H = 252;
 const SPACEDECK_GAP = 14;
 const SPACEDECK_STEP_X = SPACEDECK_CARD_W + SPACEDECK_GAP;
 const SPACEDECK_STEP_Y = SPACEDECK_CARD_H + SPACEDECK_GAP;
+const SPACEDECK_LIFT = 26; // the focus sits a little above centre, leaving room for the indicator
 const SPACEDECK_COMMIT_PX = 56;
 const SPACEDECK_LOCK_PX = 8;
 // Quick off the mark, long soft landing: snappy without a bounce.
 const SPACEDECK_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const SPACEDECK_MS = 460;
 
-function SpaceDeckCard({ agent, tone, spaceName, focused, theme }) {
+function SpaceDeckCard({ agent, tone, spaceName, focused, settled, theme }) {
   const pal = usePal(theme);
   const accent = pal[tone];
+  const tint = CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1);
+  const count = (n, label, d) => (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: pal.textSecondary, whiteSpace: "nowrap" }}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
+      <Text size="xs" theme={theme} style={{ color: pal.textSecondary, fontVariantNumeric: "tabular-nums" }}><span style={{ fontWeight: tokens.weight.semibold, color: pal.text }}>{n}</span> {label}</Text>
+    </span>
+  );
   return (
     <div style={{
       width: SPACEDECK_CARD_W, height: SPACEDECK_CARD_H, boxSizing: "border-box",
       padding: 18, display: "flex", flexDirection: "column",
-      background: `linear-gradient(${CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1)}, ${CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1)}), ${pal.bgElevated}`,
+      background: `linear-gradient(${tint}, ${tint}), ${pal.bgElevated}`,
       borderRadius: tokens.radius.lg,
+      // The focused card grows to fill the frame once it lands, and eases
+      // back down the moment a swipe starts.
+      transform: focused && settled ? "scale(1)" : "scale(0.9)",
       opacity: focused ? 1 : 0.5,
-      transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${motion.smooth} ${motion.easeInOut}`,
+      transition: `transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${motion.smooth} ${motion.easeInOut}`,
       userSelect: "none",
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -5602,15 +5605,19 @@ function SpaceDeckCard({ agent, tone, spaceName, focused, theme }) {
           {spaceName}
         </span>
       </div>
-      <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 3 }}>
+        <Caption theme={theme} style={{ display: "block" }}>Agent</Caption>
         <Text size="lg" weight="semibold" theme={theme} style={{ letterSpacing: "-0.01em" }}>{agent.name}</Text>
         <Text size="sm" secondary theme={theme} style={{ display: "block" }}>{agent.role}</Text>
       </div>
-      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <Text size="xs" mono theme={theme} style={{ color: pal.textTertiary, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{agent.stat}</Text>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-          <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{agent.status === "online" ? "Online" : "Idle"}</Text>
+      <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {count(agent.scheduled, "scheduled", <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>)}
+          {count(agent.recurring, "recurring", <><path d="M17 2l4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h15" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H3" /></>)}
+        </div>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <StatusDot status={agent.status === "online" ? "online" : "offline"} pulse={focused && agent.status === "online"} size={6} theme={theme} />
+          <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{agent.status === "online" ? "Online" : "Idle"}</Text>
         </span>
       </div>
     </div>
@@ -5705,7 +5712,7 @@ function SpaceDeckPattern({ theme }) {
   const offX = drag && drag.axis === "x" ? band(drag.dx, col === 0, col === cols - 1) : 0;
   const offY = drag && drag.axis === "y" ? band(drag.dy, row === 0, row === rows - 1) : 0;
   const tx = SPACEDECK_PANEL_W / 2 - SPACEDECK_CARD_W / 2 - col * SPACEDECK_STEP_X + offX;
-  const ty = SPACEDECK_PANEL_H / 2 - SPACEDECK_CARD_H / 2 - row * SPACEDECK_STEP_Y + offY;
+  const ty = SPACEDECK_PANEL_H / 2 - SPACEDECK_CARD_H / 2 - SPACEDECK_LIFT - row * SPACEDECK_STEP_Y + offY;
   const glide = drag ? "none" : `transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`;
 
   return (
@@ -5728,32 +5735,30 @@ function SpaceDeckPattern({ theme }) {
             display: "grid", gridTemplateColumns: `repeat(${cols}, ${SPACEDECK_CARD_W}px)`, gap: SPACEDECK_GAP,
           }}>
             {SPACEDECK_SPACES.map((s, r) => s.agents.map((a, c) => (
-              <SpaceDeckCard key={`${s.id}-${a.name}`} agent={a} tone={s.tone} spaceName={s.name} focused={r === row && c === col} theme={theme} />
+              <SpaceDeckCard key={`${s.id}-${a.name}`} agent={a} tone={s.tone} spaceName={s.name} focused={r === row && c === col} settled={!drag || !drag.axis} theme={theme} />
             )))}
           </div>
 
           {/* The fixed focus frame: always in the middle, tinted by the current space. */}
           <div aria-hidden="true" style={{
             position: "absolute", left: "50%", top: "50%", width: SPACEDECK_CARD_W + 12, height: SPACEDECK_CARD_H + 12,
-            marginLeft: -(SPACEDECK_CARD_W + 12) / 2, marginTop: -(SPACEDECK_CARD_H + 12) / 2,
+            marginLeft: -(SPACEDECK_CARD_W + 12) / 2, marginTop: -(SPACEDECK_CARD_H + 12) / 2 - SPACEDECK_LIFT,
             borderRadius: tokens.radius.lg + 6, pointerEvents: "none",
             boxShadow: `0 0 0 1.5px ${accent}, 0 18px 48px ${pal.shadowLg}`,
             transition: `box-shadow ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
           }} />
 
-          {/* Where you are: space name top left, rows on the right edge, columns along the bottom. */}
-          <div style={{
-            position: "absolute", top: 14, left: 14, display: "inline-flex", alignItems: "center", gap: 8, pointerEvents: "none",
-            padding: "5px 12px 5px 10px", borderRadius: tokens.radius.pill,
-            background: CTXBAR_alpha(pal.bgElevated, 0.9), boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
-            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          {/* The indicator lives inside the panel, on a faded plate just under the focused card. */}
+          <div aria-hidden="true" style={{
+            position: "absolute", left: "50%", bottom: 54, transform: "translateX(-50%)", pointerEvents: "none",
+            padding: 10, borderRadius: tokens.radius.md,
+            background: CTXBAR_alpha(pal.bgElevated, theme === "dark" ? 0.7 : 0.82),
+            boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 4px 16px ${pal.shadow}`,
+            backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: 4, background: accent, transition: `background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}` }} />
-            <Text size="sm" weight="medium" theme={theme}>{space.name}</Text>
-            <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{space.agents[col].name}</Text>
+            <SpaceDeckCross row={row} col={col} rows={rows} cols={cols} accent={accent} theme={theme} />
           </div>
         </div>
-        <SpaceDeckCross row={row} col={col} rows={rows} cols={cols} accent={accent} theme={theme} />
         <Caption theme={theme} style={{ textAlign: "center", display: "block" }}>Swipe left and right for agents, up and down for spaces.</Caption>
       </Stack>
     </div>
@@ -5839,8 +5844,8 @@ const PATTERN_GROUPS = [
     title: "Agentic navigation",
     blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
     patterns: [
-      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 500 },
-      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 630 },
+      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 470 },
+      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 590 },
     ],
   },
 ];
@@ -8282,9 +8287,6 @@ function CitationsPattern({ theme }) {
             : <CiteChip key={i} n={s.cite + 1} active={openChip === i}
                 onClick={handleChip(i, s.cite)} theme={theme} />
         )}
-      </div>
-      <div style={{ marginTop: 10, animation: `halaska-step-in 0.4s ${motion.emphasized} 0.16s both` }}>
-        <Caption theme={theme}>Tap a citation to inspect its source</Caption>
       </div>
       {openChip !== null && (
         <CitePopover srcIdx={srcIdx} left={anchor.left} top={anchor.top}
@@ -12274,7 +12276,7 @@ function DemoPatterns({ theme }) {
       <div style={{ paddingLeft: 8 }}>
         <Caption theme={theme}>Two UX paradigms</Caption>
         <Text size="sm" theme={theme} style={{ color: pal.textSecondary, display: "block", marginTop: 6, maxWidth: 560 }}>
-          Most AI products end up as one of these, or both. Each example below is a complete screen built only from the components and patterns on this page. Tap one to expand it.
+          Most AI products end up as one of these, or both. Each example below is a complete screen built only from the components and patterns on this page.
         </Text>
       </div>
       {UX_PARADIGMS.map(p => (
@@ -12561,7 +12563,7 @@ function BeforeAfterSection({ theme }) {
           after={<LiveStage scale={scale} theme={theme}><ChatParadigmExample theme={theme} /></LiveStage>} />
       </div>
       <Text size="sm" theme={theme} style={{ color: pal.textTertiary, display: "block", textAlign: "center" }}>
-        Drag the handle. Same components, same data. Only the kit changed.
+        Same components, same data. Only the kit changed.
       </Text>
     </div>
   );
