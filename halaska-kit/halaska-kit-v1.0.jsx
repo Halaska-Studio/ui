@@ -5218,11 +5218,24 @@ function CTXBAR_alpha(hex, a) {
 
 const CTXBAR_CONTEXTS = ["Thread", "Doc", "Calendar"];
 
-// Three verbs per context. The bar is the same, the verbs change.
-const CTXBAR_SUGGESTIONS = {
-  Thread: ["Summarize this", "Draft a reply", "Send as email"],
-  Doc: ["Read me the summary", "Tighten the copy", "Share with Dana"],
-  Calendar: ["Schedule in the next free slot", "Move to Thursday", "Send invites"],
+// Per context: two suggestions from the agent and one action of the user's
+// own. The bar is the same, the verbs change, and the two kinds look different.
+const CTXBAR_ITEMS = {
+  Thread: [
+    { kind: "agent", label: "Summarize this" },
+    { kind: "agent", label: "Draft a reply" },
+    { kind: "user", label: "Send", done: "Sent to Priya" },
+  ],
+  Doc: [
+    { kind: "agent", label: "Read me the summary" },
+    { kind: "agent", label: "Tighten the copy" },
+    { kind: "user", label: "Save draft", done: "Draft saved" },
+  ],
+  Calendar: [
+    { kind: "agent", label: "Find the next free slot" },
+    { kind: "agent", label: "Move to Thursday" },
+    { kind: "user", label: "Send invites", done: "Invites sent" },
+  ],
 };
 
 const CTXBAR_THREAD = [
@@ -5252,13 +5265,13 @@ const CTXBAR_DAY_HEIGHT = 150;
 
 const CTXBAR_CYCLE_MS = 3500;
 const CTXBAR_BUSY_MS = 1800;
+const CTXBAR_DONE_MS = 1300;
 const CTXBAR_STAGGER_MS = 60;
 
 // Panel geometry: the content box is fixed so no context can move the bar.
 const CTXBAR_PANEL_H = 360;
 const CTXBAR_CONTENT_H = 210;
 const CTXBAR_BAR_H = 44;
-const CTXBAR_BAR_INNER_W = 480;
 
 function CtxBarThread({ theme }) {
   const pal = usePal(theme);
@@ -5333,10 +5346,13 @@ function ContextBarPattern({ theme }) {
   const inv = usePal(theme === "dark" ? "light" : "dark");
 
   const [context, setContext] = useState(CTXBAR_CONTEXTS[0]);
-  const [visibleFor, setVisibleFor] = useState(null);   // which context's verbs have finished entering
-  const [busy, setBusy] = useState(null);               // the suggestion Alpha is working on
+  const [visibleFor, setVisibleFor] = useState(null);   // which context's items have finished entering
+  const [busy, setBusy] = useState(null);               // { kind: "agent" | "user", label }
   const [hovered, setHovered] = useState(-1);
   const [auto, setAuto] = useState(true);
+  const [barW, setBarW] = useState(0);                  // measured content width, animated
+  const rowRef = useRef(null);
+  const statusRef = useRef(null);
   const cancels = useRef([]);
 
   useEffect(() => () => cancels.current.forEach(fn => fn()), []);
@@ -5354,21 +5370,29 @@ function ContextBarPattern({ theme }) {
     return () => clearTimeout(t);
   }, [auto, busy, context]);
 
-  // New verbs mount hidden, then enter with a stagger on the next frame.
+  // New items mount hidden, then enter with a stagger on the next frame.
   useEffect(() => {
     let inner = 0;
     const outer = requestAnimationFrame(() => { inner = requestAnimationFrame(() => setVisibleFor(context)); });
     return () => { cancelAnimationFrame(outer); cancelAnimationFrame(inner); };
   }, [context]);
 
+  // The bar hugs whatever it holds: measure the live row (or the status line)
+  // and let the width ease to it.
+  useEffect(() => {
+    const el = busy ? statusRef.current : rowRef.current;
+    if (el) setBarW(Math.ceil(el.scrollWidth));
+  }, [context, busy]);
+
   const pick = (ctx) => { setAuto(false); setContext(ctx); };
-  const run = (label) => {
-    setAuto(false); setHovered(-1); setBusy(label);
-    later(() => setBusy(null), CTXBAR_BUSY_MS);
+  const run = (item) => {
+    setAuto(false); setHovered(-1); setBusy(item);
+    later(() => setBusy(null), item.kind === "user" ? CTXBAR_DONE_MS : CTXBAR_BUSY_MS);
   };
 
   const shown = visibleFor === context && !busy;
-  const suggestions = CTXBAR_SUGGESTIONS[context];
+  const items = CTXBAR_ITEMS[context];
+  const enter = (i) => `opacity ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms, transform ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms, background ${motion.fast} ${motion.easeOut}, color ${motion.smooth} ${motion.easeInOut}`;
 
   return (
     <div style={{ width: 640, maxWidth: "100%", fontFamily: tokens.font.sans }}>
@@ -5390,65 +5414,97 @@ function ContextBarPattern({ theme }) {
             </div>
           </div>
 
-          {/* The contextual bar: docked bottom centre, fixed height, stable width. */}
+          {/* The contextual bar: docked bottom centre, fixed height, width follows its content. */}
           <div style={{
             position: "absolute", left: "50%", bottom: 16, transform: "translateX(-50%)",
-            height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 12px 0 14px",
+            height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 7px 0 12px",
             display: "flex", alignItems: "center", gap: 10,
             borderRadius: tokens.radius.pill,
-            background: CTXBAR_alpha(inv.bg, 0.9), border: `1px solid ${inv.border}`,
+            background: CTXBAR_alpha(inv.bg, 0.92), border: `1px solid ${inv.border}`,
             backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
             boxShadow: `0 8px 24px ${pal.shadowLg}`,
             transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
           }}>
-            <Orb size={16} variant={busy ? "orbit" : "pulse"} color={inv.accent} theme={theme} />
-            <div style={{ position: "relative", width: CTXBAR_BAR_INNER_W, height: 30 }}>
-              {/* Verb row */}
-              <div key={context} style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: shown ? "auto" : "none" }}>
-                {suggestions.map((label, i) => (
-                  <Fragment key={label}>
-                    {i > 0 && (
-                      <span style={{
-                        width: 1, height: 14, background: inv.border, flexShrink: 0, margin: "0 3px",
-                        opacity: shown ? 1 : 0,
-                        transition: `opacity ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms, background ${motion.smooth} ${motion.easeInOut}`,
-                      }} />
-                    )}
-                    <button type="button" onClick={() => run(label)}
-                      onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(-1)}
-                      style={{
-                        ...interactiveBase, height: 30, padding: "0 12px", borderRadius: tokens.radius.pill,
-                        background: hovered === i ? inv.bgHover : "transparent",
-                        color: inv.text, ...tokens.type.sm, fontWeight: tokens.weight.medium, whiteSpace: "nowrap",
-                        opacity: shown ? 1 : 0, transform: shown ? "translateY(0)" : "translateY(4px)",
-                        transition: `opacity ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms, transform ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms, background ${motion.fast} ${motion.easeOut}, color ${motion.smooth} ${motion.easeInOut}`,
-                      }}>{label}</button>
-                  </Fragment>
-                ))}
+            <Orb size={16} variant={busy && busy.kind === "agent" ? "orbit" : "pulse"} color={inv.accent} theme={theme} />
+            <div style={{
+              position: "relative", height: 30, width: barW || "auto", overflow: "hidden",
+              transition: `width ${motion.smooth} ${motion.emphasized}`,
+            }}>
+              {/* Items: two agent suggestions (tinted, with a spark) and one action of your own (solid). */}
+              <div key={context} ref={rowRef} style={{ position: "absolute", top: 0, left: 0, height: 30, display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", pointerEvents: shown ? "auto" : "none" }}>
+                {items.map((item, i) => {
+                  const agent = item.kind === "agent";
+                  const hot = hovered === i;
+                  return (
+                    <Fragment key={item.label}>
+                      {!agent && (
+                        <span style={{
+                          width: 1, height: 16, background: inv.border, flexShrink: 0, margin: "0 2px",
+                          opacity: shown ? 1 : 0, transition: `opacity ${motion.normal} ${motion.emphasized} ${i * CTXBAR_STAGGER_MS}ms`,
+                        }} />
+                      )}
+                      <button type="button" onClick={() => run(item)} aria-label={agent ? `Ask Alpha: ${item.label}` : item.label}
+                        onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(-1)}
+                        style={{
+                          ...interactiveBase, height: 30, padding: agent ? "0 12px 0 9px" : "0 14px", flexShrink: 0,
+                          display: "inline-flex", alignItems: "center", gap: 6, borderRadius: tokens.radius.pill,
+                          background: agent
+                            ? CTXBAR_alpha(inv.accent, hot ? 0.3 : 0.2)
+                            : (hot ? inv.textSecondary : inv.text),
+                          color: agent ? inv.accent : inv.bg,
+                          ...tokens.type.sm, fontWeight: tokens.weight.medium, whiteSpace: "nowrap",
+                          opacity: shown ? 1 : 0, transform: shown ? "translateY(0)" : "translateY(4px)",
+                          transition: enter(i),
+                        }}>
+                        {agent && <span aria-hidden="true" style={{ fontSize: 11, lineHeight: 1 }}>✦</span>}
+                        <span style={{ color: agent ? inv.text : inv.bg }}>{item.label}</span>
+                      </button>
+                    </Fragment>
+                  );
+                })}
               </div>
-              {/* Status line, same box, only visible while Alpha works */}
-              <div aria-live="polite" style={{
-                position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+              {/* Status line, same box: what Alpha is doing, or that your action went through. */}
+              <div ref={statusRef} aria-live="polite" style={{
+                position: "absolute", top: 0, left: 0, height: 30, display: "inline-flex", alignItems: "center", gap: 6, padding: "0 8px 0 2px", whiteSpace: "nowrap",
                 pointerEvents: "none", opacity: busy ? 1 : 0, transform: busy ? "translateY(0)" : "translateY(4px)",
                 transition: `opacity ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms, transform ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms`,
               }}>
-                <span style={{ ...tokens.type.sm, color: inv.textSecondary, whiteSpace: "nowrap", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>Alpha is on it:</span>
-                <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text, whiteSpace: "nowrap", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{busy}</span>
+                {busy && busy.kind === "user" ? (
+                  <>
+                    <span style={{ ...tokens.type.sm, color: inv.success }}>✓</span>
+                    <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text }}>{busy.done}</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ ...tokens.type.sm, color: inv.textSecondary }}>Alpha is on it:</span>
+                    <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text }}>{busy ? busy.label : ""}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
-        <Caption theme={theme}>Suggestions follow the context. Same bar, different verbs.</Caption>
+        <Caption theme={theme}>Tinted with a spark: Alpha suggests it. Solid: your own action. The bar resizes to fit.</Caption>
       </Stack>
     </div>
   );
 }
 
-// · Spaces and agents: a horizontal deck of agents, a vertical swipe between spaces
-
+// Spaces and agents: one fixed focus frame, a grid of agent cards sliding behind it.
+// Three spaces, stacked as rows of one grid. Each row is a space with its
+// own scheme; each column is an agent. `tone` names a palette colour.
 const SPACEDECK_SPACES = [
   {
-    id: "studio", name: "Studio", badge: "accent",
+    id: "personal", name: "Personal", tone: "warning",
+    agents: [
+      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", stat: "1 running · 4 done today" },
+      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", stat: "2 running · 8 done today" },
+      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", stat: "0 running · 2 done today" },
+      { name: "Travel", role: "Flights, hotels, the itinerary", orb: "orbit", status: "idle", stat: "1 running · 3 done today" },
+    ],
+  },
+  {
+    id: "studio", name: "Studio", tone: "accent",
     agents: [
       { name: "Ops", role: "Runs support triage and release checks", orb: "pulse", status: "online", stat: "3 running · 12 done today" },
       { name: "Sales", role: "Keeps renewals and pipeline moving", orb: "orbit", status: "online", stat: "1 running · 6 done today" },
@@ -5457,244 +5513,187 @@ const SPACEDECK_SPACES = [
     ],
   },
   {
-    id: "personal", name: "Personal", badge: "warning",
+    id: "side", name: "Side project", tone: "success",
     agents: [
-      { name: "Accountant", role: "Receipts, tax, the quarterly return", orb: "sweep", status: "online", stat: "1 running · 4 done today" },
-      { name: "Assistant", role: "Calendar, travel, the small stuff", orb: "pulse", status: "online", stat: "2 running · 8 done today" },
-      { name: "Trainer", role: "Programme, check-ins, nudges", orb: "spark", status: "idle", stat: "0 running · 2 done today" },
-      { name: "Travel", role: "Flights, hotels, the itinerary", orb: "orbit", status: "idle", stat: "1 running · 3 done today" },
+      { name: "Builder", role: "Ships the weekend backlog", orb: "orbit", status: "online", stat: "2 running · 5 done today" },
+      { name: "Growth", role: "Posts, replies, the waitlist", orb: "spark", status: "idle", stat: "0 running · 3 done today" },
+      { name: "Helpdesk", role: "Answers the first twenty users", orb: "pulse", status: "online", stat: "1 running · 7 done today" },
+      { name: "Finance", role: "Runway, invoices, the domain bill", orb: "sweep", status: "idle", stat: "0 running · 1 done today" },
     ],
   },
 ];
 
-// Geometry. The viewport is the panel's inner width; cards are centred by index.
+// Geometry. One focus frame sits fixed in the middle of the panel; the grid
+// of cards slides behind it on both axes.
+const SPACEDECK_PANEL_W = 640;
 const SPACEDECK_PANEL_H = 440;
-const SPACEDECK_VIEW_W = 608;
-const SPACEDECK_VIEW_H = 332;
-const SPACEDECK_CARD_W = 260;
-const SPACEDECK_CARD_H = 300;
-const SPACEDECK_GAP = 16;
-const SPACEDECK_STEP = SPACEDECK_CARD_W + SPACEDECK_GAP;
-const SPACEDECK_ORIGIN = SPACEDECK_VIEW_W / 2 - SPACEDECK_CARD_W / 2;
-const SPACEDECK_COMMIT_PX = 60;
-const SPACEDECK_PEEK_PX = 40;
-const SPACEDECK_SWAP_MS = 350;
+const SPACEDECK_CARD_W = 248;
+const SPACEDECK_CARD_H = 252;
+const SPACEDECK_GAP = 14;
+const SPACEDECK_STEP_X = SPACEDECK_CARD_W + SPACEDECK_GAP;
+const SPACEDECK_STEP_Y = SPACEDECK_CARD_H + SPACEDECK_GAP;
+const SPACEDECK_COMMIT_PX = 56;
+const SPACEDECK_LOCK_PX = 8;
+// Quick off the mark, long soft landing: snappy without a bounce.
+const SPACEDECK_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const SPACEDECK_MS = 460;
 
-function SpaceDeckCard({ agent, space, accent, active, theme }) {
+function SpaceDeckCard({ agent, tone, focused, theme }) {
   const pal = usePal(theme);
+  const accent = pal[tone];
   return (
     <div style={{
-      width: SPACEDECK_CARD_W, height: SPACEDECK_CARD_H, boxSizing: "border-box", flexShrink: 0,
-      padding: 20, display: "flex", flexDirection: "column",
-      background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
-      boxShadow: active ? `0 12px 32px ${pal.shadowMd}` : `0 1px 4px ${pal.shadow}`,
-      transform: active ? "scale(1)" : "scale(0.92)", opacity: active ? 1 : 0.6,
-      transition: `transform ${motion.smooth} ${motion.emphasized}, opacity ${motion.smooth} ${motion.emphasized}, box-shadow ${motion.smooth} ${motion.easeInOut}, background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+      width: SPACEDECK_CARD_W, height: SPACEDECK_CARD_H, boxSizing: "border-box",
+      padding: 18, display: "flex", flexDirection: "column",
+      background: `linear-gradient(${CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1)}, ${CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1)}), ${pal.bgElevated}`,
+      borderRadius: tokens.radius.lg,
+      opacity: focused ? 1 : 0.5,
+      transition: `opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${motion.smooth} ${motion.easeInOut}`,
       userSelect: "none",
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Orb size={22} variant={agent.orb} color={accent} theme={theme} label={`${agent.name} working`} />
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{agent.status === "online" ? "Online" : "Idle"}</Text>
-          <StatusDot status={agent.status === "online" ? "online" : "offline"} pulse={agent.status === "online"} size={7} theme={theme} />
+          <StatusDot status={agent.status === "online" ? "online" : "offline"} pulse={focused && agent.status === "online"} size={7} theme={theme} />
         </span>
       </div>
-      <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 4 }}>
         <Text size="lg" weight="semibold" theme={theme} style={{ letterSpacing: "-0.01em" }}>{agent.name}</Text>
         <Text size="sm" secondary theme={theme} style={{ display: "block" }}>{agent.role}</Text>
       </div>
-      <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-        <Badge theme={theme} variant={space.badge}>{space.name}</Badge>
-        <Text size="xs" mono theme={theme} style={{ color: pal.textTertiary, fontVariantNumeric: "tabular-nums" }}>{agent.stat}</Text>
-      </div>
+      <Text size="xs" mono theme={theme} style={{ marginTop: "auto", color: pal.textTertiary, fontVariantNumeric: "tabular-nums" }}>{agent.stat}</Text>
     </div>
   );
 }
 
 function SpaceDeckPattern({ theme }) {
   const pal = usePal(theme);
-  const [space, setSpace] = useState(0);
-  const [idx, setIdx] = useState([0, 0]);           // active card, remembered per space
-  const [swap, setSwap] = useState(null);           // { phase: "out" | "pre" | "in", dir }
-  const [drag, setDrag] = useState({ x: 0, y: 0, axis: null });
-  const [peek, setPeek] = useState(false);
-  const pointer = useRef(null);                     // live drag bookkeeping
-  const swapRef = useRef(null);
-  const touched = useRef(false);
-  const cancels = useRef([]);
-  swapRef.current = swap;
+  const [row, setRow] = useState(1);
+  const [col, setCol] = useState(1);
+  const [drag, setDrag] = useState(null); // { axis: "x" | "y" | null, dx, dy }
+  const startRef = useRef(null);
+  const cleanupRef = useRef(null);
+  useEffect(() => () => { if (cleanupRef.current) cleanupRef.current(); }, []);
 
-  useEffect(() => () => cancels.current.forEach(fn => fn()), []);
-  const later = useCallback((fn, ms) => {
-    const t = setTimeout(fn, ms);
-    cancels.current.push(() => clearTimeout(t));
-  }, []);
+  const rows = SPACEDECK_SPACES.length;
+  const cols = SPACEDECK_SPACES[0].agents.length;
+  const space = SPACEDECK_SPACES[row];
+  const accent = pal[space.tone];
+  const clamp = (v, max) => Math.min(max, Math.max(0, v));
+  const move = useCallback((dr, dc) => {
+    setRow(r => clamp(r + dr, rows - 1));
+    setCol(c => clamp(c + dc, cols - 1));
+  }, [rows, cols]);
 
-  // One quiet peek at the next card on mount, skipped once the reader has touched anything.
-  useEffect(() => {
-    const t1 = setTimeout(() => { if (!touched.current) setPeek(true); }, 700);
-    const t2 = setTimeout(() => setPeek(false), 1100);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
-
-  const mark = () => { touched.current = true; setPeek(false); };
-
-  const current = SPACEDECK_SPACES[space];
-  const accentFor = (s) => (s.id === "studio" ? pal.accent : pal.warning);
-  const accent = accentFor(current);
-  const count = current.agents.length;
-  const cur = idx[space];
-
-  const go = (dir) => {
-    mark();
-    setIdx(arr => { const next = arr.slice(); next[space] = (arr[space] + dir + count) % count; return next; });
-  };
-  const jump = (i) => {
-    mark();
-    setIdx(arr => { const next = arr.slice(); next[space] = i; return next; });
-  };
-
-  // Vertical switch: current deck slides out, the other space's deck slides in from the far side.
-  const switchSpace = (dir) => {
-    mark();
-    if (swapRef.current) return;
-    setSwap({ phase: "out", dir });
-    later(() => {
-      setSpace(s => (s + dir + SPACEDECK_SPACES.length) % SPACEDECK_SPACES.length);
-      setSwap({ phase: "pre", dir });
-    }, SPACEDECK_SWAP_MS);
-    later(() => setSwap({ phase: "in", dir }), SPACEDECK_SWAP_MS + 30);
-    later(() => setSwap(null), SPACEDECK_SWAP_MS * 2 + 60);
-  };
-
-  // Drag, shared by pointer and touch. Axis locks after 6px; commit past 60px on release.
+  // Pointer and touch share one path. The axis locks after a few pixels, so a
+  // swipe is either across agents or across spaces, never diagonal.
   const begin = (x, y) => {
-    mark();
-    if (swapRef.current) return;
-    pointer.current = { x, y, dx: 0, dy: 0, axis: null };
-    setDrag({ x: 0, y: 0, axis: "pending" });
-  };
-  const move = (x, y) => {
-    const d = pointer.current; if (!d) return;
-    d.dx = x - d.x; d.dy = y - d.y;
-    if (!d.axis) {
-      if (Math.abs(d.dx) < 6 && Math.abs(d.dy) < 6) return;
-      d.axis = Math.abs(d.dx) > Math.abs(d.dy) ? "x" : "y";
-    }
-    if (d.axis === "x") setDrag({ x: d.dx, y: 0, axis: "x" });
-    else setDrag({ x: 0, y: d.dy * 0.3, axis: "y" });
-  };
-  const end = () => {
-    const d = pointer.current; if (!d) return;
-    pointer.current = null;
-    setDrag({ x: 0, y: 0, axis: null });
-    if (d.axis === "x" && Math.abs(d.dx) > SPACEDECK_COMMIT_PX) go(d.dx < 0 ? 1 : -1);
-    else if (d.axis === "y" && Math.abs(d.dy) > SPACEDECK_COMMIT_PX) switchSpace(d.dy < 0 ? 1 : -1);
-  };
-
-  const onPointerDown = (e) => {
-    if (e.button !== undefined && e.button !== 0) return;
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* no-op */ }
-    begin(e.clientX, e.clientY);
-  };
-  const onPointerMove = (e) => move(e.clientX, e.clientY);
-  const onPointerUp = () => end();
-  // Touch handlers only step in where Pointer Events are missing, so nothing fires twice.
-  const noPointer = typeof window !== "undefined" && !window.PointerEvent;
-  const onTouchStart = noPointer ? (e) => { const t = e.touches[0]; begin(t.clientX, t.clientY); } : undefined;
-  const onTouchMove = noPointer ? (e) => { const t = e.touches[0]; if (t) move(t.clientX, t.clientY); } : undefined;
-  const onTouchEnd = noPointer ? () => end() : undefined;
-
-  const onKeyDown = (e) => {
-    if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
-    else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); switchSpace(1); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); switchSpace(-1); }
-  };
-
-  const dragging = drag.axis === "x";
-  const trackX = SPACEDECK_ORIGIN - cur * SPACEDECK_STEP + drag.x - (peek ? SPACEDECK_PEEK_PX : 0);
-
-  // Deck wrapper: the vertical swap and the vertical drag follow live here.
-  let deckStyle;
-  if (swap && swap.phase === "out") {
-    deckStyle = { transform: `translateY(${-24 * swap.dir}px)`, opacity: 0, transition: `transform ${motion.smooth} ${motion.easeIn}, opacity ${motion.smooth} ${motion.easeIn}` };
-  } else if (swap && swap.phase === "pre") {
-    deckStyle = { transform: `translateY(${24 * swap.dir}px)`, opacity: 0, transition: "none" };
-  } else {
-    deckStyle = {
-      transform: `translateY(${drag.axis === "y" ? drag.y : 0}px)`, opacity: 1,
-      transition: drag.axis === "y" ? "none" : `transform ${motion.smooth} ${motion.emphasized}, opacity ${motion.smooth} ${motion.emphasized}`,
+    startRef.current = { x, y };
+    setDrag({ axis: null, dx: 0, dy: 0 });
+    const onMove = (e) => {
+      const p = e.touches ? e.touches[0] : e;
+      const dx = p.clientX - startRef.current.x, dy = p.clientY - startRef.current.y;
+      setDrag(d => {
+        const axis = d && d.axis ? d.axis : (Math.abs(dx) > SPACEDECK_LOCK_PX || Math.abs(dy) > SPACEDECK_LOCK_PX) ? (Math.abs(dx) >= Math.abs(dy) ? "x" : "y") : null;
+        return { axis, dx, dy };
+      });
+      if (e.cancelable && e.touches) e.preventDefault();
     };
-  }
+    const onUp = () => {
+      setDrag(d => {
+        if (d && d.axis === "x" && Math.abs(d.dx) > SPACEDECK_COMMIT_PX) move(0, d.dx < 0 ? 1 : -1);
+        if (d && d.axis === "y" && Math.abs(d.dy) > SPACEDECK_COMMIT_PX) move(d.dy < 0 ? 1 : -1, 0);
+        return null;
+      });
+      stop();
+    };
+    const stop = () => {
+      window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onUp); window.removeEventListener("touchcancel", onUp);
+      cleanupRef.current = null;
+    };
+    window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onMove, { passive: false }); window.addEventListener("touchend", onUp); window.addEventListener("touchcancel", onUp);
+    cleanupRef.current = stop;
+  };
+
+  const onKey = (e) => {
+    const map = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
+    const m = map[e.key];
+    if (m) { e.preventDefault(); move(m[0], m[1]); }
+  };
+
+  // Rubber band at the edges: the grid follows the finger at a third of the speed.
+  const band = (d, atStart, atEnd) => ((d > 0 && atStart) || (d < 0 && atEnd) ? d / 3 : d);
+  const offX = drag && drag.axis === "x" ? band(drag.dx, col === 0, col === cols - 1) : 0;
+  const offY = drag && drag.axis === "y" ? band(drag.dy, row === 0, row === rows - 1) : 0;
+  const tx = SPACEDECK_PANEL_W / 2 - SPACEDECK_CARD_W / 2 - col * SPACEDECK_STEP_X + offX;
+  const ty = SPACEDECK_PANEL_H / 2 - SPACEDECK_CARD_H / 2 - row * SPACEDECK_STEP_Y + offY;
+  const glide = drag ? "none" : `transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`;
 
   return (
-    <div style={{ width: 640, maxWidth: "100%", fontFamily: tokens.font.sans }}>
+    <div style={{ width: SPACEDECK_PANEL_W, maxWidth: "100%", fontFamily: tokens.font.sans }}>
       <Stack gap={10}>
-        <div role="region" aria-label={`${current.name} agents`} tabIndex={0} onKeyDown={onKeyDown} style={{
-          position: "relative", height: SPACEDECK_PANEL_H, padding: 16, boxSizing: "border-box", overflow: "hidden",
-          background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
-          transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
-        }}>
-          {/* One wash per space, crossfaded, so the scheme change is a fade rather than a jump. */}
-          {SPACEDECK_SPACES.map((s, i) => (
-            <div key={s.id} aria-hidden="true" style={{
-              position: "absolute", inset: 0, pointerEvents: "none", borderRadius: "inherit",
-              background: `radial-gradient(ellipse 70% 60% at 50% 45%, ${CTXBAR_alpha(accentFor(s), theme === "dark" ? 0.12 : 0.08)} 0%, transparent 100%)`,
-              opacity: i === space ? 1 : 0, transition: `opacity ${motion.slow} ${motion.easeInOut}`,
-            }} />
-          ))}
-
-          {/* Header: the space pill on the left, the hint on the right */}
-          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", height: 32 }}>
-            <button type="button" onClick={() => switchSpace(1)} aria-label={`Switch space, now ${current.name}`} style={{
-              ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 8, height: 28, padding: "0 6px 0 12px",
-              borderRadius: tokens.radius.pill, background: CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1), color: accent,
-              transition: `background ${motion.slow} ${motion.easeInOut}, color ${motion.slow} ${motion.easeInOut}`,
-            }}>
-              <Text size="sm" weight="semibold" color={accent} theme={theme} style={{ transition: `color ${motion.slow} ${motion.easeInOut}` }}>{current.name}</Text>
-              <span aria-hidden="true" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", lineHeight: 1, fontSize: 9, opacity: 0.7, gap: 0 }}>
-                <span style={{ transform: "translateY(2px)" }}>⌃</span>
-                <span style={{ transform: "translateY(-2px)" }}>⌄</span>
-              </span>
-            </button>
-            <Caption theme={theme}>Swipe up or down for another space</Caption>
+        <div tabIndex={0} role="group" aria-label={`Agents. ${space.name} space, ${space.agents[col].name}. Arrow keys move between agents and spaces.`}
+          onKeyDown={onKey}
+          onMouseDown={(e) => { e.preventDefault(); e.currentTarget.focus(); begin(e.clientX, e.clientY); }}
+          onTouchStart={(e) => begin(e.touches[0].clientX, e.touches[0].clientY)}
+          style={{
+            position: "relative", width: "100%", height: SPACEDECK_PANEL_H, overflow: "hidden", outline: "none",
+            borderRadius: tokens.radius.lg, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
+            cursor: drag ? "grabbing" : "grab", touchAction: "none",
+            transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+          }}>
+          {/* The grid: every space is a row, every agent a column. It moves; the frame does not. */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, willChange: "transform",
+            transform: `translate3d(${tx}px, ${ty}px, 0)`, transition: glide,
+            display: "grid", gridTemplateColumns: `repeat(${cols}, ${SPACEDECK_CARD_W}px)`, gap: SPACEDECK_GAP,
+          }}>
+            {SPACEDECK_SPACES.map((s, r) => s.agents.map((a, c) => (
+              <SpaceDeckCard key={`${s.id}-${a.name}`} agent={a} tone={s.tone} focused={r === row && c === col} theme={theme} />
+            )))}
           </div>
 
-          {/* Deck viewport: fixed box; the track slides by index, the wrapper handles the space swap. */}
-          <div
-            onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
-            onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}
-            style={{
-              position: "relative", height: SPACEDECK_VIEW_H, marginTop: 12, overflow: "hidden",
-              cursor: dragging ? "grabbing" : "grab", touchAction: "none", userSelect: "none", WebkitUserSelect: "none",
-            }}>
-            <div style={{ position: "absolute", inset: 0, ...deckStyle }}>
-              <div style={{
-                position: "absolute", top: (SPACEDECK_VIEW_H - SPACEDECK_CARD_H) / 2, left: 0,
-                display: "flex", gap: SPACEDECK_GAP, willChange: "transform",
-                transform: `translateX(${trackX}px)`,
-                transition: dragging ? "none" : `transform ${motion.smooth} ${motion.emphasized}`,
-              }}>
-                {current.agents.map((agent, i) => (
-                  <SpaceDeckCard key={`${current.id}-${agent.name}`} agent={agent} space={current} accent={accent} active={i === cur} theme={theme} />
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* The fixed focus frame: always in the middle, tinted by the current space. */}
+          <div aria-hidden="true" style={{
+            position: "absolute", left: "50%", top: "50%", width: SPACEDECK_CARD_W + 12, height: SPACEDECK_CARD_H + 12,
+            marginLeft: -(SPACEDECK_CARD_W + 12) / 2, marginTop: -(SPACEDECK_CARD_H + 12) / 2,
+            borderRadius: tokens.radius.lg + 6, pointerEvents: "none",
+            boxShadow: `0 0 0 1.5px ${accent}, 0 18px 48px ${pal.shadowLg}`,
+            transition: `box-shadow ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
+          }} />
 
-          {/* Dots: one per agent, the active one stretched */}
-          <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 12, height: 8 }}>
-            {current.agents.map((agent, i) => (
-              <button key={agent.name} type="button" onClick={() => jump(i)} aria-label={`Show ${agent.name}`} aria-pressed={i === cur} style={{
-                ...interactiveBase, padding: 0, height: 8, width: i === cur ? 18 : 8, borderRadius: 4,
-                background: i === cur ? accent : pal.textMuted,
-                transition: `width ${motion.smooth} ${motion.emphasized}, background ${motion.slow} ${motion.easeInOut}`,
+          {/* Where you are: space name top left, rows on the right edge, columns along the bottom. */}
+          <div style={{
+            position: "absolute", top: 14, left: 14, display: "inline-flex", alignItems: "center", gap: 8, pointerEvents: "none",
+            padding: "5px 12px 5px 10px", borderRadius: tokens.radius.pill,
+            background: CTXBAR_alpha(pal.bgElevated, 0.9), boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: 4, background: accent, transition: `background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}` }} />
+            <Text size="sm" weight="medium" theme={theme}>{space.name}</Text>
+            <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{space.agents[col].name}</Text>
+          </div>
+          <div aria-hidden="true" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap: 5, pointerEvents: "none", padding: 6, borderRadius: tokens.radius.pill, background: CTXBAR_alpha(pal.bgElevated, 0.85), boxShadow: `0 0 0 1px ${pal.borderSubtle}`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", }}>
+            {SPACEDECK_SPACES.map((s, r) => (
+              <span key={s.id} style={{
+                width: 5, height: r === row ? 18 : 5, borderRadius: 3, background: r === row ? accent : pal.textMuted, opacity: r === row ? 1 : 0.5,
+                transition: `height ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
+              }} />
+            ))}
+          </div>
+          <div aria-hidden="true" style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 5, pointerEvents: "none", padding: 6, borderRadius: tokens.radius.pill, background: CTXBAR_alpha(pal.bgElevated, 0.85), boxShadow: `0 0 0 1px ${pal.borderSubtle}`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", }}>
+            {space.agents.map((a, c) => (
+              <span key={a.name} style={{
+                height: 5, width: c === col ? 18 : 5, borderRadius: 3, background: c === col ? accent : pal.textMuted, opacity: c === col ? 1 : 0.5,
+                transition: `width ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, background ${SPACEDECK_MS}ms ${SPACEDECK_EASE}, opacity ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`,
               }} />
             ))}
           </div>
         </div>
-        <Caption theme={theme}>Left and right for agents. Up and down for spaces.</Caption>
+        <Caption theme={theme}>The frame stays put. Swipe left and right for agents, up and down for spaces.</Caption>
       </Stack>
     </div>
   );
@@ -5779,8 +5778,8 @@ const PATTERN_GROUPS = [
     title: "Agentic navigation",
     blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
     patterns: [
-      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar whose suggestions change with what's on screen.",           component: "ContextBarPattern",                    height: 500 },
-      { id: "pat-space-deck",     title: "Spaces and agents", desc: "Swipe sideways between agents, up and down between spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 580 },
+      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 500 },
+      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 580 },
     ],
   },
 ];
