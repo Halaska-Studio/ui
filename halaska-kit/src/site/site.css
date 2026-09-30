@@ -1,0 +1,64 @@
+/* Layout and responsive rules for the site chrome only. Colours come from the
+   kit's palette through CSS variables set on .site by App.jsx. */
+:root { --hdr: 56px; --nav: 256px; }
+html, body { margin: 0; padding: 0; }
+* { box-sizing: border-box; }
+body { -webkit-font-smoothing: antialiased; }
+.site { min-height: 100vh; background: var(--s-bg); color: var(--s-text); font-family: var(--halaska-sans, 'Geist'), -apple-system, system-ui, sans-serif; transition: background 0.35s ease, color 0.35s ease; }
+.site a { color: inherit; text-decoration: none; }
+.site ::selection { background: var(--s-accent-bg); }
+
+.site-hdr { position: sticky; top: 0; z-index: 900; height: var(--hdr); display: flex; align-items: center; gap: 20px; padding: 0 20px;
+  background: var(--s-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--s-border); }
+.site-hdr .hdr-links { display: flex; align-items: center; gap: 4px; }
+.site-hdr .hdr-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.site-hdr .hdr-burger { display: none !important; }
+
+.site-shell { display: grid; grid-template-columns: var(--nav) minmax(0, 1fr); }
+.site-nav { position: sticky; top: var(--hdr); height: calc(100vh - var(--hdr)); overflow-y: auto; padding: 24px 12px 80px 16px; border-right: 1px solid var(--s-border); scrollbar-width: thin; }
+.site-main { min-width: 0; display: flex; justify-content: center; gap: 56px; padding: 44px 48px 160px; }
+.site-article { width: 100%; max-width: 780px; min-width: 0; }
+.site-article.wide { max-width: 1040px; }
+.site-rail { display: none; width: 180px; flex-shrink: 0; position: sticky; top: calc(var(--hdr) + 44px); align-self: flex-start; max-height: calc(100vh - var(--hdr) - 80px); overflow-y: auto; }
+@media (min-width: 1320px) { .site-rail { display: block; } }
+
+.site-landing { max-width: 1120px; margin: 0 auto; padding: 0 32px 160px; }
+
+.site-drawer-scrim { position: fixed; inset: 0; z-index: 950; background: rgba(0,0,0,0.45); }
+.site-drawer { position: fixed; top: 0; bottom: 0; left: 0; z-index: 960; width: min(320px, 86vw); overflow-y: auto; padding: 20px 14px 60px; background: var(--s-bg); border-right: 1px solid var(--s-border); }
+
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.grid-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 2px 16px; }
+.masonry { column-count: 3; column-gap: 16px; }
+.masonry > * { break-inside: avoid; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--s-border); border-radius: 16px; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table-wrap th, .table-wrap td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--s-border); vertical-align: top; }
+.table-wrap tr:last-child td { border-bottom: none; }
+.table-wrap th { font-weight: 500; color: var(--s-text-3); font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .masonry { column-count: 2; }
+}
+@media (max-width: 900px) {
+  .site-shell { grid-template-columns: minmax(0, 1fr); }
+  .site-nav { display: none; }
+  .site-main { padding: 28px 16px 160px; }
+  .site-hdr { gap: 10px; padding: 0 12px; }
+  .site-hdr .hdr-links, .site-hdr .hdr-hide-sm { display: none !important; }
+  .site-hdr .hdr-burger { display: inline-flex !important; }
+  .site-landing { padding: 0 16px 160px; }
+}
+@media (max-width: 620px) {
+  .masonry { column-count: 1; }
+  .stack-sm { flex-direction: column !important; align-items: stretch !important; }
+}
+
+/* Screens in the mobile layout sit side by side when there is room. */
+@media (min-width: 900px) {
+  .screens-mobile { flex-direction: row !important; align-items: flex-start; gap: 40px !important; }
+  .screens-mobile > * { flex: 1 1 0; min-width: 0; }
+}
+
+/* Controls that only make sense with room to spare. */
+@media (max-width: 560px) { .hide-phone { display: none !important; } }

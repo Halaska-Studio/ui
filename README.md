@@ -1,4 +1,4 @@
-# UI by Halaska
+# Halaska UI
 
 ![The Chat example screen, built entirely from the kit](docs/after.png)
 
@@ -41,13 +41,16 @@ Agent guide: https://ui.halaska.com/install.md. API reference: https://ui.halask
 
 ```
 halaska-kit/
-  halaska-kit-v1.0.jsx   the kit: tokens, components, patterns, showcase page
-  src/main.jsx           Vite entry for the showcase site
-  scripts/               generates llms.txt, the .d.ts shim, and the source map on build
+  halaska-kit-v1.0.jsx   the kit: tokens, components, patterns (one file, react + react-dom only)
+  src/site/              the website: landing page, component, pattern and screen pages, docs
+    data/                catalogue, pattern guidance, screens, shadcn/ui parity table, changelog
+    examples/            one real file per component and pattern; the site shows the code it runs
+    pages/ ui/ chrome/   the three page templates, the preview frame, header, nav and search
+  scripts/               generates llms.txt, the .d.ts shim, site data and the pre-rendered pages
   CLAUDE.md              project notes for coding agents
 ```
 
-## Run the showcase locally
+## Run the site locally
 
 ```bash
 cd halaska-kit

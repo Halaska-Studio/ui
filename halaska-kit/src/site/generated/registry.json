@@ -1,0 +1,406 @@
+{
+ "groups": [
+  {
+   "id": "grp-agentic-nav",
+   "title": "Agentic navigation",
+   "blurb": "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
+   "patterns": [
+    {
+     "id": "pat-context-bar",
+     "title": "Contextual taskbar",
+     "desc": "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",
+     "component": "ContextBarPattern",
+     "height": 470,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-space-deck",
+     "title": "Spaces and agents",
+     "desc": "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.",
+     "component": "SpaceDeckPattern",
+     "height": 590,
+     "replay": false,
+     "housed": false
+    }
+   ]
+  },
+  {
+   "id": "grp-conversation",
+   "title": "Conversation core",
+   "blurb": "The baseline chat surface. Every AI product ships these, so the play here is craft, not coverage.",
+   "patterns": [
+    {
+     "id": "pat-prompt-input",
+     "title": "Prompt input",
+     "desc": "The composer: attachments, model pill, and a stop-while-streaming state.",
+     "component": "PromptInputPattern",
+     "height": 380,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-message",
+     "title": "Message thread",
+     "desc": "User and assistant turns with hover actions and response branches.",
+     "component": "MessageThreadPattern",
+     "height": 436,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-streaming",
+     "title": "Streaming answer",
+     "desc": "Streamed reply with inline sources and follow-ups.",
+     "component": "StreamingAnswerPattern",
+     "height": 596,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-chat",
+     "title": "Agent chat",
+     "desc": "Chat panel with reasoning chips and a composer.",
+     "component": "AgentChatPattern",
+     "height": 640,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-code",
+     "title": "Code block",
+     "desc": "Agent-written code streaming in line by line with syntax tint.",
+     "component": "CodeBlockPattern",
+     "height": 460,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-model-context",
+     "title": "Model & context",
+     "desc": "Model picker with capability badges and a live context-window meter.",
+     "component": "ModelContextPattern",
+     "height": 480,
+     "replay": false,
+     "housed": false
+    }
+   ]
+  },
+  {
+   "id": "grp-trust",
+   "title": "Trust & transparency",
+   "blurb": "Why the user should believe the output: reasoning made visible, sources attached, confidence stated honestly.",
+   "patterns": [
+    {
+     "id": "pat-thinking",
+     "title": "Thinking",
+     "desc": "Expandable reasoning trace while the agent works.",
+     "component": "ThinkingTracePattern",
+     "height": 476,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-citations",
+     "title": "Inline citations",
+     "desc": "Numbered source chips with an anchored popover pager.",
+     "component": "CitationsPattern",
+     "height": 496,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-context",
+     "title": "Context sources",
+     "desc": "Retrieved knowledge chunks with their sources.",
+     "component": "ContextSourcesPattern",
+     "height": 516,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-confidence",
+     "title": "Confidence states",
+     "desc": "One claim rendered at three confidence levels. Low is a designed state.",
+     "component": "ConfidencePattern",
+     "height": 520,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-recommendation",
+     "title": "Recommendation",
+     "desc": "Agent suggestion with confidence and clear actions.",
+     "component": "RecommendationPattern",
+     "height": 580,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-feedback",
+     "title": "Feedback capture",
+     "desc": "Thumbs with a structured follow-up on negative.",
+     "component": "FeedbackPattern",
+     "height": 480,
+     "replay": false,
+     "housed": false
+    }
+   ]
+  },
+  {
+   "id": "grp-control",
+   "title": "Agentic control",
+   "blurb": "The delegation lifecycle: consent before the agent acts, visibility while it works, accountability after. Intervention points that don't look like errors.",
+   "patterns": [
+    {
+     "id": "pat-plan",
+     "title": "Plan preview",
+     "desc": "The agent states its plan in plain language. Proceed, edit, or take over.",
+     "component": "PlanPreviewPattern",
+     "height": 540,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-approval",
+     "title": "Approval card",
+     "desc": "Human-in-the-loop question before the agent acts.",
+     "component": "ApprovalCardPattern",
+     "height": 540,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-autonomy",
+     "title": "Autonomy levels",
+     "desc": "Per-task dial for how much the agent may do, observe through autonomous.",
+     "component": "AutonomyPattern",
+     "height": 620,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-permissions",
+     "title": "Permission scope",
+     "desc": "Tools, data, and limits the agent can touch, summarised in plain language.",
+     "component": "PermissionScopePattern",
+     "height": 740,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-queue",
+     "title": "Task queue",
+     "desc": "What the agent will work through. Reorder, remove, watch it clear.",
+     "component": "QueuePattern",
+     "height": 576,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-status",
+     "title": "Agent status",
+     "desc": "Live status pill with rolling phases, a stop control, and a mid-run redirect.",
+     "component": "AgentStatusPattern",
+     "height": 356,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-tools",
+     "title": "Tool calls",
+     "desc": "Edits, commands, and reads as a compact activity feed.",
+     "component": "ToolStreamPattern",
+     "height": 616,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-tasks",
+     "title": "Task rows",
+     "desc": "Live agent task status: running, failed, completed.",
+     "component": "AgentTasksPattern",
+     "height": 616,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-handoff",
+     "title": "Handoff",
+     "desc": "The agent escalates to a human with prepared context. Calm, not a failure.",
+     "component": "HandoffPattern",
+     "height": 480,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-receipt",
+     "title": "Action receipt",
+     "desc": "Evidence of what changed, under whose authority, with a time-limited undo.",
+     "component": "ActionReceiptPattern",
+     "height": 500,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-checkpoints",
+     "title": "Checkpoints",
+     "desc": "Named restore points. Confirm inline and roll back with re-verification.",
+     "component": "CheckpointPattern",
+     "height": 476,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-audit",
+     "title": "Audit log",
+     "desc": "The filterable record of agent actions, with inline receipts.",
+     "component": "AuditLogPattern",
+     "height": 636,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-error-repair",
+     "title": "Error repair",
+     "desc": "The structured mistake: acknowledge, show the fix, offer recourse.",
+     "component": "ErrorRepairPattern",
+     "height": 500,
+     "replay": true,
+     "housed": false
+    }
+   ]
+  },
+  {
+   "id": "grp-output",
+   "title": "Output & generative UI",
+   "blurb": "Where responses stop being text: proposed edits, structured objects, artifacts, and charts.",
+   "patterns": [
+    {
+     "id": "pat-artifact",
+     "title": "Artifact",
+     "desc": "Generated content in a versioned container with preview and raw views.",
+     "component": "ArtifactPattern",
+     "height": 540,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-diff-view",
+     "title": "Diff view",
+     "desc": "Proposed code edits side by side with per-hunk accept and reject.",
+     "component": "DiffViewPattern",
+     "height": 560,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-diff",
+     "title": "Diff table",
+     "desc": "AI-proposed edits sweeping through tabular data.",
+     "component": "DiffTablePattern",
+     "height": 540,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-structured",
+     "title": "Structured data",
+     "desc": "Schema output rendered as a readable card, raw JSON one toggle away.",
+     "component": "StructuredDataPattern",
+     "height": 536,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-insights",
+     "title": "Insight cards",
+     "desc": "Paged agent insights with live charts.",
+     "component": "InsightCardsPattern",
+     "height": 620,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-comparison",
+     "title": "Comparison",
+     "desc": "Two models stream the same prompt side by side. Pick a winner.",
+     "component": "ComparisonPattern",
+     "height": 516,
+     "replay": true,
+     "housed": true
+    }
+   ]
+  },
+  {
+   "id": "grp-ambient",
+   "title": "Ambient & beyond chat",
+   "blurb": "The agent outside the thread: boards, nudges, digests, and inline assists that don't make you scroll a transcript to reconstruct state.",
+   "patterns": [
+    {
+     "id": "pat-taskboard",
+     "title": "Taskboard",
+     "desc": "The board is primary, chat is secondary. Work moves when decisions are needed.",
+     "component": "TaskboardPattern",
+     "height": 456,
+     "replay": true,
+     "housed": true
+    },
+    {
+     "id": "pat-inline-assist",
+     "title": "Inline assist",
+     "desc": "Ghost-text completions. Accept, dismiss, and watch the agent adapt.",
+     "component": "InlineAssistPattern",
+     "height": 380,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-nudge",
+     "title": "Nudge",
+     "desc": "A proactive, non-blocking suggestion with a real escape hatch.",
+     "component": "NudgePattern",
+     "height": 320,
+     "replay": true,
+     "housed": false
+    },
+    {
+     "id": "pat-digest",
+     "title": "Digest",
+     "desc": "While-you-were-away summary with rationale and receipts per action.",
+     "component": "DigestPattern",
+     "height": 576,
+     "replay": false,
+     "housed": true
+    },
+    {
+     "id": "pat-notifications",
+     "title": "Notification center",
+     "desc": "The classic panel: agent events with severity, read state, and actions.",
+     "component": "NotificationCenterPattern",
+     "height": 560,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-search",
+     "title": "Command search",
+     "desc": "Command palette with live filtering and an empty state.",
+     "component": "CommandSearchPattern",
+     "height": 540,
+     "replay": false,
+     "housed": false
+    },
+    {
+     "id": "pat-agent-setup",
+     "title": "Agent setup",
+     "desc": "Full multi-step setup flow with live preview.",
+     "component": "AgentSetupPattern",
+     "height": 760,
+     "replay": false,
+     "housed": false
+    }
+   ]
+  }
+ ]
+}

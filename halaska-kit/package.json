@@ -7,9 +7,10 @@
   "main": "src/components/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
-    "prebuild": "node scripts/generate-api.mjs && node scripts/extract-source.mjs && cp halaska-kit-v1.0.jsx public/halaska-kit.jsx"
+    "prebuild": "node scripts/generate-api.mjs && node scripts/extract-source.mjs && node scripts/generate-site-data.mjs && cp halaska-kit-v1.0.jsx public/halaska-kit.jsx",
+    "predev": "node scripts/extract-source.mjs && node scripts/generate-site-data.mjs"
   },
   "dependencies": {
     "react": "^18.2.0",

@@ -48,7 +48,8 @@ for (const line of exportBlock.split("\n")) {
 }
 
 const NON_COMPONENT = new Set(["tokens", "motion", "interactiveBase", "usePal", "useThemeContext",
-  "AccentContext", "useAccent", "injectStyles", "getAvatarColor", "PATTERN_GROUPS", "UX_PATTERNS", "DESIGN_HEURISTICS"]);
+  "AccentContext", "useAccent", "injectStyles", "getAvatarColor", "PATTERN_GROUPS", "UX_PATTERNS", "DESIGN_HEURISTICS", "ACCENT_COLORS", "INSTALL_PROMPT",
+  "setKitMotion", "setKitFont", "KIT_MOTION_PRESETS", "KIT_FONT_PRESETS"]);
 
 // ── llms.txt ───────────────────────────────────────────────────
 let out = `# Halaska Kit: API reference for coding agents

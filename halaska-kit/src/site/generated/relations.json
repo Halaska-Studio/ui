@@ -1,0 +1,900 @@
+{
+ "patterns": {
+  "pat-context-bar": {
+   "components": [
+    "avatar",
+    "badge",
+    "calendar",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-space-deck": {
+   "components": [
+    "calendar",
+    "orb",
+    "stack",
+    "status-dot",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-prompt-input": {
+   "components": [
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-message": {
+   "components": [
+    "agent-glyph",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-streaming": {
+   "components": [
+    "agent-glyph",
+    "label",
+    "separator",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-chat": {
+   "components": [
+    "stack",
+    "streaming-text",
+    "tabs",
+    "thinking-indicator"
+   ],
+   "screens": []
+  },
+  "pat-code": {
+   "components": [
+    "agent-glyph",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-model-context": {
+   "components": [
+    "separator",
+    "stack",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-thinking": {
+   "components": [
+    "label",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-citations": {
+   "components": [
+    "agent-glyph",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-context": {
+   "components": [
+    "badge",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-confidence": {
+   "components": [
+    "button",
+    "segmented-control",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-recommendation": {
+   "components": [
+    "agent-glyph",
+    "ai-suggestion-badge",
+    "badge",
+    "button",
+    "card",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-feedback": {
+   "components": [
+    "agent-glyph",
+    "button",
+    "field",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-plan": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "button",
+    "card",
+    "label",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "pat-approval": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "button",
+    "card",
+    "radio-group",
+    "stack",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-autonomy": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "card",
+    "stack",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "pat-permissions": {
+   "components": [
+    "agent-glyph",
+    "card",
+    "separator",
+    "stack",
+    "switch",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "pat-queue": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-status": {
+   "components": [
+    "button",
+    "field",
+    "orb",
+    "stack",
+    "typography"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "pat-tools": {
+   "components": [
+    "agent-glyph",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-tasks": {
+   "components": [
+    "badge",
+    "button",
+    "card",
+    "progress",
+    "spinner",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-handoff": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "button",
+    "card",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "pat-receipt": {
+   "components": [
+    "card",
+    "label",
+    "separator",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-checkpoints": {
+   "components": [
+    "agent-glyph",
+    "button",
+    "stack",
+    "thinking-indicator",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "pat-audit": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-error-repair": {
+   "components": [
+    "agent-glyph",
+    "button",
+    "card",
+    "separator",
+    "stack",
+    "toggle",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-artifact": {
+   "components": [
+    "stack",
+    "tabs",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-diff-view": {
+   "components": [
+    "button",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-diff": {
+   "components": [
+    "badge",
+    "button",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-structured": {
+   "components": [
+    "badge",
+    "card",
+    "separator",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-insights": {
+   "components": [
+    "agent-glyph",
+    "badge",
+    "button",
+    "card",
+    "chart",
+    "pagination",
+    "separator",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-comparison": {
+   "components": [
+    "badge",
+    "stack",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-taskboard": {
+   "components": [
+    "agent-glyph",
+    "avatar",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-inline-assist": {
+   "components": [
+    "button",
+    "kbd",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-nudge": {
+   "components": [
+    "agent-glyph",
+    "button",
+    "spinner",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-digest": {
+   "components": [
+    "button",
+    "separator",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-notifications": {
+   "components": [
+    "badge",
+    "typography"
+   ],
+   "screens": []
+  },
+  "pat-search": {
+   "components": [
+    "kbd",
+    "typography"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "pat-agent-setup": {
+   "components": [
+    "alert",
+    "avatar",
+    "badge",
+    "button",
+    "card",
+    "chip",
+    "combobox",
+    "confidence-bar",
+    "field",
+    "label",
+    "segmented-control",
+    "separator",
+    "slider",
+    "stack",
+    "stat",
+    "stepper",
+    "switch",
+    "tag",
+    "typography"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  }
+ },
+ "components": {
+  "avatar": {
+   "patterns": [
+    "pat-context-bar",
+    "pat-taskboard",
+    "pat-agent-setup"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "badge": {
+   "patterns": [
+    "pat-context-bar",
+    "pat-context",
+    "pat-recommendation",
+    "pat-plan",
+    "pat-approval",
+    "pat-autonomy",
+    "pat-queue",
+    "pat-tasks",
+    "pat-handoff",
+    "pat-audit",
+    "pat-diff",
+    "pat-structured",
+    "pat-insights",
+    "pat-comparison",
+    "pat-notifications",
+    "pat-agent-setup"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "calendar": {
+   "patterns": [
+    "pat-context-bar",
+    "pat-space-deck"
+   ],
+   "screens": []
+  },
+  "stack": {
+   "patterns": [
+    "pat-context-bar",
+    "pat-space-deck",
+    "pat-prompt-input",
+    "pat-message",
+    "pat-streaming",
+    "pat-chat",
+    "pat-model-context",
+    "pat-context",
+    "pat-recommendation",
+    "pat-plan",
+    "pat-approval",
+    "pat-autonomy",
+    "pat-permissions",
+    "pat-queue",
+    "pat-status",
+    "pat-tools",
+    "pat-tasks",
+    "pat-handoff",
+    "pat-receipt",
+    "pat-checkpoints",
+    "pat-audit",
+    "pat-error-repair",
+    "pat-artifact",
+    "pat-diff-view",
+    "pat-diff",
+    "pat-structured",
+    "pat-insights",
+    "pat-comparison",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "typography": {
+   "patterns": [
+    "pat-context-bar",
+    "pat-space-deck",
+    "pat-prompt-input",
+    "pat-message",
+    "pat-streaming",
+    "pat-code",
+    "pat-model-context",
+    "pat-thinking",
+    "pat-citations",
+    "pat-context",
+    "pat-confidence",
+    "pat-recommendation",
+    "pat-feedback",
+    "pat-plan",
+    "pat-approval",
+    "pat-autonomy",
+    "pat-permissions",
+    "pat-queue",
+    "pat-status",
+    "pat-tools",
+    "pat-tasks",
+    "pat-handoff",
+    "pat-receipt",
+    "pat-checkpoints",
+    "pat-audit",
+    "pat-error-repair",
+    "pat-artifact",
+    "pat-diff-view",
+    "pat-diff",
+    "pat-structured",
+    "pat-insights",
+    "pat-comparison",
+    "pat-taskboard",
+    "pat-inline-assist",
+    "pat-nudge",
+    "pat-digest",
+    "pat-notifications",
+    "pat-search",
+    "pat-agent-setup"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "orb": {
+   "patterns": [
+    "pat-space-deck",
+    "pat-status"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "status-dot": {
+   "patterns": [
+    "pat-space-deck"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "thinking-indicator": {
+   "patterns": [
+    "pat-prompt-input",
+    "pat-streaming",
+    "pat-chat",
+    "pat-code",
+    "pat-thinking",
+    "pat-plan",
+    "pat-queue",
+    "pat-tools",
+    "pat-handoff",
+    "pat-checkpoints"
+   ],
+   "screens": []
+  },
+  "agent-glyph": {
+   "patterns": [
+    "pat-message",
+    "pat-streaming",
+    "pat-code",
+    "pat-citations",
+    "pat-recommendation",
+    "pat-feedback",
+    "pat-plan",
+    "pat-approval",
+    "pat-autonomy",
+    "pat-permissions",
+    "pat-queue",
+    "pat-tools",
+    "pat-handoff",
+    "pat-checkpoints",
+    "pat-audit",
+    "pat-error-repair",
+    "pat-insights",
+    "pat-taskboard",
+    "pat-nudge"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "label": {
+   "patterns": [
+    "pat-streaming",
+    "pat-thinking",
+    "pat-plan",
+    "pat-receipt",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "separator": {
+   "patterns": [
+    "pat-streaming",
+    "pat-model-context",
+    "pat-permissions",
+    "pat-receipt",
+    "pat-error-repair",
+    "pat-structured",
+    "pat-insights",
+    "pat-digest",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "streaming-text": {
+   "patterns": [
+    "pat-chat"
+   ],
+   "screens": []
+  },
+  "tabs": {
+   "patterns": [
+    "pat-chat",
+    "pat-artifact"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "button": {
+   "patterns": [
+    "pat-confidence",
+    "pat-recommendation",
+    "pat-feedback",
+    "pat-plan",
+    "pat-approval",
+    "pat-status",
+    "pat-tasks",
+    "pat-handoff",
+    "pat-checkpoints",
+    "pat-error-repair",
+    "pat-diff-view",
+    "pat-diff",
+    "pat-insights",
+    "pat-inline-assist",
+    "pat-nudge",
+    "pat-digest",
+    "pat-agent-setup"
+   ],
+   "screens": [
+    "chat",
+    "canvas"
+   ]
+  },
+  "segmented-control": {
+   "patterns": [
+    "pat-confidence",
+    "pat-agent-setup"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "ai-suggestion-badge": {
+   "patterns": [
+    "pat-recommendation"
+   ],
+   "screens": []
+  },
+  "card": {
+   "patterns": [
+    "pat-recommendation",
+    "pat-plan",
+    "pat-approval",
+    "pat-autonomy",
+    "pat-permissions",
+    "pat-tasks",
+    "pat-handoff",
+    "pat-receipt",
+    "pat-error-repair",
+    "pat-structured",
+    "pat-insights",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "field": {
+   "patterns": [
+    "pat-feedback",
+    "pat-status",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "radio-group": {
+   "patterns": [
+    "pat-approval"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "switch": {
+   "patterns": [
+    "pat-permissions",
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "progress": {
+   "patterns": [
+    "pat-tasks"
+   ],
+   "screens": [
+    "chat"
+   ]
+  },
+  "spinner": {
+   "patterns": [
+    "pat-tasks",
+    "pat-nudge"
+   ],
+   "screens": []
+  },
+  "toggle": {
+   "patterns": [
+    "pat-error-repair"
+   ],
+   "screens": []
+  },
+  "chart": {
+   "patterns": [
+    "pat-insights"
+   ],
+   "screens": []
+  },
+  "pagination": {
+   "patterns": [
+    "pat-insights"
+   ],
+   "screens": []
+  },
+  "kbd": {
+   "patterns": [
+    "pat-inline-assist",
+    "pat-search"
+   ],
+   "screens": []
+  },
+  "alert": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "chip": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "combobox": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "confidence-bar": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "slider": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "stat": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "stepper": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "tag": {
+   "patterns": [
+    "pat-agent-setup"
+   ],
+   "screens": []
+  },
+  "search-input": {
+   "patterns": [],
+   "screens": [
+    "chat"
+   ]
+  },
+  "accordion": {
+   "patterns": [],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "dot-grid": {
+   "patterns": [],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "select": {
+   "patterns": [],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "split-button": {
+   "patterns": [],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "zoom-control": {
+   "patterns": [],
+   "screens": [
+    "canvas"
+   ]
+  }
+ },
+ "screens": {
+  "chat": {
+   "patterns": [
+    "pat-thinking",
+    "pat-streaming",
+    "pat-approval",
+    "pat-prompt-input",
+    "pat-model-context",
+    "pat-status",
+    "pat-search"
+   ],
+   "components": [
+    "agent-glyph",
+    "avatar",
+    "badge",
+    "button",
+    "orb",
+    "progress",
+    "search-input",
+    "status-dot",
+    "typography"
+   ]
+  },
+  "canvas": {
+   "patterns": [
+    "pat-agent-setup",
+    "pat-autonomy",
+    "pat-permissions",
+    "pat-plan",
+    "pat-checkpoints",
+    "pat-handoff",
+    "pat-status"
+   ],
+   "components": [
+    "accordion",
+    "badge",
+    "button",
+    "dot-grid",
+    "orb",
+    "radio-group",
+    "segmented-control",
+    "select",
+    "split-button",
+    "status-dot",
+    "tabs",
+    "typography",
+    "zoom-control"
+   ]
+  }
+ }
+}

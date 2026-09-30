@@ -1,6 +1,6 @@
-# UI by Halaska: install and retrofit guide
+# Halaska UI: install and retrofit guide
 
-You are a coding agent setting up UI by Halaska (halaska-kit.jsx) in a project. Follow this guide end to end. API reference with every export and its props: https://ui.halaska.com/llms.txt
+You are a coding agent setting up Halaska UI (halaska-kit.jsx) in a project. Follow this guide end to end. API reference with every export and its props: https://ui.halaska.com/llms.txt
 
 ## What it is
 

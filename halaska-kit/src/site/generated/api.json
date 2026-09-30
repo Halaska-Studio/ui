@@ -1,0 +1,3494 @@
+{
+ "ThemeProvider": [
+  {
+   "name": "theme",
+   "type": "string",
+   "default": "\"light\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  }
+ ],
+ "Text": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"base\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "weight",
+   "type": "string",
+   "default": "\"regular\"",
+   "description": ""
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "mono",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "muted",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "secondary",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "align",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "truncate",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  },
+  {
+   "name": "as",
+   "type": "string",
+   "default": "\"span\"",
+   "description": ""
+  }
+ ],
+ "Heading": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "level",
+   "type": "number",
+   "default": "1",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Label": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "required",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "htmlFor",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Caption": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Code": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Button": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"primary\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "iconRight",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "loading",
+   "type": "boolean",
+   "description": "Shows a spinner and blocks clicks."
+  },
+  {
+   "name": "fullWidth",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  },
+  {
+   "name": "type",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-expanded\"",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-haspopup\"",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-describedby\"",
+   "type": "any",
+   "description": ""
+  }
+ ],
+ "IconButton": [
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "36",
+   "description": "Size of the control."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"ghost\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  },
+  {
+   "name": "\"aria-expanded\"",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-haspopup\"",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "\"aria-describedby\"",
+   "type": "any",
+   "description": ""
+  }
+ ],
+ "ButtonGroup": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "LinkButton": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "iconRight",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "TextInput": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "caption",
+   "type": "string",
+   "description": "Helper text under the control."
+  },
+  {
+   "name": "error",
+   "type": "string",
+   "description": "Error message. Turns the border red and replaces the caption."
+  },
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "type",
+   "type": "string",
+   "default": "\"text\"",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "TextArea": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "caption",
+   "type": "string",
+   "description": "Helper text under the control."
+  },
+  {
+   "name": "rows",
+   "type": "number",
+   "default": "3",
+   "description": ""
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Select": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "options",
+   "type": "array",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Checkbox": [
+  {
+   "name": "checked",
+   "type": "boolean",
+   "description": "The controlled checked state."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
+  }
+ ],
+ "Radio": [
+  {
+   "name": "checked",
+   "type": "boolean",
+   "description": "The controlled checked state."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "description": "Prevents interaction and dims the control."
+  },
+  {
+   "name": "tabIndex",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "RadioGroup": [
+  {
+   "name": "options",
+   "type": "array",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SwitchToggle": [
+  {
+   "name": "checked",
+   "type": "boolean",
+   "description": "The controlled checked state."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SegmentedControl": [
+  {
+   "name": "options",
+   "type": "array",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Card": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "padding",
+   "type": "any",
+   "description": ""
+  },
+  {
+   "name": "hover",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "CardHeader": [
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "subtitle",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "action",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Divider": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "spacing",
+   "type": "number",
+   "description": ""
+  }
+ ],
+ "Stack": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "gap",
+   "type": "string",
+   "default": "\"md\"",
+   "description": ""
+  },
+  {
+   "name": "direction",
+   "type": "string",
+   "default": "\"column\"",
+   "description": ""
+  },
+  {
+   "name": "align",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "justify",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "wrap",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "DotGrid": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "spacing",
+   "type": "number",
+   "default": "20",
+   "description": ""
+  }
+ ],
+ "Badge": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"default\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Tag": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "removable",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "onRemove",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Spinner": [
+  {
+   "name": "size",
+   "type": "number",
+   "default": "16",
+   "description": "Size of the control."
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  }
+ ],
+ "Progress": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "6",
+   "description": ""
+  }
+ ],
+ "Skeleton": [
+  {
+   "name": "width",
+   "type": "number",
+   "description": ""
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "16",
+   "description": ""
+  },
+  {
+   "name": "rounded",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Toast": [
+  {
+   "name": "message",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"default\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Avatar": [
+  {
+   "name": "name",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "src",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "32",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AvatarGroup": [
+  {
+   "name": "names",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "max",
+   "type": "number",
+   "default": "4",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "28",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ListItem": [
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "subtitle",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "left",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "right",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "divider",
+   "type": "boolean",
+   "default": "true",
+   "description": ""
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Stat": [
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "change",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AISuggestionBadge": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "StreamingText": [
+  {
+   "name": "text",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "30",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ConfidenceBar": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "BeforeAfterToggle": [
+  {
+   "name": "before",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "after",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ZoomControl": [
+  {
+   "name": "zoom",
+   "type": "number",
+   "description": ""
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Pagination": [
+  {
+   "name": "current",
+   "type": "number",
+   "description": ""
+  },
+  {
+   "name": "total",
+   "type": "number",
+   "description": ""
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"numbers\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Slider": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "min",
+   "type": "number",
+   "default": "0",
+   "description": ""
+  },
+  {
+   "name": "max",
+   "type": "number",
+   "default": "100",
+   "description": ""
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Orb": [
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"pulse\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "20",
+   "description": "Size of the control."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "pill",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "ThinkingIndicator": [
+  {
+   "name": "label",
+   "type": "string",
+   "default": "\"Thinking\"",
+   "description": "Visible label."
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ThinkingSteps": [
+  {
+   "name": "steps",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "current",
+   "type": "number",
+   "default": "0",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SpringToggle": [
+  {
+   "name": "checked",
+   "type": "boolean",
+   "description": "The controlled checked state."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SpringSlider": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "min",
+   "type": "number",
+   "default": "0",
+   "description": ""
+  },
+  {
+   "name": "max",
+   "type": "number",
+   "default": "100",
+   "description": ""
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CopyInput": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "SubtleTabs": [
+  {
+   "name": "tabs",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ProgressCircle": [
+  {
+   "name": "value",
+   "type": "number",
+   "default": "0",
+   "description": "The controlled value."
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "48",
+   "description": "Size of the control."
+  },
+  {
+   "name": "stroke",
+   "type": "number",
+   "default": "4",
+   "description": ""
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Rating": [
+  {
+   "name": "value",
+   "type": "number",
+   "default": "0",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "max",
+   "type": "number",
+   "default": "5",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "18",
+   "description": "Size of the control."
+  },
+  {
+   "name": "readOnly",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "StatusBadge": [
+  {
+   "name": "status",
+   "type": "string",
+   "default": "\"default\"",
+   "description": ""
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "pulse",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Stepper": [
+  {
+   "name": "steps",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "current",
+   "type": "number",
+   "default": "0",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CommandPalette": [
+  {
+   "name": "items",
+   "type": "array",
+   "default": "[]",
+   "description": "The entries to render."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Type a command or search…\"",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CommandMenu": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "items",
+   "type": "array",
+   "default": "[]",
+   "description": "The entries to render."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Type a command or search…\"",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Chip": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "selected",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "onToggle",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "onRemove",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "InputGroup": [
+  {
+   "name": "prefix",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "suffix",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Combobox": [
+  {
+   "name": "options",
+   "type": "array",
+   "default": "[]",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Select…\"",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Calendar": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "DatePicker": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Pick a date\"",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ContextMenu": [
+  {
+   "name": "items",
+   "type": "array",
+   "description": "The entries to render."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Menubar": [
+  {
+   "name": "menus",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Sparkline": [
+  {
+   "name": "data",
+   "type": "array",
+   "default": "[]",
+   "description": ""
+  },
+  {
+   "name": "width",
+   "type": "number",
+   "default": "240",
+   "description": ""
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "72",
+   "description": ""
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "fill",
+   "type": "boolean",
+   "default": "true",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "DataTable": [
+  {
+   "name": "columns",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "rows",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AlertDialog": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "description": "Supporting text."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"danger\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "confirmLabel",
+   "type": "string",
+   "default": "\"Confirm\"",
+   "description": ""
+  },
+  {
+   "name": "cancelLabel",
+   "type": "string",
+   "default": "\"Cancel\"",
+   "description": ""
+  },
+  {
+   "name": "onConfirm",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "FormDialog": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "description": "Supporting text."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "submitLabel",
+   "type": "string",
+   "default": "\"Save\"",
+   "description": ""
+  },
+  {
+   "name": "onSubmit",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CardDialog": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "cover",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "description": "Supporting text."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "actions",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Accordion": [
+  {
+   "name": "items",
+   "type": "array",
+   "description": "The entries to render."
+  },
+  {
+   "name": "defaultOpen",
+   "type": "number",
+   "default": "-1",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Dialog": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Tooltip": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "text",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Popover": [
+  {
+   "name": "trigger",
+   "type": "ReactNode",
+   "description": "The element that opens it."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Sheet": [
+  {
+   "name": "open",
+   "type": "boolean",
+   "description": "Whether the overlay is shown."
+  },
+  {
+   "name": "onClose",
+   "type": "() => void",
+   "description": "Called when the overlay should close."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "side",
+   "type": "string",
+   "default": "\"right\"",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Table": [
+  {
+   "name": "columns",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "rows",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Tabs": [
+  {
+   "name": "tabs",
+   "type": "array",
+   "description": ""
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Collapsible": [
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "defaultOpen",
+   "type": "boolean",
+   "default": "false",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Toggle": [
+  {
+   "name": "pressed",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "onPress",
+   "type": "function",
+   "description": ""
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ToggleGroup": [
+  {
+   "name": "options",
+   "type": "array",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Breadcrumb": [
+  {
+   "name": "items",
+   "type": "array",
+   "description": "The entries to render."
+  },
+  {
+   "name": "maxVisible",
+   "type": "number",
+   "description": ""
+  },
+  {
+   "name": "home",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "HoverCard": [
+  {
+   "name": "trigger",
+   "type": "ReactNode",
+   "description": "The element that opens it."
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ChevronIcon": [
+  {
+   "name": "size",
+   "type": "number",
+   "default": "12",
+   "description": "Size of the control."
+  },
+  {
+   "name": "direction",
+   "type": "string",
+   "default": "\"right\"",
+   "description": ""
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "InputOTP": [
+  {
+   "name": "length",
+   "type": "number",
+   "default": "6",
+   "description": ""
+  },
+  {
+   "name": "value",
+   "type": "string",
+   "default": "\"\"",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Kbd": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "EmptyState": [
+  {
+   "name": "icon",
+   "type": "ReactNode",
+   "description": "Icon shown before the content."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "description": "Supporting text."
+  },
+  {
+   "name": "action",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AlertBanner": [
+  {
+   "name": "title",
+   "type": "string",
+   "description": "Heading text."
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "description": "Supporting text."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"default\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "DropdownMenu": [
+  {
+   "name": "trigger",
+   "type": "ReactNode",
+   "description": "The element that opens it."
+  },
+  {
+   "name": "items",
+   "type": "array",
+   "description": "The entries to render."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ScrollArea": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "maxHeight",
+   "type": "number",
+   "default": "200",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "Choicebox": [
+  {
+   "name": "options",
+   "type": "array",
+   "description": "The choices to offer."
+  },
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "multiple",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SearchInput": [
+  {
+   "name": "value",
+   "type": "any",
+   "description": "The controlled value."
+  },
+  {
+   "name": "onChange",
+   "type": "(value) => void",
+   "description": "Called with the new value."
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Search…\"",
+   "description": "Hint shown while empty."
+  },
+  {
+   "name": "shortcut",
+   "type": "string",
+   "default": "\"⌘K\"",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "SplitButton": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "onClick",
+   "type": "() => void",
+   "description": "Called on click."
+  },
+  {
+   "name": "items",
+   "type": "array",
+   "default": "[]",
+   "description": "The entries to render."
+  },
+  {
+   "name": "variant",
+   "type": "string",
+   "default": "\"primary\"",
+   "description": "Visual variant."
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"md\"",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "StatusDot": [
+  {
+   "name": "status",
+   "type": "string",
+   "default": "\"online\"",
+   "description": ""
+  },
+  {
+   "name": "pulse",
+   "type": "boolean",
+   "description": ""
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "8",
+   "description": "Size of the control."
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "description": "Visible label."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "MiddleTruncate": [
+  {
+   "name": "text",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "tail",
+   "type": "number",
+   "default": "6",
+   "description": ""
+  },
+  {
+   "name": "mono",
+   "type": "boolean",
+   "default": "true",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "Snippet": [
+  {
+   "name": "text",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "prompt",
+   "type": "string",
+   "default": "\"$\"",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "FileTree": [
+  {
+   "name": "data",
+   "type": "array",
+   "default": "[]",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "BrowserFrame": [
+  {
+   "name": "url",
+   "type": "string",
+   "default": "\"localhost:3000\"",
+   "description": ""
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "PhoneFrame": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  },
+  {
+   "name": "width",
+   "type": "number",
+   "default": "300",
+   "description": ""
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "560",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "NotificationCenterPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ContextBarPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "SpaceDeckPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AgentSetupPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AgentGlyph": [
+  {
+   "name": "size",
+   "type": "number",
+   "default": "24",
+   "description": "Size of the control."
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ThinkingTracePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "steps",
+   "type": "{ label: string, detail?: string }[]",
+   "default": "THINKING_TRACE_STEPS",
+   "description": "Reasoning steps, revealed one per `stepMs` (default: THINKING_TRACE_STEPS)"
+  },
+  {
+   "name": "stepMs",
+   "type": "number",
+   "default": "1100",
+   "description": "Milliseconds per step; total think time = steps.length × stepMs (default: 1100)"
+  },
+  {
+   "name": "thinkingLabel",
+   "type": "string",
+   "default": "\"Thinking\"",
+   "description": "Label shown while thinking (default: \"Thinking\")"
+  },
+  {
+   "name": "doneLabel",
+   "type": "(seconds: number) => string",
+   "default": "(seconds) => `Thought for ${seconds.toFixed(1)} seconds`",
+   "description": "Header label once done (default: `Thought for ${seconds.toFixed(1)} seconds`)"
+  },
+  {
+   "name": "collapseDelayMs",
+   "type": "number",
+   "default": "1000",
+   "description": "Pause after done before the trace collapses (default: 1000)"
+  },
+  {
+   "name": "autoCollapse",
+   "type": "boolean",
+   "default": "true",
+   "description": "Collapse the trace automatically after done (default: true)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Run the timed trace on mount; false renders the finished, collapsed state with no timers (default: true)"
+  },
+  {
+   "name": "defaultOpen",
+   "type": "boolean",
+   "default": "autoplay",
+   "description": "Initial expanded state of the trace (default: autoplay)"
+  },
+  {
+   "name": "onDone",
+   "type": "(seconds: number) => void",
+   "description": "Fires when thinking completes (autoplay only)"
+  },
+  {
+   "name": "onToggle",
+   "type": "(open: boolean) => void",
+   "description": "Fires when the trace expands/collapses, by user click or auto-collapse"
+  }
+ ],
+ "StreamingAnswerPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override (defaults to ThemeProvider context)"
+  },
+  {
+   "name": "segments",
+   "type": "({ t: string ",
+   "default": "STREAM_ANSWERS.default.segments",
+   "description": "| { chip: string })[]} The answer as text runs and inline source chips, in order; streaming restarts whenever it changes (default: the Acme ticket demo answer)"
+  },
+  {
+   "name": "sources",
+   "type": "{ name: string, domain: string }[]",
+   "default": "STREAM_SOURCES",
+   "description": "Sources row shown once streaming completes (default: STREAM_SOURCES)"
+  },
+  {
+   "name": "followups",
+   "type": "string[]",
+   "default": "STREAM_ANSWERS.default.followups",
+   "description": "Follow-up prompts listed under the answer (default: the demo follow-ups)"
+  },
+  {
+   "name": "thinkingLabel",
+   "type": "string",
+   "default": "\"Checking the inbox\"",
+   "description": "Label beside the dots while thinking (default: \"Checking the inbox\")"
+  },
+  {
+   "name": "answerLabel",
+   "type": "string",
+   "default": "\"Answer\"",
+   "description": "Caption that replaces the thinking indicator once streaming starts (default: \"Answer\")"
+  },
+  {
+   "name": "sourcesLabel",
+   "type": "(n: number) => string",
+   "default": "n => `${n} sources`",
+   "description": "Caption above the sources row, given the source count (default: n => `${n} sources`)"
+  },
+  {
+   "name": "followupsLabel",
+   "type": "string",
+   "default": "\"Follow-ups\"",
+   "description": "Caption above the follow-up list (default: \"Follow-ups\")"
+  },
+  {
+   "name": "thinkMs",
+   "type": "number",
+   "default": "700",
+   "description": "Thinking duration before the first character appears (default: 700)"
+  },
+  {
+   "name": "charsPerTick",
+   "type": "number",
+   "default": "2",
+   "description": "Characters revealed per tick (default: 2)"
+  },
+  {
+   "name": "tickMs",
+   "type": "number",
+   "default": "18",
+   "description": "Milliseconds between ticks (default: 18)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Think → stream on mount; false renders the finished answer immediately with no timers (default: true)"
+  },
+  {
+   "name": "onFollowup",
+   "type": "(text: string) => void",
+   "description": "Fires when a follow-up is clicked; the parent then swaps `segments`/`followups`. When omitted, the demo toggles to its built-in second answer"
+  },
+  {
+   "name": "onDone",
+   "type": "() => void",
+   "description": "Fires when streaming completes (not fired when autoplay is false)"
+  }
+ ],
+ "ApprovalCardPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\"|\"dark\"",
+   "description": "Palette override (defaults to ThemeContext)"
+  },
+  {
+   "name": "eyebrow",
+   "type": "string",
+   "default": "\"Needs your call\"",
+   "description": "Small caption beside the agent glyph (default: \"Needs your call\")"
+  },
+  {
+   "name": "badgeLabel",
+   "type": "string",
+   "default": "\"Paused\"",
+   "description": "Status badge text while paused (default: \"Paused\")"
+  },
+  {
+   "name": "question",
+   "type": "string",
+   "default": "\"How should I reply to Acme's outage complaint?\"",
+   "description": "The question the agent is asking (default: \"How should I reply to Acme's outage complaint?\")"
+  },
+  {
+   "name": "options",
+   "type": "{ id: string, title: string, sub?: string }[]",
+   "default": "APPROVAL_OPTIONS",
+   "description": "Radio-row choices (default: APPROVAL_OPTIONS)"
+  },
+  {
+   "name": "approveLabel",
+   "type": "string",
+   "default": "\"Approve\"",
+   "description": "Primary button label (default: \"Approve\")"
+  },
+  {
+   "name": "skipLabel",
+   "type": "string",
+   "default": "\"Skip\"",
+   "description": "Ghost button label (default: \"Skip\")"
+  },
+  {
+   "name": "approvedText",
+   "type": "string | ((option) => string)",
+   "default": "APPROVAL_APPROVED_TEXT",
+   "description": "Headline of the approved state; a function receives the chosen option (default: `Approved · ${option.title}`)"
+  },
+  {
+   "name": "skippedText",
+   "type": "string",
+   "default": "APPROVAL_SKIPPED_TEXT",
+   "description": "Headline of the skipped state (default: \"Skipped · nothing was changed\")"
+  },
+  {
+   "name": "onSelect",
+   "type": "(option) => void",
+   "description": "Fires when a radio row is picked"
+  },
+  {
+   "name": "onApprove",
+   "type": "(option) => void",
+   "description": "Fires when Approve is clicked, with the chosen option"
+  },
+  {
+   "name": "onSkip",
+   "type": "() => void",
+   "description": "Fires when Skip is clicked"
+  }
+ ],
+ "ToolStreamPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AgentTasksPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "RecommendationPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ContextSourcesPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "DiffTablePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CommandSearchPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "InsightCardsPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AgentChatPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "PromptInputPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "MessageThreadPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CodeBlockPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ModelContextPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "CitationsPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ConfidencePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "FeedbackPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "PlanPreviewPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Alpha wants to clear the support backlog\"",
+   "description": "Card headline (default: \"Alpha wants to clear the support backlog\")"
+  },
+  {
+   "name": "subtitle",
+   "type": "string",
+   "default": "\"Nothing runs until you say so.\"",
+   "description": "Line under the headline while reviewing (default: \"Nothing runs until you say so.\")"
+  },
+  {
+   "name": "steps",
+   "type": "string[]",
+   "default": "PLANPREV_STEPS",
+   "description": "Plain-language steps, shown numbered; copied into state on mount so edits never mutate the prop"
+  },
+  {
+   "name": "badgeLabel",
+   "type": "string",
+   "default": "\"Proposed\"",
+   "description": "Status badge text in the review/edit phases (default: \"Proposed\")"
+  },
+  {
+   "name": "proceedLabel",
+   "type": "string",
+   "default": "\"Proceed\"",
+   "description": "Primary action label (default: \"Proceed\")"
+  },
+  {
+   "name": "editLabel",
+   "type": "string",
+   "default": "\"Edit plan\"",
+   "description": "Secondary action label (default: \"Edit plan\")"
+  },
+  {
+   "name": "handoffLabel",
+   "type": "string",
+   "default": "\"I'll do it myself\"",
+   "description": "Ghost action label that hands the plan back to the user (default: \"I'll do it myself\")"
+  },
+  {
+   "name": "lockLabel",
+   "type": "string",
+   "default": "\"Lock plan\"",
+   "description": "Label of the button that locks an edited plan (default: \"Lock plan\")"
+  },
+  {
+   "name": "doneText",
+   "type": "string | (count: number) => string",
+   "description": "Footer text once every step has run; default renders \"Done · N actions taken · view receipt\""
+  },
+  {
+   "name": "handoffText",
+   "type": "string",
+   "default": "\"Plan handed off. Alpha is standing by.\"",
+   "description": "Line shown after the user takes the plan over (default: \"Plan handed off. Alpha is standing by.\")"
+  },
+  {
+   "name": "stepDelayMs",
+   "type": "number",
+   "default": "700",
+   "description": "Interval between steps checking off while executing (default: 700)"
+  },
+  {
+   "name": "onProceed",
+   "type": "(steps: string[]) => void",
+   "description": "Fires when Proceed is clicked, with the kept (possibly edited) steps"
+  },
+  {
+   "name": "onComplete",
+   "type": "(steps: string[]) => void",
+   "description": "Fires when the last kept step checks off"
+  },
+  {
+   "name": "onEdit",
+   "type": "(steps: string[]) => void",
+   "description": "Fires when the plan is locked after editing, with the kept steps"
+  },
+  {
+   "name": "onHandoff",
+   "type": "() => void",
+   "description": "Fires when the user chooses to do it themselves"
+  }
+ ],
+ "AutonomyPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "PermissionScopePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "QueuePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AgentStatusPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override (defaults to ThemeContext)"
+  },
+  {
+   "name": "phases",
+   "type": "(string | { label: string, orb?: \"pulse\" | \"orbit\" | \"sweep\" | \"globe\" | \"spark\" })[]",
+   "default": "AGENTSTATUS_MAIN_PHASES",
+   "description": "Main working phases, shown in order (default: AGENTSTATUS_MAIN_PHASES with orbit → globe → sweep orbs)"
+  },
+  {
+   "name": "redirectPhases",
+   "type": "(string | { label: string, orb?: \"pulse\" | \"orbit\" | \"sweep\" | \"globe\" | \"spark\" })[]",
+   "default": "AGENTSTATUS_REDIRECT_PHASES",
+   "description": "Phases run after a redirect note is sent (default: AGENTSTATUS_REDIRECT_PHASES with globe → sweep orbs)"
+  },
+  {
+   "name": "waitingLabel",
+   "type": "string",
+   "default": "\"Waiting on you · 2 replies need a look\"",
+   "description": "Pill text once the main cycle ends and the agent needs the user (default: \"Waiting on you · 2 replies need a look\")"
+  },
+  {
+   "name": "pausedLabel",
+   "type": "string",
+   "default": "\"Stopped · progress kept\"",
+   "description": "Pill text while stopped (default: \"Stopped · progress kept\")"
+  },
+  {
+   "name": "doneLabel",
+   "type": "string",
+   "default": "\"Done · replies redrafted to your note\"",
+   "description": "Pill text once the redirect cycle finishes (default: \"Done · replies redrafted to your note\")"
+  },
+  {
+   "name": "phaseMs",
+   "type": "number",
+   "default": "1800",
+   "description": "Milliseconds per phase (default: 1800)"
+  },
+  {
+   "name": "contextLabel",
+   "type": "string | ((step: number, total: number) => string)",
+   "default": "agentstatusContextLabel",
+   "description": "Footer line under the pill (default: (step, total) => `Alpha · step ${step} of ${total}`)"
+  },
+  {
+   "name": "redirectPlaceholder",
+   "type": "string",
+   "default": "\"Tell Alpha what to do instead…\"",
+   "description": "Placeholder for the redirect note input (default: \"Tell Alpha what to do instead…\")"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Cycle phases on mount; false renders the waiting state immediately and a redirect jumps straight to done (default: true)"
+  },
+  {
+   "name": "onPause",
+   "type": "() => void",
+   "description": "Fires when the user stops the run (the control reads Stop)"
+  },
+  {
+   "name": "onResume",
+   "type": "() => void",
+   "description": "Fires when the user resumes"
+  },
+  {
+   "name": "onRedirect",
+   "type": "(note: string) => void",
+   "description": "Fires with the trimmed note when the user sends a redirect"
+  },
+  {
+   "name": "onWaiting",
+   "type": "() => void",
+   "description": "Fires when the main cycle ends and the agent needs the user"
+  },
+  {
+   "name": "onDone",
+   "type": "() => void",
+   "description": "Fires when the redirect cycle finishes"
+  }
+ ],
+ "HandoffPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override; falls back to ThemeContext"
+  },
+  {
+   "name": "workingLabel",
+   "type": "string",
+   "default": "\"Reviewing Acme's refund request…\"",
+   "description": "ThinkingIndicator label while the agent is still working (default: \"Reviewing Acme's refund request…\")"
+  },
+  {
+   "name": "workingMs",
+   "type": "number",
+   "default": "2000",
+   "description": "How long the working beat lasts before the handoff card appears (default: 2000)"
+  },
+  {
+   "name": "headline",
+   "type": "string",
+   "default": "\"Alpha is handing this to you\"",
+   "description": "Handoff headline on the accent rail (default: \"Alpha is handing this to you\")"
+  },
+  {
+   "name": "reason",
+   "type": "string",
+   "default": "\"Refund exceeds your $2,500 approval cap\"",
+   "description": "Because-line under the headline (default: \"Refund exceeds your $2,500 approval cap\")"
+  },
+  {
+   "name": "context",
+   "type": "{ label: string, value: string }[]",
+   "default": "HANDOFF_CONTEXT_ROWS",
+   "description": "Prepared context rows the human inherits (value renders mono)"
+  },
+  {
+   "name": "takeOverLabel",
+   "type": "string",
+   "default": "\"Take over\"",
+   "description": "Primary action label (default: \"Take over\")"
+  },
+  {
+   "name": "resumeLabel",
+   "type": "string",
+   "default": "\"Raise cap to $5,000 & let Alpha finish\"",
+   "description": "Secondary action label that raises the cap and lets the agent finish (default: \"Raise cap to $5,000 & let Alpha finish\")"
+  },
+  {
+   "name": "takenOverText",
+   "type": "string",
+   "default": "\"You have control. Alpha left notes in the thread.\"",
+   "description": "Confirmation line after Take over (default: \"You have control. Alpha left notes in the thread.\")"
+  },
+  {
+   "name": "resumingLabel",
+   "type": "string",
+   "default": "\"Resuming with new cap…\"",
+   "description": "ThinkingIndicator label while the agent resumes (default: \"Resuming with new cap…\")"
+  },
+  {
+   "name": "resumedText",
+   "type": "ReactNode",
+   "default": "HANDOFF_RESUMED_TEXT",
+   "description": "Resolved line after the agent finishes (default: \"Done · refunded $3,900 to Acme\", amount in mono)"
+  },
+  {
+   "name": "resumeMs",
+   "type": "number",
+   "default": "1500",
+   "description": "How long the resuming beat lasts before it resolves (default: 1500)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Play the working beat on mount; false shows the handoff card immediately (default: true)"
+  },
+  {
+   "name": "onTakeOver",
+   "type": "() => void",
+   "description": "Fires when the user clicks Take over"
+  },
+  {
+   "name": "onResume",
+   "type": "() => void",
+   "description": "Fires when the user clicks the raise-cap action"
+  },
+  {
+   "name": "onResumed",
+   "type": "() => void",
+   "description": "Fires when the resumed run resolves (after resumeMs)"
+  }
+ ],
+ "ActionReceiptPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Credit issued\"",
+   "description": "Headline while the action stands (default: \"Credit issued\")"
+  },
+  {
+   "name": "reversedTitle",
+   "type": "string",
+   "default": "\"Reversed\"",
+   "description": "Headline after undo (default: \"Reversed\")"
+  },
+  {
+   "name": "timestamp",
+   "type": "string",
+   "default": "\"14:32:07 UTC\"",
+   "description": "Mono timestamp shown top-right (default: \"14:32:07 UTC\")"
+  },
+  {
+   "name": "reversedTimestamp",
+   "type": "string",
+   "default": "\"14:32:19 UTC\"",
+   "description": "Timestamp shown after undo (default: \"14:32:19 UTC\")"
+  },
+  {
+   "name": "meta",
+   "type": "{ label: string, value: string }[]",
+   "default": "RECEIPT_META",
+   "description": "What / Where / Authority rows (default: RECEIPT_META)"
+  },
+  {
+   "name": "reversedMeta",
+   "type": "{ label: string, value: string }[]",
+   "default": "RECEIPT_META_REVERSED",
+   "description": "Rows shown after undo (default: RECEIPT_META_REVERSED)"
+  },
+  {
+   "name": "before",
+   "type": "number",
+   "default": "0",
+   "description": "Credit balance before the action (default: 0)"
+  },
+  {
+   "name": "after",
+   "type": "number",
+   "default": "180",
+   "description": "Credit balance after the action; counts up on mount (default: 180)"
+  },
+  {
+   "name": "unit",
+   "type": "string",
+   "default": "\"USD\"",
+   "description": "Unit suffix on the strip and delta (default: \"USD\")"
+  },
+  {
+   "name": "decimals",
+   "type": "number",
+   "default": "0",
+   "description": "Decimal places for before/after/delta (default: 0)"
+  },
+  {
+   "name": "stripLabel",
+   "type": "string",
+   "default": "\"Acme credit\"",
+   "description": "Label at the left of the before → after strip (default: \"Acme credit\")"
+  },
+  {
+   "name": "undoSeconds",
+   "type": "number",
+   "default": "RECEIPT_UNDO_SECONDS",
+   "description": "Length of the undo window; drives the ring and countdown (default: 10)"
+  },
+  {
+   "name": "undoLabel",
+   "type": "string",
+   "default": "\"Undo\"",
+   "description": "Undo button text (default: \"Undo\")"
+  },
+  {
+   "name": "expiredLabel",
+   "type": "string",
+   "default": "\"Undo window closed\"",
+   "description": "Caption once the window closes (default: \"Undo window closed\")"
+  },
+  {
+   "name": "reversedLabel",
+   "type": "string",
+   "default": "\"Reversal logged · nothing else was affected\"",
+   "description": "Caption after undo (default: \"Reversal logged · nothing else was affected\")"
+  },
+  {
+   "name": "auditLabel",
+   "type": "string",
+   "default": "\"View in audit log\"",
+   "description": "Audit link text in the expired and reversed states (default: \"View in audit log\")"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Run the countdown + count-up on mount; false renders the expired state with no timers (default: true)"
+  },
+  {
+   "name": "onUndo",
+   "type": "() => void",
+   "description": "Fires when the user clicks Undo inside the window"
+  },
+  {
+   "name": "onExpire",
+   "type": "() => void",
+   "description": "Fires when the undo window closes untouched"
+  },
+  {
+   "name": "onAudit",
+   "type": "() => void",
+   "description": "Fires when the user clicks the audit link"
+  }
+ ],
+ "CheckpointPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "AuditLogPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ErrorRepairPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override (defaults to ThemeProvider context)"
+  },
+  {
+   "name": "headline",
+   "type": "string",
+   "default": "\"Alpha got this one wrong\"",
+   "description": "Plain-language admission (default: \"Alpha got this one wrong\")"
+  },
+  {
+   "name": "acknowledgment",
+   "type": "string",
+   "default": "\"Alpha archived the Stripe payout notice as a newsletter. It matched the sender rule and never reached your inbox.\"",
+   "description": "One sentence on what went wrong, no blame (default: the archived-payout-notice line)"
+  },
+  {
+   "name": "fixesTitle",
+   "type": "string",
+   "default": "\"What Alpha did about it\"",
+   "description": "Eyebrow above the fix list (default: \"What Alpha did about it\")"
+  },
+  {
+   "name": "fixes",
+   "type": "string[]",
+   "default": "REPAIR_FIXES",
+   "description": "Corrective actions taken, each drawn in with a check (default: REPAIR_FIXES)"
+  },
+  {
+   "name": "diff",
+   "type": "{ label: string, before: string, after: string ",
+   "default": "REPAIR_DIFF",
+   "description": "| null} Before/after line revealed by Review; null hides the Review button and the diff (default: REPAIR_DIFF)"
+  },
+  {
+   "name": "reviewLabel",
+   "type": "string",
+   "default": "\"Review the fix\"",
+   "description": "Toggle-diff button label (default: \"Review the fix\")"
+  },
+  {
+   "name": "flagLabel",
+   "type": "string",
+   "default": "\"Flag for a human\"",
+   "description": "Escalation button label (default: \"Flag for a human\")"
+  },
+  {
+   "name": "footer",
+   "type": "string",
+   "default": "\"Logged to audit · nothing else was affected.\"",
+   "description": "Quiet audit note under the actions; empty string hides it (default: \"Logged to audit · nothing else was affected.\")"
+  },
+  {
+   "name": "beatMs",
+   "type": "number",
+   "default": "1200",
+   "description": "Delay between the three beats when autoplaying (default: 1200)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Reveal beats on a timer; false shows all three at once, no timers (default: true)"
+  },
+  {
+   "name": "onReview",
+   "type": "() => void",
+   "description": "Fires when the user toggles the diff open or closed"
+  },
+  {
+   "name": "onFlag",
+   "type": "() => void",
+   "description": "Fires when the user asks for a human"
+  }
+ ],
+ "ArtifactPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "DiffViewPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "StructuredDataPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ComparisonPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "TaskboardPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "InlineAssistPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "NudgePattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "DigestPattern": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ChatParadigmExample": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "layout",
+   "type": "string",
+   "default": "\"desktop\"",
+   "description": ""
+  }
+ ],
+ "CanvasParadigmExample": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "layout",
+   "type": "string",
+   "default": "\"desktop\"",
+   "description": ""
+  }
+ ],
+ "CompareSlider": [
+  {
+   "name": "before",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "after",
+   "type": "ReactNode",
+   "description": ""
+  },
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "initial",
+   "type": "number",
+   "default": "0.5",
+   "description": ""
+  },
+  {
+   "name": "labels",
+   "type": "array",
+   "default": "[\"Before\", \"After\"]",
+   "description": ""
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "description": "Inline style merged onto the root element."
+  }
+ ],
+ "BeforeAfterSection": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  }
+ ],
+ "ChatParadigmBefore": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "layout",
+   "type": "string",
+   "default": "\"desktop\"",
+   "description": ""
+  }
+ ]
+}

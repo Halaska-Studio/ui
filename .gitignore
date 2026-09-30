@@ -22,3 +22,6 @@ halaska-kit/public/halaska-kit.jsx
 halaska-kit/public/halaska-kit.d.ts
 halaska-kit/public/llms.txt
 halaska-kit/public/source-map.json
+
+# internal working notes (never published)
+docs/internal/

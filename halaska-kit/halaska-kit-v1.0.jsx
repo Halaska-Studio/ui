@@ -6,7 +6,7 @@
  * Single-file React kit: import { Button, Orb, PlanPreviewPattern } from "./halaska-kit"
  */
 
-import { useState, useRef, useEffect, useCallback, createContext, useContext, Fragment } from "react";
+import { useState, useRef, useEffect, useCallback, createContext, useContext, Fragment, cloneElement, isValidElement } from "react";
 
 // shadcn/ui components available in Claude artifacts:
 // Badge, Button, Card, Checkbox, Input, Label, Progress, RadioGroup,
@@ -131,6 +131,9 @@ const GLOBAL_STYLES = `
 @media (prefers-reduced-motion: reduce) {
   [data-halaska-orb] span { animation: none !important; opacity: 0.6 !important; transform: none !important; }
 }
+@media (prefers-reduced-motion: reduce) {
+  [data-halaska-calm] { animation: none !important; }
+}
 
 /* Keyboard focus is always visible. Components set outline:none inline for
    pointer users; :focus-visible restores a ring for keyboard users only. */
@@ -138,6 +141,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   outline: 2px solid #3b82f6 !important;
   outline-offset: 2px !important;
 }
+[role="dialog"]:focus-visible, [role="alertdialog"]:focus-visible { outline: none !important; }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -355,6 +359,86 @@ const interactiveBase = {
   transition: `all ${motion.normal} ${motion.easeInOut}`,
 };
 
+// ─── ACCESSIBILITY HELPERS ────────────────────────────────────
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// Modal behaviour for overlays: moves focus inside when it opens, keeps Tab
+// inside, closes on Escape, and returns focus to whatever opened it.
+function useModalFocus(open, onClose) {
+  const ref = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return;
+    const opener = document.activeElement;
+    const items = () => ref.current ? [...ref.current.querySelectorAll(FOCUSABLE)].filter(el => el.getClientRects().length) : [];
+    const t = setTimeout(() => {
+      const node = ref.current;
+      if (node && !node.contains(document.activeElement)) (items()[0] || node).focus({ preventScroll: true });
+    }, 0);
+    const onKey = (e) => {
+      const node = ref.current;
+      if (e.key === "Escape") { e.stopPropagation(); closeRef.current?.(); return; }
+      if (e.key !== "Tab" || !node) return;
+      const list = items();
+      if (!list.length) { e.preventDefault(); return; }
+      const first = list[0], last = list[list.length - 1], active = document.activeElement;
+      if (e.shiftKey && (active === first || !node.contains(active))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && (active === last || !node.contains(active))) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("keydown", onKey, true);
+      if (opener && opener.focus) opener.focus({ preventScroll: true });
+    };
+  }, [open]);
+  return ref;
+}
+
+// Arrow keys move focus between the items of a group (tabs, menus, radios).
+// Returns the newly focused element so callers can also select it.
+function arrowNav(e, { selector = "button:not([disabled])", horizontal = true, vertical = true, onEscape } = {}) {
+  if (e.key === "Escape" && onEscape) { e.stopPropagation(); onEscape(); return null; }
+  const prev = (horizontal && e.key === "ArrowLeft") || (vertical && e.key === "ArrowUp");
+  const next = (horizontal && e.key === "ArrowRight") || (vertical && e.key === "ArrowDown");
+  if (!prev && !next && e.key !== "Home" && e.key !== "End") return null;
+  const items = [...e.currentTarget.querySelectorAll(selector)];
+  if (!items.length) return null;
+  const i = items.indexOf(document.activeElement);
+  const target = e.key === "Home" ? items[0] : e.key === "End" ? items[items.length - 1]
+    : items[(i + (next ? 1 : -1) + items.length) % items.length];
+  e.preventDefault();
+  target.focus();
+  return target;
+}
+
+// Focus the first item of a menu when it mounts.
+const focusFirstItem = (el) => { if (el) { const b = el.querySelector("button:not([disabled])"); if (b) b.focus({ preventScroll: true }); } };
+
+// Props that let a clickable container act as a button for keyboard users.
+const pressable = (onClick) => (onClick ? {
+  role: "button", tabIndex: 0,
+  onKeyDown: (e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onClick(e); } },
+} : {});
+
+// Adds expanded state to a trigger element so assistive tech hears it on the
+// control itself. Kit buttons pass these through; other elements get them as attributes.
+const withPopupState = (trigger, open, popup) =>
+  (isValidElement(trigger) ? cloneElement(trigger, { "aria-expanded": open, "aria-haspopup": popup }) : trigger);
+
+// A stable id for linking a control to its popup or active option.
+let uidCount = 0;
+function useUid(prefix = "hk") {
+  const ref = useRef(null);
+  if (!ref.current) ref.current = `${prefix}-${++uidCount}`;
+  return ref.current;
+}
+
+// A plain-text label can name a control for assistive tech.
+const labelText = (label) => (typeof label === "string" ? label : undefined);
+
 // ─── AVATAR COLORS ────────────────────────────────────────────
 // Deterministic palette from name hash: soft, muted tones
 
@@ -475,14 +559,14 @@ function Heading({ children, level = 1, theme: tp, style: sp }) {
   );
 }
 
-function Label({ children, required, theme: tp, style: sp }) {
+function Label({ children, required, htmlFor, theme: tp, style: sp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <label style={{
+    <label htmlFor={htmlFor} style={{
       ...tokens.type.sm, fontWeight: tokens.weight.medium, fontFamily: tokens.font.sans,
       color: pal.textSecondary, display: "flex", alignItems: "center",
       gap: 4, transition: `color ${motion.smooth} ${motion.easeInOut}`, ...sp,
-    }}>{children}{required && <span style={{ color: pal.danger }}>*</span>}</label>
+    }}>{children}{required && <span aria-hidden="true" style={{ color: pal.danger }}>*</span>}</label>
   );
 }
 
@@ -507,6 +591,7 @@ function Code({ children, theme: tp, style: sp }) {
 function Button({
   children, variant = "primary", size = "md", icon, iconRight,
   disabled, loading, fullWidth, onClick, theme: tp, style: sp,
+  type, "aria-label": ariaLabel, "aria-expanded": ariaExpanded, "aria-haspopup": ariaHaspopup, "aria-describedby": ariaDescribedby,
 }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
@@ -580,6 +665,7 @@ function Button({
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
       disabled={disabled}
+      type={type} aria-label={ariaLabel} aria-expanded={ariaExpanded} aria-haspopup={ariaHaspopup} aria-describedby={ariaDescribedby} aria-busy={loading || undefined}
       style={{
         ...interactiveBase, ...s, border: "none", ...v,
         fontWeight: tokens.weight.medium, borderRadius: tokens.radius.md,
@@ -604,7 +690,7 @@ function Button({
   );
 }
 
-function IconButton({ icon, size = 36, variant = "ghost", onClick, theme: tp, label: ariaLabel, style: sp }) {
+function IconButton({ icon, size = 36, variant = "ghost", onClick, theme: tp, label: ariaLabel, style: sp, "aria-expanded": ariaExpanded, "aria-haspopup": ariaHaspopup, "aria-describedby": ariaDescribedby }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const bgMap = {
@@ -613,8 +699,8 @@ function IconButton({ icon, size = 36, variant = "ghost", onClick, theme: tp, la
     outline: hover ? pal.bgSubtle : "transparent",
   };
   return (
-    <button onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      aria-label={ariaLabel} style={{
+    <button type="button" onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      aria-label={ariaLabel} aria-expanded={ariaExpanded} aria-haspopup={ariaHaspopup} aria-describedby={ariaDescribedby} style={{
         ...interactiveBase, width: size, height: size, borderRadius: tokens.radius.md,
         background: bgMap[variant] || bgMap.ghost, color: pal.textSecondary,
         display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.45,
@@ -627,7 +713,7 @@ function IconButton({ icon, size = 36, variant = "ghost", onClick, theme: tp, la
 function ButtonGroup({ children, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ display: "inline-flex", borderRadius: tokens.radius.md, overflow: "hidden", border: `1px solid ${pal.borderInput}`, transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
+    <div role="group" style={{ display: "inline-flex", borderRadius: tokens.radius.md, overflow: "hidden", border: `1px solid ${pal.borderInput}`, transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
       {Array.isArray(children) ? children.map((child, i) => (
         <div key={i} style={{ borderRight: i < children.length - 1 ? `1px solid ${pal.borderInput}` : "none" }}>{child}</div>
       )) : children}
@@ -708,6 +794,7 @@ function TextInput({
         <input
           type={type} value={value} onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder} disabled={disabled}
+          aria-label={labelText(label)} aria-invalid={error ? true : undefined}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             ...s, width: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
@@ -740,7 +827,7 @@ function TextArea({ value, onChange, placeholder, label, caption, rows = 3, disa
       <div style={{ position: "relative" }}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
         <textarea value={value} onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder} rows={rows} disabled={disabled}
+          placeholder={placeholder} rows={rows} disabled={disabled} aria-label={labelText(label)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             ...tokens.type.base, width: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
@@ -766,6 +853,9 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const listRef = useRef(null);
+  const typed = useRef({ text: "", at: 0 });
+  const uid = useUid("select");
   const [hoverIdx, setHoverIdx] = useState(-1);
 
   useEffect(() => {
@@ -781,18 +871,51 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
   };
   const s = sizes[size];
 
-  const selectedLabel = options.reduce((acc, opt) => {
-    const val = typeof opt === "string" ? opt : opt.value;
-    const lab = typeof opt === "string" ? opt : opt.label;
-    return val === value ? lab : acc;
-  }, null);
+  const valOf = (opt) => (typeof opt === "string" ? opt : opt.value);
+  const labOf = (opt) => (typeof opt === "string" ? opt : opt.label);
+  const selectedIdx = options.findIndex((opt) => valOf(opt) === value);
+  const selectedLabel = selectedIdx >= 0 ? labOf(options[selectedIdx]) : null;
+
+  // Keep the active option in view while moving with the keyboard.
+  useEffect(() => {
+    if (!open || hoverIdx < 0) return;
+    const el = listRef.current?.children[hoverIdx];
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+  }, [open, hoverIdx]);
+
+  const openList = () => { setOpen(true); setHoverIdx(selectedIdx >= 0 ? selectedIdx : 0); };
+  const pick = (i) => { if (options[i] != null) onChange?.(valOf(options[i])); setOpen(false); };
+  const onKeyDown = (e) => {
+    if (disabled) return;
+    const last = options.length - 1;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!open) return openList();
+      setHoverIdx((i) => e.key === "ArrowDown" ? Math.min(last, i + 1) : Math.max(0, i - 1));
+    } else if (e.key === "Home" && open) { e.preventDefault(); setHoverIdx(0); }
+    else if (e.key === "End" && open) { e.preventDefault(); setHoverIdx(last); }
+    else if ((e.key === "Enter" || e.key === " ") && open) { e.preventDefault(); pick(hoverIdx); }
+    else if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); }
+    else if (e.key === "Tab") setOpen(false);
+    else if (e.key.length === 1 && e.key !== " ") {
+      // Type-ahead: jump to the first option starting with what was typed.
+      const now = Date.now();
+      typed.current = { text: (now - typed.current.at < 600 ? typed.current.text : "") + e.key.toLowerCase(), at: now };
+      const i = options.findIndex((opt) => String(labOf(opt)).toLowerCase().startsWith(typed.current.text));
+      if (i >= 0) { if (open) setHoverIdx(i); else onChange?.(valOf(options[i])); }
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, ...sp }}>
       {label && <Label theme={theme}>{label}</Label>}
       <div ref={ref} style={{ position: "relative" }}>
         <button
-          onClick={() => !disabled && setOpen(!open)}
+          type="button" disabled={disabled}
+          role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-label={labelText(label)}
+          aria-controls={open ? `${uid}-list` : undefined} aria-activedescendant={open && hoverIdx >= 0 ? `${uid}-opt-${hoverIdx}` : undefined}
+          onClick={() => { if (disabled) return; open ? setOpen(false) : openList(); }}
+          onKeyDown={onKeyDown}
           style={{
             ...interactiveBase, ...s, width: "100%", boxSizing: "border-box",
             textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -806,12 +929,12 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {selectedLabel || placeholder || "Select..."}
           </span>
-          <span style={{ color: pal.textTertiary, display: "inline-flex" }}>
+          <span aria-hidden="true" style={{ color: pal.textTertiary, display: "inline-flex" }}>
             <ChevronIcon size={12} direction={open ? "up" : "down"} />
           </span>
         </button>
         {open && (
-          <div style={{
+          <div ref={listRef} id={`${uid}-list`} role="listbox" style={{
             position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50,
             background: pal.bgElevated, borderRadius: tokens.radius.md,
             boxShadow: `0 4px 20px ${pal.shadowLg}`, padding: 4,
@@ -820,14 +943,15 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
             animation: `halaska-dropdown-expand ${motion.fast} ${motion.easeOut} both`,
           }}>
             {options.map((opt, i) => {
-              const val = typeof opt === "string" ? opt : opt.value;
-              const lab = typeof opt === "string" ? opt : opt.label;
+              const val = valOf(opt);
+              const lab = labOf(opt);
               const isActive = val === value;
               const isHover = hoverIdx === i;
               return (
-                <button key={val}
+                <button key={val} id={`${uid}-opt-${i}`} type="button" role="option" aria-selected={isActive} tabIndex={-1}
                   onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(-1)}
-                  onClick={() => { onChange?.(val); setOpen(false); }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pick(i)}
                   style={{
                     ...interactiveBase, width: "100%", textAlign: "left",
                     padding: `${8 + 1}px ${12}px`,
@@ -840,7 +964,7 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
                   }}
                 >
                   {lab}
-                  {isActive && <span style={{ fontSize: 12, color: pal.textTertiary }}>✓</span>}
+                  {isActive && <span aria-hidden="true" style={{ fontSize: 12, color: pal.textTertiary }}>✓</span>}
                 </button>
               );
             })}
@@ -853,37 +977,40 @@ function Select({ value, onChange, options, placeholder, label, disabled, size =
 
 // ─── 5. TOGGLES & SELECTIONS (animated) ──────────────────────
 
-function Checkbox({ checked, onChange, label, disabled, theme: tp }) {
+function Checkbox({ checked, onChange, label, disabled, theme: tp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
 
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 }}>
-      <div onClick={(e) => { e.preventDefault(); if (!disabled) onChange?.(!checked); }}
+      <button type="button" role="checkbox" aria-checked={!!checked} aria-label={ariaLabel} disabled={disabled}
+        onClick={() => { if (!disabled) onChange?.(!checked); }}
         style={{
+          ...interactiveBase, padding: 0, cursor: disabled ? "default" : "pointer",
           width: 18, height: 18, borderRadius: tokens.radius.xs,
           background: checked ? pal.accent : pal.bgInput,
-          border: checked ? "none" : "none",
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: `background ${motion.fast} ${motion.easeInOut}`, flexShrink: 0,
         }}>
         {checked && (
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
             <path d="M1 4L3.5 6.5L9 1" stroke={pal.textInverse} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
               style={{ strokeDasharray: 14, strokeDashoffset: 0, animation: "halaska-check-draw 0.3s ease forwards" }} />
           </svg>
         )}
-      </div>
+      </button>
       {label && <Text size="base" theme={theme} style={{ color: disabled ? pal.textMuted : pal.text }}>{label}</Text>}
     </label>
   );
 }
 
-function Radio({ checked, onChange, label, disabled, theme: tp }) {
+function Radio({ checked, onChange, label, disabled, tabIndex, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 }}>
-      <div onClick={(e) => { e.preventDefault(); if (!disabled) onChange?.(); }}
+      <button type="button" role="radio" aria-checked={!!checked} disabled={disabled} tabIndex={tabIndex}
+        onClick={() => { if (!disabled) onChange?.(); }}
         style={{
+          ...interactiveBase, padding: 0, cursor: disabled ? "default" : "pointer", boxSizing: "border-box",
           width: 18, height: 18, borderRadius: 9,
           background: pal.bgInput,
           border: `1.5px solid ${checked ? pal.accent : "transparent"}`,
@@ -896,7 +1023,7 @@ function Radio({ checked, onChange, label, disabled, theme: tp }) {
           width: 8, height: 8, borderRadius: 4, background: pal.accent,
           animation: checked ? `halaska-radio-dot-in ${motion.spring} ${motion.springCurve} forwards` : `halaska-radio-dot-out ${motion.fast} ${motion.easeIn} forwards`,
         }} />
-      </div>
+      </button>
       {label && <Text size="base" theme={theme} style={{ color: disabled ? pal.textMuted : pal.text }}>{label}</Text>}
     </label>
   );
@@ -904,14 +1031,19 @@ function Radio({ checked, onChange, label, disabled, theme: tp }) {
 
 function RadioGroup({ options, value, onChange, label, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx;
+  const vals = options.map((opt) => (typeof opt === "string" ? opt : opt.value));
+  const hasValue = vals.includes(value);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {label && <Label theme={theme}>{label}</Label>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {options.map((opt) => {
+      <div role="radiogroup" aria-label={labelText(label)}
+        onKeyDown={(e) => { const el = arrowNav(e, { selector: '[role="radio"]:not([disabled])' }); if (el) el.click(); }}
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {options.map((opt, i) => {
           const val = typeof opt === "string" ? opt : opt.value;
           const lab = typeof opt === "string" ? opt : opt.label;
-          return <Radio key={val} checked={value === val} onChange={() => onChange?.(val)} label={lab} theme={theme} />;
+          return <Radio key={val} checked={value === val} onChange={() => onChange?.(val)} label={lab} theme={theme}
+            tabIndex={value === val || (!hasValue && i === 0) ? 0 : -1} />;
         })}
       </div>
     </div>
@@ -922,7 +1054,7 @@ function SwitchToggle({ checked, onChange, label, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
-      <button onClick={() => onChange?.(!checked)} role="switch" aria-checked={checked}
+      <button type="button" onClick={() => onChange?.(!checked)} role="switch" aria-checked={!!checked}
         style={{
           ...interactiveBase, width: 44, height: 24, borderRadius: 12,
           background: checked ? pal.accent : pal.bgMuted, position: "relative", padding: 0, flexShrink: 0,
@@ -952,6 +1084,7 @@ function ThemeToggle({ theme, onChange, size = 32 }) {
 
   return (
     <button
+      type="button" aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       onClick={() => onChange(isDark ? "light" : "dark")}
       style={{
         ...interactiveBase,
@@ -1004,7 +1137,9 @@ function SegmentedControl({ options, value, onChange, theme: tp }) {
   useEffect(() => { update(); window.addEventListener("resize", update); return () => window.removeEventListener("resize", update); }, [update]);
 
   return (
-    <div ref={containerRef} style={{
+    <div ref={containerRef} role="radiogroup"
+      onKeyDown={(e) => { const el = arrowNav(e); if (el) el.click(); }}
+      style={{
       display: "flex", alignItems: "center",
       background: theme === "dark" ? "rgba(51,51,51,0.5)" : "rgba(238,238,238,0.6)",
       backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
@@ -1017,7 +1152,8 @@ function SegmentedControl({ options, value, onChange, theme: tp }) {
         ...indicator,
       }} />
       {options.map((opt) => (
-        <button key={opt} ref={(el) => (btnRefs.current[opt] = el)} onClick={() => onChange(opt)} style={{
+        <button key={opt} type="button" role="radio" aria-checked={value === opt} tabIndex={value === opt ? 0 : -1}
+          ref={(el) => (btnRefs.current[opt] = el)} onClick={() => onChange(opt)} style={{
           ...interactiveBase, position: "relative", zIndex: 1, padding: "6px 14px",
           background: "transparent", ...tokens.type.sm, flex: "1 0 auto",
           fontWeight: value === opt ? tokens.weight.medium : tokens.weight.regular,
@@ -1035,7 +1171,7 @@ function Card({ children, theme: tp, padding, hover, onClick, style: sp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hovered, setHovered] = useState(false);
   return (
-    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+    <div onClick={onClick} {...pressable(onClick)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
         background: theme === "dark" ? "rgba(42,42,42,0.7)" : "rgba(255,255,255,0.8)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
@@ -1063,7 +1199,7 @@ function CardHeader({ title, subtitle, action, theme: tp }) {
 
 function Divider({ theme: tp, spacing }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
-  return <div style={{ height: 1, background: pal.borderSubtle, margin: `${spacing ?? 16}px 0`, transition: `background ${motion.smooth} ${motion.easeInOut}` }} />;
+  return <div role="separator" style={{ height: 1, background: pal.borderSubtle, margin: `${spacing ?? 16}px 0`, transition: `background ${motion.smooth} ${motion.easeInOut}` }} />;
 }
 
 function Stack({ children, gap = "md", direction = "column", align, justify, wrap, style: sp }) {
@@ -1118,10 +1254,10 @@ function Tag({ children, color, removable, onRemove, theme: tp }) {
       background: pal.bgSubtle, padding: `${4}px ${12}px`,
       borderRadius: tokens.radius.pill, fontFamily: tokens.font.sans, transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
-      {color && <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0 }} />}
+      {color && <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0 }} />}
       {children}
       {removable && (
-        <button onClick={onRemove} style={{ ...interactiveBase, background: "transparent", color: pal.textMuted, fontSize: 12, padding: 0, marginLeft: 2, display: "flex" }}>×</button>
+        <button type="button" aria-label="Remove" onClick={onRemove} style={{ ...interactiveBase, background: "transparent", color: pal.textMuted, fontSize: 12, padding: 0, marginLeft: 2, display: "flex" }}>×</button>
       )}
     </span>
   );
@@ -1129,7 +1265,7 @@ function Tag({ children, color, removable, onRemove, theme: tp }) {
 
 function Spinner({ size = 16, color }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" style={{ animation: "halaska-spin 0.8s linear infinite" }}>
+    <svg width={size} height={size} viewBox="0 0 16 16" role="img" aria-label="Loading" style={{ animation: "halaska-spin 0.8s linear infinite" }}>
       <circle cx="8" cy="8" r="6" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeDasharray="28" strokeDashoffset="8" opacity="0.8" />
     </svg>
   );
@@ -1138,7 +1274,7 @@ function Spinner({ size = 16, color }) {
 function Progress({ value, theme: tp, height = 6 }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ width: "100%", height, background: pal.bgMuted, borderRadius: height / 2, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
+    <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, Math.max(0, value)))} style={{ width: "100%", height, background: pal.bgMuted, borderRadius: height / 2, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
       <div style={{ width: `${Math.min(100, Math.max(0, value))}%`, height: "100%", background: pal.accent, borderRadius: height / 2, transition: `width 0.6s cubic-bezier(0.34,1.56,0.64,1), background ${motion.smooth} ${motion.easeInOut}` }} />
     </div>
   );
@@ -1147,7 +1283,7 @@ function Progress({ value, theme: tp, height = 6 }) {
 function Skeleton({ width, height = 16, rounded, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{
+    <div aria-hidden="true" data-halaska-calm style={{
       width: width || "100%", height, borderRadius: rounded ? height / 2 : tokens.radius.sm,
       background: `linear-gradient(90deg, ${pal.bgMuted} 25%, ${pal.bgSubtle} 50%, ${pal.bgMuted} 75%) 0 0 / 200% 100%`,
       animation: "halaska-shimmer 1.5s ease-in-out infinite",
@@ -1160,7 +1296,7 @@ function Toast({ message, variant = "default", icon, theme: tp }) {
   const bgMap = { default: pal.bgElevated, success: pal.successBg, warning: pal.warningBg, danger: pal.dangerBg };
   const colorMap = { default: pal.text, success: pal.success, warning: pal.warning, danger: pal.danger };
   return (
-    <div style={{
+    <div role={variant === "danger" ? "alert" : "status"} style={{
       display: "inline-flex", alignItems: "center", gap: 12,
       padding: `${12}px ${16}px`, background: bgMap[variant],
       borderRadius: tokens.radius.lg, boxShadow: `0 2px 8px ${pal.shadow}`,
@@ -1176,19 +1312,22 @@ function Toast({ message, variant = "default", icon, theme: tp }) {
 
 function Avatar({ name, src, size = 32, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx;
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); }, [src]);
   const colors = getAvatarColor(name);
   const initials = name ? name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : "?";
+  const showImage = src && !failed;
   return (
-    <div style={{
+    <div role={showImage ? undefined : "img"} aria-label={showImage ? undefined : name} style={{
       width: size, height: size, borderRadius: size / 2,
-      background: src ? "transparent" : colors.bg,
+      background: showImage ? "transparent" : colors.bg,
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", flexShrink: 0, transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
-      {src ? (
-        <img src={src} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      {showImage ? (
+        <img src={src} alt={name || ""} onError={() => setFailed(true)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
-        <span style={{
+        <span aria-hidden="true" style={{
           fontFamily: tokens.font.sans, fontWeight: tokens.weight.semibold,
           color: colors.text, fontSize: size * 0.36, letterSpacing: "-0.02em",
         }}>{initials}</span>
@@ -1227,7 +1366,7 @@ function ListItem({ title, subtitle, left, right, divider = true, onClick, theme
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
-    <div onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+    <div onClick={onClick} {...pressable(onClick)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: `${12}px ${16}px`,
@@ -1292,7 +1431,7 @@ function ConfidenceBar({ value, label, theme: tp }) {
     <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       {label && <span style={{ ...tokens.type.sm, color: pal.textSecondary, fontFamily: tokens.font.sans, minWidth: 60 }}>{label}</span>}
-      <div style={{ flex: 1, height: 6, background: pal.bgMuted, borderRadius: 3, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
+      <div role="meter" aria-label={labelText(label) || "Confidence"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={value} style={{ flex: 1, height: 6, background: pal.bgMuted, borderRadius: 3, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
         <div style={{
           width: `${value}%`, height: "100%", background: color, borderRadius: 3,
           transition: `width 0.6s cubic-bezier(0.34,1.56,0.64,1), background ${motion.normal} ${motion.easeInOut}, transform ${motion.normal} ${motion.easeInOut}`,
@@ -1329,9 +1468,9 @@ function ZoomControl({ zoom, onChange, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
     <div style={{ display: "flex", alignItems: "center", background: pal.bgSubtle, borderRadius: tokens.radius.md, padding: 4, transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
-      <button onClick={() => onChange(Math.max(25, zoom - 10))} style={{ ...interactiveBase, width: 36, height: 32, background: "transparent", ...tokens.type.lg, color: pal.textSecondary, borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.mono }}>−</button>
-      <span style={{ minWidth: 48, textAlign: "center", ...tokens.type.base, color: pal.textSecondary, fontFamily: tokens.font.sans, fontVariantNumeric: "tabular-nums" }}>{zoom}%</span>
-      <button onClick={() => onChange(Math.min(200, zoom + 10))} style={{ ...interactiveBase, width: 36, height: 32, background: "transparent", ...tokens.type.lg, color: pal.textSecondary, borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.mono }}>+</button>
+      <button type="button" aria-label="Zoom out" disabled={zoom <= 25} onClick={() => onChange(Math.max(25, zoom - 10))} style={{ ...interactiveBase, width: 36, height: 32, background: "transparent", ...tokens.type.lg, color: pal.textSecondary, borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.mono }}>−</button>
+      <span aria-live="polite" style={{ minWidth: 48, textAlign: "center", ...tokens.type.base, color: pal.textSecondary, fontFamily: tokens.font.sans, fontVariantNumeric: "tabular-nums" }}>{zoom}%</span>
+      <button type="button" aria-label="Zoom in" disabled={zoom >= 200} onClick={() => onChange(Math.min(200, zoom + 10))} style={{ ...interactiveBase, width: 36, height: 32, background: "transparent", ...tokens.type.lg, color: pal.textSecondary, borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.mono }}>+</button>
     </div>
   );
 }
@@ -1356,13 +1495,13 @@ function Pagination({ current, total, onChange, variant = "numbers", theme: tp }
     );
   }
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: `0 ${4}px` }}>
+    <div role="navigation" aria-label="Pagination" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: `0 ${4}px` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => current > 1 && onChange(current - 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.md, color: current > 1 ? pal.textTertiary : pal.textMuted, padding: `${4}px ${8}px` }}>‹</button>
-        <span style={{ ...tokens.type.base, color: pal.textTertiary, fontFamily: tokens.font.sans, fontVariantNumeric: "tabular-nums" }}>{current}/{total}</span>
-        <button onClick={() => current < total && onChange(current + 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.md, color: current < total ? pal.textTertiary : pal.textMuted, padding: `${4}px ${8}px` }}>›</button>
+        <button type="button" aria-label="Previous page" disabled={current <= 1} onClick={() => current > 1 && onChange(current - 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.md, color: current > 1 ? pal.textTertiary : pal.textMuted, padding: `${4}px ${8}px` }}>‹</button>
+        <span aria-label={`Page ${current} of ${total}`} style={{ ...tokens.type.base, color: pal.textTertiary, fontFamily: tokens.font.sans, fontVariantNumeric: "tabular-nums" }}>{current}/{total}</span>
+        <button type="button" aria-label="Next page" disabled={current >= total} onClick={() => current < total && onChange(current + 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.md, color: current < total ? pal.textTertiary : pal.textMuted, padding: `${4}px ${8}px` }}>›</button>
       </div>
-      <button onClick={() => current < total && onChange(current + 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.base, color: current < total ? pal.textSecondary : pal.textMuted, fontWeight: tokens.weight.medium, padding: `${4}px ${8}px` }}>Next</button>
+      <button type="button" disabled={current >= total} onClick={() => current < total && onChange(current + 1)} style={{ ...interactiveBase, background: "transparent", ...tokens.type.base, color: current < total ? pal.textSecondary : pal.textMuted, fontWeight: tokens.weight.medium, padding: `${4}px ${8}px` }}>Next</button>
     </div>
   );
 }
@@ -1374,7 +1513,7 @@ function Slider({ value, onChange, min = 0, max = 100, label, theme: tp }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {label && <Label theme={theme}>{label}</Label>}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))}
+        <input type="range" min={min} max={max} value={value} aria-label={labelText(label)} onChange={(e) => onChange(Number(e.target.value))}
           style={{ flex: 1, height: 4, appearance: "none", background: `linear-gradient(to right, ${pal.accent} ${pct}%, ${pal.bgMuted} ${pct}%)`, borderRadius: 2, outline: "none", cursor: "pointer" }} />
         <span style={{ ...tokens.type.sm, color: pal.textTertiary, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", minWidth: 32, textAlign: "right" }}>{value}</span>
       </div>
@@ -1503,9 +1642,9 @@ function ThinkingIndicator({ label = "Thinking", size = "md", theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const dot = size === "sm" ? 4 : 6;
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: tokens.font.sans }}>
+    <div role="status" aria-label={label ? undefined : "Working"} style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: tokens.font.sans }}>
       {label && <span style={{ ...tokens.type.sm, color: pal.textSecondary, letterSpacing: "0.01em", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{label}</span>}
-      <span style={{ display: "inline-flex", gap: 4, alignItems: "center", height: dot * 1.8 }}>
+      <span aria-hidden="true" style={{ display: "inline-flex", gap: 4, alignItems: "center", height: dot * 1.8 }}>
         {[0, 1, 2].map(i => (
           <span key={i} style={{
             width: dot, height: dot, borderRadius: dot, background: pal.text, display: "inline-block",
@@ -1521,13 +1660,13 @@ function ThinkingIndicator({ label = "Thinking", size = "md", theme: tp }) {
 function ThinkingSteps({ steps, current = 0, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10, fontFamily: tokens.font.sans }}>
+    <div role="list" style={{ display: "flex", flexDirection: "column", gap: 10, fontFamily: tokens.font.sans }}>
       {steps.map((s, i) => {
         const done = i < current;
         const active = i === current;
         const reached = i <= current;
         return (
-          <div key={i} style={{
+          <div key={i} role="listitem" aria-current={active ? "step" : undefined} style={{
             display: "flex", alignItems: "center", gap: 12,
             opacity: reached ? 1 : 0.45,
             animation: reached ? `halaska-step-in 0.4s ${motion.emphasized} both` : "none",
@@ -1608,10 +1747,16 @@ function SpringSlider({ value, onChange, min = 0, max = 100, label, theme: tp })
   useEffect(() => {
     if (!dragging) return;
     const m = (e) => applyEvent(e.clientX);
+    const tm = (e) => { if (e.touches[0]) applyEvent(e.touches[0].clientX); };
     const u = () => setDragging(false);
     window.addEventListener("mousemove", m);
     window.addEventListener("mouseup", u);
-    return () => { window.removeEventListener("mousemove", m); window.removeEventListener("mouseup", u); };
+    window.addEventListener("touchmove", tm, { passive: true });
+    window.addEventListener("touchend", u);
+    return () => {
+      window.removeEventListener("mousemove", m); window.removeEventListener("mouseup", u);
+      window.removeEventListener("touchmove", tm); window.removeEventListener("touchend", u);
+    };
   }, [dragging]);
 
   const thumbScale = dragging ? 1.3 : hover ? 1.12 : 1;
@@ -1625,12 +1770,22 @@ function SpringSlider({ value, onChange, min = 0, max = 100, label, theme: tp })
       {label && <Label theme={theme}>{label}</Label>}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div ref={trackRef}
+          role="slider" tabIndex={0} aria-label={labelText(label)} aria-valuemin={min} aria-valuemax={max} aria-valuenow={value}
+          onKeyDown={(e) => {
+            const step = e.shiftKey ? Math.max(1, Math.round((max - min) / 10)) : 1;
+            const to = e.key === "ArrowRight" || e.key === "ArrowUp" ? value + step
+              : e.key === "ArrowLeft" || e.key === "ArrowDown" ? value - step
+              : e.key === "Home" ? min : e.key === "End" ? max : null;
+            if (to == null) return;
+            e.preventDefault(); onChange?.(Math.max(min, Math.min(max, to)));
+          }}
+          onTouchStart={(e) => { setDragging(true); if (e.touches[0]) applyEvent(e.touches[0].clientX); }}
           onMouseDown={(e) => { setDragging(true); applyEvent(e.clientX); }}
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
           style={{
             position: "relative", flex: 1, height: 20, cursor: "pointer",
-            display: "flex", alignItems: "center",
+            display: "flex", alignItems: "center", touchAction: "none", borderRadius: 10,
           }}>
           <div style={{
             position: "absolute", left: 0, right: 0, height: 4, borderRadius: 2, background: pal.bgMuted,
@@ -1676,7 +1831,7 @@ function CopyInput({ value, label, theme: tp, style: sp }) {
         border: focused ? `1.5px solid ${pal.borderFocus}` : hover ? `1.5px solid ${pal.borderSubtle}` : "1.5px solid transparent",
         transition: `border-color ${motion.normal} ${motion.easeInOut}, background ${motion.smooth} ${motion.easeInOut}`,
       }}>
-        <input readOnly value={value}
+        <input readOnly value={value} aria-label={labelText(label) || "Value to copy"}
           onFocus={(e) => { e.target.select(); setFocused(true); }}
           onBlur={() => setFocused(false)}
           style={{
@@ -1684,7 +1839,7 @@ function CopyInput({ value, label, theme: tp, style: sp }) {
             background: "transparent", border: "none", outline: "none",
             color: pal.text, fontFamily: tokens.font.mono, textOverflow: "ellipsis",
           }} />
-        <button onClick={copy} style={{
+        <button type="button" onClick={copy} aria-live="polite" style={{
           ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6,
           padding: "6px 12px", margin: 4, borderRadius: tokens.radius.sm,
           background: copied ? pal.accentBg : "transparent",
@@ -1737,7 +1892,7 @@ function SubtleTabs({ tabs, value, onChange, theme: tp }) {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", measure); };
   }, [value, tabs]);
   return (
-    <div ref={containerRef} style={{
+    <div ref={containerRef} role="tablist" onKeyDown={(e) => { const el = arrowNav(e, { vertical: false }); if (el) el.click(); }} style={{
       position: "relative", display: "inline-flex", gap: 2, padding: 4,
       borderRadius: tokens.radius.md, background: pal.bgSubtle,
       transition: `background ${motion.smooth} ${motion.easeInOut}`,
@@ -1751,7 +1906,7 @@ function SubtleTabs({ tabs, value, onChange, theme: tp }) {
         transition: `left ${motion.spring} ${motion.springCurve}, width ${motion.spring} ${motion.springCurve}, opacity ${motion.fast} ${motion.easeOut}, background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
       }} />
       {tabs.map(t => (
-        <button key={t} data-subtle-tab={t} onClick={() => onChange(t)}
+        <button key={t} type="button" role="tab" aria-selected={value === t} tabIndex={value === t ? 0 : -1} data-subtle-tab={t} onClick={() => onChange(t)}
           style={{
             ...interactiveBase, ...tokens.type.sm, fontFamily: tokens.font.sans,
             fontWeight: value === t ? tokens.weight.semibold : tokens.weight.medium,
@@ -1774,7 +1929,7 @@ function ProgressCircle({ value = 0, size = 48, stroke = 4, label, theme: tp }) 
   const c = 2 * Math.PI * r;
   const off = c - (clamped / 100) * c;
   return (
-    <div style={{ position: "relative", width: size, height: size, display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.sans }}>
+    <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(clamped)} style={{ position: "relative", width: size, height: size, display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: tokens.font.sans }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={pal.bgMuted} strokeWidth={stroke} style={{ transition: `stroke ${motion.smooth} ${motion.easeInOut}` }} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={pal.accent} strokeWidth={stroke}
@@ -1799,7 +1954,7 @@ function Rating({ value = 0, onChange, max = 5, size = 18, readOnly, theme: tp }
     setTimeout(() => setBurst(-1), 500);
   };
   return (
-    <div style={{ display: "inline-flex", gap: 4, alignItems: "center" }} onMouseLeave={() => setHover(0)}>
+    <div role="group" aria-label={`Rating, ${value} of ${max}`} style={{ display: "inline-flex", gap: 4, alignItems: "center" }} onMouseLeave={() => setHover(0)}>
       {Array.from({ length: max }).map((_, i) => {
         const isCurrent = i < value;
         const isPreview = hover > 0 && i < hover;
@@ -1808,7 +1963,8 @@ function Rating({ value = 0, onChange, max = 5, size = 18, readOnly, theme: tp }
         else if (isCurrent) { color = pal.warning; opacity = 1; }
         else { color = pal.bgMuted; opacity = 1; }
         return (
-          <button key={i} disabled={readOnly} onClick={() => click(i + 1)} onMouseEnter={() => !readOnly && setHover(i + 1)}
+          <button key={i} type="button" disabled={readOnly} aria-label={`${i + 1} of ${max}`} aria-pressed={i + 1 === value}
+            onClick={() => click(i + 1)} onMouseEnter={() => !readOnly && setHover(i + 1)}
             style={{
               ...interactiveBase, background: "transparent", padding: 0, lineHeight: 1,
               color, opacity, fontSize: size, position: "relative",
@@ -1862,14 +2018,15 @@ function StatusBadge({ status = "default", children, pulse, theme: tp }) {
 function Stepper({ steps, current = 0, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ display: "flex", width: "100%", fontFamily: tokens.font.sans }}>
+    <div role="list" style={{ display: "flex", width: "100%", fontFamily: tokens.font.sans }}>
       {steps.map((s, i) => {
         const done = i < current;
         const active = i === current;
         const nextReached = i + 1 <= current;
         const last = i === steps.length - 1;
         return (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", minWidth: 0 }}>
+          <div key={i} role="listitem" aria-current={active ? "step" : undefined} aria-label={`Step ${i + 1} of ${steps.length}: ${typeof s === "string" ? s : ""}${done ? ", done" : ""}`}
+            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", minWidth: 0 }}>
             {!last && (
               <div style={{
                 position: "absolute", top: 11, left: "50%", right: "-50%", height: 2,
@@ -1909,6 +2066,7 @@ function CommandPalette({ items = [], placeholder = "Type a command or search…
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [query, setQuery] = useState("");
   const [idx, setIdx] = useState(0);
+  const uid = useUid("cmd");
   const filtered = items.filter(i => i.label.toLowerCase().includes(query.toLowerCase()));
   useEffect(() => { setIdx(0); }, [query]);
   return (
@@ -1922,7 +2080,8 @@ function CommandPalette({ items = [], placeholder = "Type a command or search…
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${pal.borderSubtle}` }}>
         <span style={{ color: pal.textTertiary, fontSize: 14, display: "inline-flex" }}>⌕</span>
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder}
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder} aria-label={placeholder}
+          role="combobox" aria-expanded="true" aria-controls={`${uid}-list`} aria-activedescendant={filtered[idx] ? `${uid}-opt-${idx}` : undefined}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") { e.preventDefault(); setIdx(i => Math.min(i + 1, filtered.length - 1)); }
             else if (e.key === "ArrowUp") { e.preventDefault(); setIdx(i => Math.max(i - 1, 0)); }
@@ -1931,11 +2090,11 @@ function CommandPalette({ items = [], placeholder = "Type a command or search…
           style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: pal.text, fontFamily: tokens.font.sans, ...tokens.type.base }} />
         <Kbd theme={theme}>⌘K</Kbd>
       </div>
-      <div style={{ maxHeight: 240, overflowY: "auto", padding: 8 }}>
+      <div id={`${uid}-list`} role="listbox" style={{ maxHeight: 240, overflowY: "auto", padding: 8 }}>
         {filtered.length === 0 ? (
           <div style={{ padding: "24px 16px", textAlign: "center", color: pal.textTertiary, ...tokens.type.sm }}>No results for "{query}"</div>
         ) : filtered.map((item, i) => (
-          <button key={i} onClick={() => item.onSelect?.()} onMouseEnter={() => setIdx(i)}
+          <button key={i} id={`${uid}-opt-${i}`} type="button" role="option" aria-selected={idx === i} onClick={() => item.onSelect?.()} onMouseEnter={() => setIdx(i)}
             style={{
               ...interactiveBase, width: "100%", padding: "8px 12px", borderRadius: tokens.radius.sm,
               display: "flex", alignItems: "center", gap: 12,
@@ -1958,6 +2117,7 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [query, setQuery] = useState("");
   const [idx, setIdx] = useState(0);
+  const uid = useUid("cmd");
   const filtered = items.filter(i => i.label.toLowerCase().includes(query.toLowerCase()));
   useEffect(() => { if (open) { setQuery(""); setIdx(0); } }, [open]);
   useEffect(() => { setIdx(0); }, [query]);
@@ -1972,6 +2132,7 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [open, filtered, idx, onClose]);
+  const panelRef = useModalFocus(open, onClose);
   if (!open) return null;
   return (
     <div onClick={onClose} style={{
@@ -1980,7 +2141,7 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
       zIndex: 10000, display: "flex", alignItems: "flex-start", justifyContent: "center",
       paddingTop: "14vh", animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Command menu" onClick={e => e.stopPropagation()} style={{
         width: 520, maxWidth: "92vw", fontFamily: tokens.font.sans,
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
@@ -1991,18 +2152,19 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${pal.borderSubtle}` }}>
           <span style={{ color: pal.textTertiary, fontSize: 14, display: "inline-flex" }}>⌕</span>
-          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder}
+          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder} aria-label={placeholder}
+          role="combobox" aria-expanded="true" aria-controls={`${uid}-list`} aria-activedescendant={filtered[idx] ? `${uid}-opt-${idx}` : undefined}
             style={{
               flex: 1, background: "transparent", border: "none", outline: "none",
               color: pal.text, fontFamily: tokens.font.sans, ...tokens.type.base,
             }} />
           <Kbd theme={theme}>Esc</Kbd>
         </div>
-        <div style={{ maxHeight: 320, overflowY: "auto", padding: 8 }}>
+        <div id={`${uid}-list`} role="listbox" style={{ maxHeight: 320, overflowY: "auto", padding: 8 }}>
           {filtered.length === 0 ? (
             <div style={{ padding: "24px 16px", textAlign: "center", color: pal.textTertiary, ...tokens.type.sm }}>No results for "{query}"</div>
           ) : filtered.map((item, i) => (
-            <button key={i} onClick={() => { item.onSelect?.(); onClose?.(); }} onMouseEnter={() => setIdx(i)}
+            <button key={i} id={`${uid}-opt-${i}`} type="button" role="option" aria-selected={idx === i} tabIndex={-1} onClick={() => { item.onSelect?.(); onClose?.(); }} onMouseEnter={() => setIdx(i)}
               style={{
                 ...interactiveBase, width: "100%", padding: "8px 12px", borderRadius: tokens.radius.sm,
                 display: "flex", alignItems: "center", gap: 12,
@@ -2033,7 +2195,8 @@ function Chip({ children, selected, onToggle, onRemove, icon, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
-    <button onClick={onToggle}
+    <button type="button" onClick={onToggle} aria-pressed={onToggle ? !!selected : undefined}
+      onKeyDown={onRemove ? (e) => { if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); onRemove(); } } : undefined}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
         ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6,
@@ -2048,7 +2211,7 @@ function Chip({ children, selected, onToggle, onRemove, icon, theme: tp }) {
       {icon && <span style={{ display: "inline-flex" }}>{icon}</span>}
       {children}
       {onRemove && (
-        <span role="button" onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        <span aria-label="Remove" onClick={(e) => { e.stopPropagation(); onRemove(); }}
           style={{ marginLeft: 2, color: pal.textTertiary, fontSize: 12, lineHeight: 1, cursor: "pointer" }}>×</span>
       )}
     </button>
@@ -2074,7 +2237,7 @@ function InputGroup({ prefix, suffix, value, onChange, placeholder, label, theme
         {prefix != null && (
           <div style={{ display: "flex", alignItems: "center", padding: "0 12px", color: pal.textTertiary, ...tokens.type.sm, fontFamily: tokens.font.sans, borderRight: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle, transition: `all ${motion.smooth} ${motion.easeInOut}` }}>{prefix}</div>
         )}
-        <input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder}
+        <input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} aria-label={labelText(label)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{ flex: 1, minWidth: 0, padding: "0 16px", border: "none", outline: "none", background: "transparent", color: pal.text, fontFamily: tokens.font.sans, ...tokens.type.base }} />
         {suffix != null && (
@@ -2092,8 +2255,10 @@ function Combobox({ options = [], value, onChange, placeholder = "Select…", la
   const [query, setQuery] = useState("");
   const [idx, setIdx] = useState(0);
   const ref = useRef(null);
+  const uid = useUid("combo");
   const filtered = options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()));
   const selected = options.find(o => o.value === value);
+  const closeAndReturn = () => { setOpen(false); ref.current?.querySelector("[data-combobox-trigger]")?.focus(); };
   useEffect(() => {
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", h);
@@ -2102,7 +2267,9 @@ function Combobox({ options = [], value, onChange, placeholder = "Select…", la
   return (
     <div ref={ref} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 4, minWidth: 220 }}>
       {label && <Label theme={theme}>{label}</Label>}
-      <button onClick={() => setOpen(o => !o)}
+      <button type="button" data-combobox-trigger role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-label={labelText(label)}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={(e) => { if (e.key === "ArrowDown" && !open) { e.preventDefault(); setOpen(true); } }}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
         style={{
         ...interactiveBase, display: "flex", alignItems: "center", justifyContent: "space-between", height: 38,
@@ -2125,19 +2292,20 @@ function Combobox({ options = [], value, onChange, placeholder = "Select…", la
           boxShadow: `0 8px 24px ${pal.shadowLg}`,
           animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`, overflow: "hidden",
         }}>
-          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter…"
+          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter…" aria-label="Filter options"
+            aria-controls={`${uid}-list`} aria-activedescendant={filtered[idx] ? `${uid}-opt-${idx}` : undefined}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setIdx(i => Math.min(i + 1, filtered.length - 1)); }
               else if (e.key === "ArrowUp") { e.preventDefault(); setIdx(i => Math.max(i - 1, 0)); }
-              else if (e.key === "Enter") { e.preventDefault(); if (filtered[idx]) { onChange?.(filtered[idx].value); setOpen(false); } }
-              else if (e.key === "Escape") setOpen(false);
+              else if (e.key === "Enter") { e.preventDefault(); if (filtered[idx]) { onChange?.(filtered[idx].value); closeAndReturn(); } }
+              else if (e.key === "Escape") { e.stopPropagation(); closeAndReturn(); }
             }}
             style={{ width: "100%", padding: "10px 16px", background: "transparent", border: "none", outline: "none", borderBottom: `1px solid ${pal.borderSubtle}`, color: pal.text, fontFamily: tokens.font.sans, ...tokens.type.sm, boxSizing: "border-box" }} />
-          <div style={{ maxHeight: 200, overflowY: "auto", padding: 4 }}>
+          <div id={`${uid}-list`} role="listbox" style={{ maxHeight: 200, overflowY: "auto", padding: 4 }}>
             {filtered.length === 0 ? (
               <div style={{ padding: 12, textAlign: "center", color: pal.textTertiary, ...tokens.type.sm }}>No results</div>
             ) : filtered.map((o, i) => (
-              <button key={o.value} onClick={() => { onChange?.(o.value); setOpen(false); }} onMouseEnter={() => setIdx(i)}
+              <button key={o.value} id={`${uid}-opt-${i}`} type="button" role="option" aria-selected={o.value === value} tabIndex={-1} onClick={() => { onChange?.(o.value); closeAndReturn(); }} onMouseEnter={() => setIdx(i)}
                 style={{
                   ...interactiveBase, width: "100%", padding: "8px 12px", borderRadius: tokens.radius.sm,
                   display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -2173,20 +2341,31 @@ function Calendar({ value, onChange, theme: tp }) {
   return (
     <div style={{ width: 260, padding: 16, background: pal.bgElevated, borderRadius: tokens.radius.md, border: `1px solid ${pal.borderSubtle}`, fontFamily: tokens.font.sans, transition: `all ${motion.smooth} ${motion.easeInOut}` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <button onClick={() => setView(new Date(year, month - 1, 1))} style={{ ...interactiveBase, background: "transparent", padding: "4px 8px", color: pal.textSecondary, borderRadius: tokens.radius.sm, ...tokens.type.base }}>‹</button>
-        <div style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.text }}>{monthName} {year}</div>
-        <button onClick={() => setView(new Date(year, month + 1, 1))} style={{ ...interactiveBase, background: "transparent", padding: "4px 8px", color: pal.textSecondary, borderRadius: tokens.radius.sm, ...tokens.type.base }}>›</button>
+        <button type="button" aria-label="Previous month" onClick={() => setView(new Date(year, month - 1, 1))} style={{ ...interactiveBase, background: "transparent", padding: "4px 8px", color: pal.textSecondary, borderRadius: tokens.radius.sm, ...tokens.type.base }}>‹</button>
+        <div aria-live="polite" style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.text }}>{monthName} {year}</div>
+        <button type="button" aria-label="Next month" onClick={() => setView(new Date(year, month + 1, 1))} style={{ ...interactiveBase, background: "transparent", padding: "4px 8px", color: pal.textSecondary, borderRadius: tokens.radius.sm, ...tokens.type.base }}>›</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}
+        onKeyDown={(e) => {
+          // Arrow keys move between days: left and right by a day, up and down by a week.
+          const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+          if (!delta) return;
+          const days = [...e.currentTarget.querySelectorAll("button:not([disabled])")];
+          const i = days.indexOf(document.activeElement);
+          if (i < 0 || !days[i + delta]) return;
+          e.preventDefault(); days[i + delta].focus();
+        }}>
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-          <div key={i} style={{ ...tokens.type.xxs, color: pal.textTertiary, textAlign: "center", padding: "6px 0", textTransform: "uppercase", letterSpacing: 0.5 }}>{d}</div>
+          <div key={i} aria-hidden="true" style={{ ...tokens.type.xxs, color: pal.textTertiary, textAlign: "center", padding: "6px 0", textTransform: "uppercase", letterSpacing: 0.5 }}>{d}</div>
         ))}
         {cells.map((d, i) => {
           const date = d ? new Date(year, month, d) : null;
           const isToday = sameDate(date, today);
           const isSelected = sameDate(date, value);
           return (
-            <button key={i} disabled={!d} onClick={() => d && onChange?.(date)}
+            <button key={i} type="button" disabled={!d} aria-hidden={!d || undefined} aria-pressed={d ? isSelected : undefined} aria-current={isToday ? "date" : undefined}
+              aria-label={date ? date.toLocaleDateString("default", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : undefined}
+              onClick={() => d && onChange?.(date)}
               style={{
                 ...interactiveBase, padding: "6px 0", borderRadius: tokens.radius.sm,
                 background: isSelected ? pal.accent : "transparent",
@@ -2214,9 +2393,11 @@ function DatePicker({ value, onChange, label, placeholder = "Pick a date", theme
   }, []);
   const formatted = value ? value.toLocaleDateString("default", { year: "numeric", month: "short", day: "numeric" }) : null;
   return (
-    <div ref={ref} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 4, minWidth: 220 }}>
+    <div ref={ref} onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); ref.current?.querySelector("button")?.focus(); } }}
+      style={{ position: "relative", display: "flex", flexDirection: "column", gap: 4, minWidth: 220 }}>
       {label && <Label theme={theme}>{label}</Label>}
-      <button onClick={() => setOpen(o => !o)}
+      <button type="button" aria-haspopup="dialog" aria-expanded={open} aria-label={labelText(label) ? `${label}: ${formatted || placeholder}` : undefined}
+        onClick={() => setOpen(o => !o)}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
         style={{
         ...interactiveBase, display: "flex", alignItems: "center", gap: 10, height: 38,
@@ -2240,7 +2421,9 @@ function DatePicker({ value, onChange, label, placeholder = "Pick a date", theme
 function ContextMenu({ items, children, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [menu, setMenu] = useState(null);
-  const handle = (e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); };
+  const opener = useRef(null);
+  const handle = (e) => { e.preventDefault(); opener.current = document.activeElement; setMenu({ x: e.clientX, y: e.clientY }); };
+  const closeAndReturn = () => { setMenu(null); opener.current?.focus?.(); };
   useEffect(() => {
     if (!menu) return;
     const close = () => setMenu(null);
@@ -2252,7 +2435,9 @@ function ContextMenu({ items, children, theme: tp }) {
     <>
       <div onContextMenu={handle}>{children}</div>
       {menu && (
-        <div onClick={(e) => e.stopPropagation()} style={{
+        <div ref={focusFirstItem} role="menu" onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => { if (e.key === "Tab") { setMenu(null); return; } arrowNav(e, { horizontal: false, onEscape: closeAndReturn }); }}
+          style={{
           position: "fixed", top: menu.y, left: menu.x, zIndex: 10000,
           background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
@@ -2261,9 +2446,9 @@ function ContextMenu({ items, children, theme: tp }) {
           animation: `halaska-scale-in ${motion.fast} ${motion.emphasized} both`, transformOrigin: "top left",
         }}>
           {items.map((it, i) => it.separator ? (
-            <div key={i} style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
+            <div key={i} role="separator" style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
           ) : (
-            <button key={i} onClick={() => { it.onSelect?.(); setMenu(null); }}
+            <button key={i} type="button" role="menuitem" onClick={() => { it.onSelect?.(); closeAndReturn(); }}
               onMouseEnter={(e) => e.currentTarget.style.background = pal.bgSubtle}
               onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
               style={{
@@ -2288,10 +2473,19 @@ function Menubar({ menus, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [open, setOpen] = useState(null);
   return (
-    <div style={{ display: "inline-flex", gap: 2, padding: 4, background: pal.bgSubtle, borderRadius: tokens.radius.md, fontFamily: tokens.font.sans, position: "relative", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
+    <div role="menubar" style={{ display: "inline-flex", gap: 2, padding: 4, background: pal.bgSubtle, borderRadius: tokens.radius.md, fontFamily: tokens.font.sans, position: "relative", transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
       {menus.map((m, i) => (
         <div key={m.label} style={{ position: "relative" }}>
-          <button onClick={() => setOpen(o => o === i ? null : i)} onMouseEnter={() => { if (open !== null) setOpen(i); }}
+          <button type="button" role="menuitem" aria-haspopup="menu" aria-expanded={open === i} data-menubar-trigger
+            onClick={() => setOpen(o => o === i ? null : i)} onMouseEnter={() => { if (open !== null) setOpen(i); }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") { e.preventDefault(); setOpen(i); }
+              else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                const all = [...e.currentTarget.closest('[role="menubar"]').querySelectorAll("[data-menubar-trigger]")];
+                const to = all[(i + (e.key === "ArrowRight" ? 1 : -1) + all.length) % all.length];
+                e.preventDefault(); to.focus(); if (open !== null) setOpen(all.indexOf(to));
+              }
+            }}
             style={{
               ...interactiveBase, padding: "6px 12px", borderRadius: tokens.radius.sm,
               background: open === i ? pal.bgElevated : "transparent",
@@ -2301,7 +2495,13 @@ function Menubar({ menus, theme: tp }) {
           {open === i && (
             <>
               <div onClick={() => setOpen(null)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
-              <div style={{
+              <div ref={focusFirstItem} role="menu"
+                onKeyDown={(e) => {
+                  const back = () => { setOpen(null); e.currentTarget.parentElement.querySelector("[data-menubar-trigger]")?.focus(); };
+                  if (e.key === "Tab") { setOpen(null); return; }
+                  arrowNav(e, { horizontal: false, onEscape: back });
+                }}
+                style={{
                 position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
                 background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
@@ -2310,9 +2510,9 @@ function Menubar({ menus, theme: tp }) {
                 animation: `halaska-scale-in ${motion.fast} ${motion.emphasized} both`,
               }}>
                 {m.items.map((it, j) => it.separator ? (
-                  <div key={j} style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
+                  <div key={j} role="separator" style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
                 ) : (
-                  <button key={j} onClick={() => { it.onSelect?.(); setOpen(null); }}
+                  <button key={j} type="button" role="menuitem" onClick={(e) => { const title = e.currentTarget.closest('[role="menu"]').parentElement.querySelector("[data-menubar-trigger]"); it.onSelect?.(); setOpen(null); title?.focus(); }}
                     onMouseEnter={(e) => e.currentTarget.style.background = pal.bgSubtle}
                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                     style={{
@@ -2380,13 +2580,15 @@ function DataTable({ columns, rows, theme: tp }) {
   const [sort, setSort] = useState({ key: null, dir: "asc" });
   const [selected, setSelected] = useState(new Set());
   const [hoverRow, setHoverRow] = useState(-1);
+  // Rows keep their original index so selection follows the row when the sort changes.
+  const indexed = rows.map((row, id) => ({ row, id }));
   const sortedRows = sort.key != null
-    ? [...rows].sort((a, b) => {
-        const av = a[sort.key]; const bv = b[sort.key];
+    ? [...indexed].sort((a, b) => {
+        const av = a.row[sort.key]; const bv = b.row[sort.key];
         const sign = sort.dir === "asc" ? 1 : -1;
         return av > bv ? sign : av < bv ? -sign : 0;
       })
-    : rows;
+    : indexed;
   const toggleAll = () => {
     if (selected.size === rows.length) setSelected(new Set());
     else setSelected(new Set(rows.map((_, i) => i)));
@@ -2406,23 +2608,24 @@ function DataTable({ columns, rows, theme: tp }) {
         <thead>
           <tr style={{ borderBottom: `1px solid ${pal.borderSubtle}` }}>
             <th style={{ padding: "10px 14px", width: 24 }}>
-              <Checkbox theme={theme} checked={selected.size === rows.length && rows.length > 0} onChange={toggleAll} />
+              <Checkbox theme={theme} aria-label="Select all rows" checked={selected.size === rows.length && rows.length > 0} onChange={toggleAll} />
             </th>
             {columns.map((col, i) => (
-              <th key={i} onClick={() => toggleSort(i)} style={{ ...tokens.type.xs, fontWeight: tokens.weight.semibold, color: pal.textTertiary, textAlign: "left", padding: "10px 14px", textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer", userSelect: "none", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{col}
-                  {sort.key === i && <span style={{ color: pal.text }}>{sort.dir === "asc" ? "↑" : "↓"}</span>}
-                </span>
+              <th key={i} scope="col" aria-sort={sort.key === i ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+                onClick={() => toggleSort(i)} style={{ ...tokens.type.xs, fontWeight: tokens.weight.semibold, color: pal.textTertiary, textAlign: "left", padding: "10px 14px", textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer", userSelect: "none", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
+                <button type="button" onClick={(e) => { e.stopPropagation(); toggleSort(i); }} style={{ ...interactiveBase, background: "transparent", padding: 0, font: "inherit", color: "inherit", textTransform: "inherit", letterSpacing: "inherit", display: "inline-flex", alignItems: "center", gap: 4 }}>{col}
+                  {sort.key === i && <span aria-hidden="true" style={{ color: pal.text }}>{sort.dir === "asc" ? "↑" : "↓"}</span>}
+                </button>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map((row, ri) => (
-            <tr key={ri} onMouseEnter={() => setHoverRow(ri)} onMouseLeave={() => setHoverRow(-1)}
-              style={{ borderBottom: ri < sortedRows.length - 1 ? `1px solid ${pal.borderSubtle}` : "none", background: selected.has(ri) ? pal.accentBg : hoverRow === ri ? pal.bgSubtle : "transparent", transition: `background ${motion.normal} ${motion.easeInOut}` }}>
+          {sortedRows.map(({ row, id }, ri) => (
+            <tr key={id} aria-selected={selected.has(id)} onMouseEnter={() => setHoverRow(ri)} onMouseLeave={() => setHoverRow(-1)}
+              style={{ borderBottom: ri < sortedRows.length - 1 ? `1px solid ${pal.borderSubtle}` : "none", background: selected.has(id) ? pal.accentBg : hoverRow === ri ? pal.bgSubtle : "transparent", transition: `background ${motion.normal} ${motion.easeInOut}` }}>
               <td style={{ padding: "10px 14px" }}>
-                <Checkbox theme={theme} checked={selected.has(ri)} onChange={() => toggleRow(ri)} />
+                <Checkbox theme={theme} aria-label={`Select row ${ri + 1}`} checked={selected.has(id)} onChange={() => toggleRow(id)} />
               </td>
               {row.map((cell, ci) => (
                 <td key={ci} style={{ ...tokens.type.sm, color: pal.text, padding: "10px 14px", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{cell}</td>
@@ -2437,6 +2640,7 @@ function DataTable({ columns, rows, theme: tp }) {
 
 function AlertDialog({ open, onClose, title, description, variant = "danger", confirmLabel = "Confirm", cancelLabel = "Cancel", onConfirm, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const panelRef = useModalFocus(open, onClose);
   if (!open) return null;
   const iconColor = variant === "danger" ? pal.danger : variant === "warning" ? pal.warning : pal.accent;
   const iconBg = variant === "danger" ? pal.dangerBg : variant === "warning" ? pal.warningBg : pal.accentBg;
@@ -2447,7 +2651,7 @@ function AlertDialog({ open, onClose, title, description, variant = "danger", co
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000,
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div ref={panelRef} role="alertdialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 420,
@@ -2472,6 +2676,7 @@ function AlertDialog({ open, onClose, title, description, variant = "danger", co
 
 function FormDialog({ open, onClose, title, description, children, submitLabel = "Save", onSubmit, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const panelRef = useModalFocus(open, onClose);
   if (!open) return null;
   return (
     <div onClick={onClose} style={{
@@ -2479,7 +2684,7 @@ function FormDialog({ open, onClose, title, description, children, submitLabel =
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000,
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 360, maxWidth: 480,
@@ -2491,8 +2696,8 @@ function FormDialog({ open, onClose, title, description, children, submitLabel =
         <form onSubmit={(e) => { e.preventDefault(); onSubmit?.(); onClose?.(); }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>{children}</div>
           <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <Button theme={theme} variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-            <Button theme={theme} variant="primary" size="sm">{submitLabel}</Button>
+            <Button theme={theme} variant="ghost" size="sm" type="button" onClick={onClose}>Cancel</Button>
+            <Button theme={theme} variant="primary" size="sm" type="submit">{submitLabel}</Button>
           </div>
         </form>
       </div>
@@ -2502,6 +2707,7 @@ function FormDialog({ open, onClose, title, description, children, submitLabel =
 
 function CardDialog({ open, onClose, cover, title, description, children, actions, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const panelRef = useModalFocus(open, onClose);
   if (!open) return null;
   return (
     <div onClick={onClose} style={{
@@ -2509,7 +2715,7 @@ function CardDialog({ open, onClose, cover, title, description, children, action
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000,
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, overflow: "hidden", minWidth: 360, maxWidth: 480,
@@ -2539,7 +2745,7 @@ function Accordion({ items, defaultOpen = -1, theme: tp }) {
     <div style={{ width: "100%" }}>
       {items.map((item, i) => (
         <div key={i} style={{ borderBottom: `1px solid ${pal.borderSubtle}`, transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
-          <button onClick={() => setOpenIdx(openIdx === i ? -1 : i)} style={{
+          <button type="button" aria-expanded={openIdx === i} onClick={() => setOpenIdx(openIdx === i ? -1 : i)} style={{
             ...interactiveBase, width: "100%", textAlign: "left", padding: "14px 0",
             display: "flex", justifyContent: "space-between", alignItems: "center",
             ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text,
@@ -2550,9 +2756,10 @@ function Accordion({ items, defaultOpen = -1, theme: tp }) {
               <ChevronIcon size={12} direction={openIdx === i ? "up" : "down"} />
             </span>
           </button>
-          <div style={{
+          <div role="region" aria-hidden={openIdx !== i} style={{
             maxHeight: openIdx === i ? 200 : 0, overflow: "hidden", opacity: openIdx === i ? 1 : 0,
-            transition: `max-height ${motion.smooth} ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}`,
+            visibility: openIdx === i ? "visible" : "hidden",
+            transition: `max-height ${motion.smooth} ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}, visibility 0s linear ${openIdx === i ? "0s" : motion.smooth}`,
           }}>
             <div style={{ ...tokens.type.sm, color: pal.textSecondary, paddingBottom: 14, lineHeight: 1.6, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{item.content}</div>
           </div>
@@ -2564,6 +2771,7 @@ function Accordion({ items, defaultOpen = -1, theme: tp }) {
 
 function Dialog({ open, onClose, title, children, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const panelRef = useModalFocus(open, onClose);
   if (!open) return null;
   return (
     <div onClick={onClose} style={{
@@ -2571,7 +2779,7 @@ function Dialog({ open, onClose, title, children, theme: tp }) {
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000,
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 480,
@@ -2592,11 +2800,14 @@ function Dialog({ open, onClose, title, children, theme: tp }) {
 function Tooltip({ children, text, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [show, setShow] = useState(false);
+  const uid = useUid("tip");
   return (
     <div style={{ position: "relative", display: "inline-flex" }}
-      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      {children}
-      <div style={{
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}
+      onFocus={() => setShow(true)} onBlur={() => setShow(false)}
+      onKeyDown={(e) => { if (e.key === "Escape") setShow(false); }}>
+      {isValidElement(children) ? cloneElement(children, { "aria-describedby": uid }) : children}
+      <div id={uid} role="tooltip" style={{
         position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
         marginBottom: 6, padding: "5px 10px", borderRadius: tokens.radius.sm,
         background: theme === "dark" ? "#fff" : "#222", color: theme === "dark" ? "#222" : "#fff",
@@ -2611,19 +2822,26 @@ function Tooltip({ children, text, theme: tp }) {
 function Popover({ trigger, children, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
   return (
-    <div style={{ position: "relative", display: "inline-flex" }}>
-      <div onClick={() => setOpen(!open)}>{trigger}</div>
+    <div ref={rootRef} style={{ position: "relative", display: "inline-flex" }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          e.stopPropagation(); setOpen(false);
+          rootRef.current?.querySelector("[data-popover-trigger] button, [data-popover-trigger] [tabindex]")?.focus();
+        }
+      }}>
+      <div data-popover-trigger onClick={() => setOpen(!open)}>{withPopupState(trigger, open, "dialog")}</div>
       {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
-      <div style={{
+      <div role="dialog" aria-hidden={!open} style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 10000,
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 200, boxShadow: `0 8px 24px ${pal.shadowLg}`,
         opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(-4px)",
-        pointerEvents: open ? "auto" : "none",
-        transition: `opacity ${motion.fast} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}`,
+        pointerEvents: open ? "auto" : "none", visibility: open ? "visible" : "hidden",
+        transition: `opacity ${motion.fast} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}, visibility 0s linear ${open ? "0s" : motion.normal}`,
       }}>{children}</div>
     </div>
   );
@@ -2632,21 +2850,23 @@ function Popover({ trigger, children, theme: tp }) {
 function Sheet({ open, onClose, title, children, side = "right", theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const isRight = side === "right";
+  const panelRef = useModalFocus(open, onClose);
   return (
     <>
       {open && <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 10000, animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both` }} />}
-      <div style={{
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} aria-hidden={!open} tabIndex={-1} style={{
         position: "fixed", top: 0, bottom: 0, [isRight ? "right" : "left"]: 0,
-        width: 320, zIndex: 10001,
+        width: 320, maxWidth: "100%", boxSizing: "border-box", zIndex: 10001,
         background: theme === "dark" ? "rgba(26,26,26,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         border: `1px solid ${pal.borderSubtle}`, padding: 24,
         transform: open ? "translateX(0)" : `translateX(${isRight ? "100%" : "-100%"})`,
-        transition: `transform ${motion.smooth} ${motion.emphasized}`,
+        visibility: open ? "visible" : "hidden",
+        transition: `transform ${motion.smooth} ${motion.emphasized}, visibility 0s linear ${open ? "0s" : motion.smooth}`,
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           {title && <div style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text, fontFamily: tokens.font.sans }}>{title}</div>}
-          <button onClick={onClose} style={{ ...interactiveBase, background: "transparent", ...tokens.type.lg, color: pal.textTertiary, padding: 4 }}>✕</button>
+          <button type="button" aria-label="Close" onClick={onClose} style={{ ...interactiveBase, background: "transparent", ...tokens.type.lg, color: pal.textTertiary, padding: 4 }}>✕</button>
         </div>
         <div style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.6, fontFamily: tokens.font.sans }}>{children}</div>
       </div>
@@ -2663,7 +2883,7 @@ function Table({ columns, rows, theme: tp }) {
         <thead>
           <tr style={{ borderBottom: `1px solid ${pal.borderSubtle}` }}>
             {columns.map((col, i) => (
-              <th key={i} style={{ ...tokens.type.xs, fontWeight: tokens.weight.semibold, color: pal.textTertiary, textAlign: "left", padding: "10px 14px", textTransform: "uppercase", letterSpacing: "0.05em", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{col}</th>
+              <th key={i} scope="col" style={{ ...tokens.type.xs, fontWeight: tokens.weight.semibold, color: pal.textTertiary, textAlign: "left", padding: "10px 14px", textTransform: "uppercase", letterSpacing: "0.05em", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{col}</th>
             ))}
           </tr>
         </thead>
@@ -2705,9 +2925,10 @@ function Tabs({ tabs, value, onChange, theme: tp }) {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", measure); };
   }, [value, tabs]);
   return (
-    <div ref={containerRef} style={{ position: "relative", display: "flex", borderBottom: `1px solid ${pal.borderSubtle}`, gap: 0, transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
+    <div ref={containerRef} role="tablist" onKeyDown={(e) => { const el = arrowNav(e, { vertical: false }); if (el) el.click(); }}
+      style={{ position: "relative", display: "flex", borderBottom: `1px solid ${pal.borderSubtle}`, gap: 0, transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
       {tabs.map(t => (
-        <button key={t} data-tab={t} onClick={() => onChange(t)}
+        <button key={t} type="button" role="tab" aria-selected={value === t} tabIndex={value === t ? 0 : -1} data-tab={t} onClick={() => onChange(t)}
           onMouseEnter={() => setHover(t)} onMouseLeave={() => setHover(null)}
           style={{
             ...interactiveBase, ...tokens.type.sm, fontWeight: value === t ? tokens.weight.medium : tokens.weight.regular,
@@ -2731,7 +2952,7 @@ function Collapsible({ title, children, defaultOpen = false, theme: tp }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div>
-      <button onClick={() => setOpen(!open)} style={{
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} style={{
         ...interactiveBase, width: "100%", textAlign: "left", padding: "10px 0",
         display: "flex", justifyContent: "space-between", alignItems: "center",
         ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text, background: "transparent",
@@ -2742,7 +2963,7 @@ function Collapsible({ title, children, defaultOpen = false, theme: tp }) {
           <ChevronIcon size={12} direction={open ? "down" : "right"} />
         </span>
       </button>
-      <div style={{ maxHeight: open ? 500 : 0, overflow: "hidden", opacity: open ? 1 : 0, transition: `max-height ${motion.smooth} ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}` }}>
+      <div aria-hidden={!open} style={{ maxHeight: open ? 500 : 0, overflow: "hidden", opacity: open ? 1 : 0, visibility: open ? "visible" : "hidden", transition: `max-height ${motion.smooth} ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}, visibility 0s linear ${open ? "0s" : motion.smooth}` }}>
         {children}
       </div>
     </div>
@@ -2753,7 +2974,7 @@ function Toggle({ pressed, onPress, children, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
-    <button onClick={() => onPress?.(!pressed)}
+    <button type="button" aria-pressed={!!pressed} onClick={() => onPress?.(!pressed)}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
         ...interactiveBase, ...tokens.type.sm, fontWeight: tokens.weight.medium,
@@ -2769,11 +2990,11 @@ function Toggle({ pressed, onPress, children, theme: tp }) {
 function ToggleGroup({ options, value, onChange, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
-    <div style={{ display: "inline-flex", borderRadius: tokens.radius.md, border: `1px solid ${pal.borderSubtle}`, overflow: "hidden", transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
+    <div role="group" style={{ display: "inline-flex", borderRadius: tokens.radius.md, border: `1px solid ${pal.borderSubtle}`, overflow: "hidden", transition: `border-color ${motion.smooth} ${motion.easeInOut}` }}>
       {options.map((opt, i) => {
         const active = Array.isArray(value) ? value.includes(opt) : value === opt;
         return (
-          <button key={opt} onClick={() => onChange(opt)} style={{
+          <button key={opt} type="button" aria-pressed={active} onClick={() => onChange(opt)} style={{
             ...interactiveBase, ...tokens.type.sm, fontWeight: active ? tokens.weight.medium : tokens.weight.regular,
             padding: "8px 14px", color: active ? pal.text : pal.textTertiary,
             background: active ? pal.bgMuted : "transparent",
@@ -2790,7 +3011,7 @@ function Breadcrumb({ items, maxVisible, home, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const homeIcon = home ? (
-    <span aria-label="Home" style={{ display: "inline-flex", color: pal.textTertiary, marginRight: 2 }}>
+    <span role="img" aria-label="Home" style={{ display: "inline-flex", color: pal.textTertiary, marginRight: 2 }}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /><path d="M10 21v-6h4v6" />
       </svg>
@@ -2802,17 +3023,18 @@ function Breadcrumb({ items, maxVisible, home, theme: tp }) {
     ? [items[0], { ellipsis: true, hidden: items.slice(1, -1) }, items[items.length - 1]]
     : items;
   return (
-    <nav style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: tokens.font.sans }}>
+    <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: tokens.font.sans }}>
       {homeIcon}
       {visible.map((item, i) => {
         const isLast = i === visible.length - 1;
-        const sep = (i > 0 || home) && <span style={{ ...tokens.type.sm, color: pal.textMuted }}>/</span>;
+        const sep = (i > 0 || home) && <span aria-hidden="true" style={{ ...tokens.type.sm, color: pal.textMuted }}>/</span>;
         if (item.ellipsis) {
           return (
             <div key={`ell-${i}`} style={{ position: "relative", display: "flex", alignItems: "center", gap: 6 }}
-              onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+              onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+              onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
               {sep}
-              <span style={{
+              <span tabIndex={0} role="button" aria-label="Show hidden levels" aria-expanded={hover} style={{
                 ...tokens.type.sm, color: hover ? pal.text : pal.textTertiary,
                 cursor: "default", padding: "2px 6px", borderRadius: tokens.radius.sm,
                 background: hover ? pal.bgSubtle : "transparent",
@@ -2841,12 +3063,19 @@ function Breadcrumb({ items, maxVisible, home, theme: tp }) {
         return (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             {sep}
-            <span onClick={item.onClick} style={{
-              ...tokens.type.sm, color: isLast ? pal.text : pal.textTertiary,
-              fontWeight: isLast ? tokens.weight.medium : tokens.weight.regular,
-              cursor: item.onClick ? "pointer" : "default",
-              transition: `color ${motion.normal} ${motion.easeInOut}`,
-            }}>{item.label}</span>
+            {(() => {
+              // A level with an href is a link, one with onClick is a button, the rest is text.
+              const style = {
+                ...tokens.type.sm, color: isLast ? pal.text : pal.textTertiary,
+                fontWeight: isLast ? tokens.weight.medium : tokens.weight.regular,
+                cursor: item.onClick || item.href ? "pointer" : "default",
+                transition: `color ${motion.normal} ${motion.easeInOut}`,
+              };
+              const current = isLast ? "page" : undefined;
+              if (item.href) return <a href={item.href} onClick={item.onClick} aria-current={current} style={{ ...style, textDecoration: "none" }}>{item.label}</a>;
+              if (item.onClick) return <button type="button" onClick={item.onClick} aria-current={current} style={{ ...interactiveBase, background: "transparent", padding: 0, ...style }}>{item.label}</button>;
+              return <span aria-current={current} style={style}>{item.label}</span>;
+            })()}
           </div>
         );
       })}
@@ -2859,17 +3088,20 @@ function HoverCard({ trigger, children, theme: tp }) {
   const [show, setShow] = useState(false);
   return (
     <div style={{ position: "relative", display: "inline-flex" }}
-      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}
+      onFocus={() => setShow(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setShow(false); }}
+      onKeyDown={(e) => { if (e.key === "Escape") setShow(false); }}>
       {trigger}
-      <div style={{
+      <div aria-hidden={!show} style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 100,
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 240, boxShadow: `0 8px 24px ${pal.shadowLg}`,
         opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(-4px)",
-        pointerEvents: show ? "auto" : "none",
-        transition: `opacity ${motion.normal} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}`,
+        pointerEvents: show ? "auto" : "none", visibility: show ? "visible" : "hidden",
+        transition: `opacity ${motion.normal} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}, visibility 0s linear ${show ? "0s" : motion.normal}`,
       }}>{children}</div>
     </div>
   );
@@ -2898,12 +3130,19 @@ function InputOTP({ length = 6, value = "", onChange, theme: tp }) {
     onChange?.(next);
     if (v && i < length - 1) refs.current[i + 1]?.focus();
   };
+  const handlePaste = (e) => {
+    const text = (e.clipboardData?.getData("text") || "").replace(/\s/g, "").slice(0, length);
+    if (!text) return;
+    e.preventDefault(); onChange?.(text);
+    refs.current[Math.min(text.length, length - 1)]?.focus();
+  };
   const handleKey = (i, e) => { if (e.key === "Backspace" && !digits[i] && i > 0) refs.current[i - 1]?.focus(); };
   return (
     <div style={{ display: "flex", gap: 8 }}>
       {digits.map((d, i) => (
         <input key={i} ref={el => refs.current[i] = el} value={d}
-          onChange={(e) => handleChange(i, e.target.value)} onKeyDown={(e) => handleKey(i, e)}
+          inputMode="numeric" autoComplete="one-time-code" aria-label={`Digit ${i + 1} of ${length}`}
+          onChange={(e) => handleChange(i, e.target.value)} onKeyDown={(e) => handleKey(i, e)} onPaste={handlePaste}
           maxLength={2} style={{
             ...interactiveBase, width: 40, height: 48, textAlign: "center",
             ...tokens.type.lg, fontWeight: tokens.weight.semibold, fontFamily: tokens.font.mono,
@@ -2952,12 +3191,12 @@ function AlertBanner({ title, description, variant = "default", theme: tp }) {
     danger: { bg: pal.dangerBg, border: pal.danger, icon: "✕", color: pal.danger },
   }[variant] || { bg: pal.bgSubtle, border: pal.border, icon: "ℹ", color: pal.text };
   return (
-    <div style={{
+    <div role={variant === "danger" || variant === "warning" ? "alert" : "status"} style={{
       display: "flex", gap: 12, padding: "12px 16px", borderRadius: tokens.radius.md,
       background: styles.bg, border: `1px solid ${styles.border}`,
       transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
-      <span style={{ fontSize: 14, color: styles.color, flexShrink: 0, marginTop: 1 }}>{styles.icon}</span>
+      <span aria-hidden="true" style={{ fontSize: 14, color: styles.color, flexShrink: 0, marginTop: 1 }}>{styles.icon}</span>
       <div>
         {title && <div style={{ ...tokens.type.sm, fontWeight: tokens.weight.semibold, color: pal.text, fontFamily: tokens.font.sans, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{title}</div>}
         {description && <div style={{ ...tokens.type.sm, color: pal.textSecondary, marginTop: 2, lineHeight: 1.5, fontFamily: tokens.font.sans, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{description}</div>}
@@ -2970,24 +3209,39 @@ function DropdownMenu({ trigger, items, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [open, setOpen] = useState(false);
   const [hoverIdx, setHoverIdx] = useState(-1);
+  const rootRef = useRef(null);
+  const menuRef = useRef(null);
+  const close = (refocus) => {
+    setOpen(false);
+    if (refocus) rootRef.current?.querySelector("[data-menu-trigger] button, [data-menu-trigger] [tabindex]")?.focus();
+  };
+  // Opening from the keyboard lands on the first item.
+  const openMenu = (viaKeyboard) => {
+    setOpen(true);
+    if (viaKeyboard) setTimeout(() => focusFirstItem(menuRef.current), 0);
+  };
   return (
-    <div style={{ position: "relative", display: "inline-flex" }}>
-      <div onClick={() => setOpen(!open)}>{trigger}</div>
-      {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
-      <div style={{
+    <div ref={rootRef} style={{ position: "relative", display: "inline-flex" }}>
+      <div data-menu-trigger
+        onClick={(e) => (open ? close() : openMenu(e.detail === 0))}
+        onKeyDown={(e) => { if (e.key === "ArrowDown" && !open) { e.preventDefault(); openMenu(true); } }}>{withPopupState(trigger, open, "menu")}</div>
+      {open && <div onClick={() => close()} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
+      <div ref={menuRef} role="menu" aria-hidden={!open}
+        onKeyDown={(e) => { if (e.key === "Tab") { close(); return; } arrowNav(e, { horizontal: false, onEscape: () => close(true) }); }}
+        style={{
         position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 10000,
         background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 4, minWidth: 180, boxShadow: `0 8px 24px ${pal.shadowLg}`,
         opacity: open ? 1 : 0, transform: open ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.97)",
-        pointerEvents: open ? "auto" : "none",
-        transition: `opacity ${motion.fast} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}`,
+        pointerEvents: open ? "auto" : "none", visibility: open ? "visible" : "hidden",
+        transition: `opacity ${motion.fast} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}, visibility 0s linear ${open ? "0s" : motion.normal}`,
       }}>
         {items.map((item, i) => item.separator ? (
-          <div key={i} style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
+          <div key={i} role="separator" style={{ height: 1, background: pal.borderSubtle, margin: "4px 0" }} />
         ) : (
-          <button key={i} onClick={() => { item.onClick?.(); setOpen(false); }}
+          <button key={i} type="button" role="menuitem" onClick={() => { item.onClick?.(); close(true); }}
             onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(-1)}
             style={{
               ...interactiveBase, width: "100%", textAlign: "left", ...tokens.type.sm,
@@ -2997,7 +3251,7 @@ function DropdownMenu({ trigger, items, theme: tp }) {
               display: "flex", alignItems: "center", gap: 8,
               transition: `background ${motion.normal} ${motion.easeInOut}, color ${motion.normal} ${motion.easeInOut}`,
             }}>
-            {item.icon && <span style={{ fontSize: 13, color: item.danger ? pal.danger : pal.textTertiary }}>{item.icon}</span>}
+            {item.icon && <span aria-hidden="true" style={{ fontSize: 13, color: item.danger ? pal.danger : pal.textTertiary }}>{item.icon}</span>}
             {item.label}
           </button>
         ))}
@@ -3031,11 +3285,11 @@ function Choicebox({ options, value, onChange, multiple, theme: tp }) {
     onChange([...set]);
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div role={multiple ? "group" : "radiogroup"} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {options.map(opt => {
         const selected = isSelected(opt.id);
         return (
-          <button key={opt.id} onClick={() => pick(opt.id)} style={{
+          <button key={opt.id} type="button" role={multiple ? "checkbox" : "radio"} aria-checked={selected} onClick={() => pick(opt.id)} style={{
             ...interactiveBase, display: "flex", alignItems: "flex-start", gap: 12,
             padding: "12px 14px", borderRadius: tokens.radius.md, textAlign: "left",
             background: selected ? pal.accentBg : pal.bgSubtle,
@@ -3086,7 +3340,7 @@ function SearchInput({ value, onChange, placeholder = "Search…", shortcut = "�
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={pal.textTertiary} strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0, transition: `stroke ${motion.smooth} ${motion.easeInOut}` }}>
         <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
       </svg>
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      <input type="search" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder}
         onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
         style={{
           flex: 1, minWidth: 0, border: "none", outline: "none", background: "transparent",
@@ -3108,12 +3362,15 @@ function SearchInput({ value, onChange, placeholder = "Search…", shortcut = "�
 function SplitButton({ children, onClick, items = [], variant = "primary", size = "md", theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const closeAndReturn = () => { setOpen(false); rootRef.current?.querySelector('[aria-haspopup="menu"]')?.focus(); };
   return (
-    <div style={{ position: "relative", display: "inline-flex" }}>
+    <div ref={rootRef} style={{ position: "relative", display: "inline-flex" }}>
       <div style={{ display: "inline-flex" }}>
         <Button theme={theme} variant={variant} size={size} onClick={onClick}
           style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}>{children}</Button>
         <Button theme={theme} variant={variant} size={size} onClick={() => setOpen(o => !o)}
+          aria-label="More options" aria-haspopup="menu" aria-expanded={open}
           style={{
             borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
             padding: "0 10px", marginLeft: 1,
@@ -3124,7 +3381,9 @@ function SplitButton({ children, onClick, items = [], variant = "primary", size 
       {open && (
         <>
           <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90 }} />
-          <div style={{
+          <div ref={focusFirstItem} role="menu"
+            onKeyDown={(e) => { if (e.key === "Tab") { setOpen(false); return; } arrowNav(e, { horizontal: false, onEscape: closeAndReturn }); }}
+            style={{
             position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 91, minWidth: 200,
             background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
             backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
@@ -3133,7 +3392,7 @@ function SplitButton({ children, onClick, items = [], variant = "primary", size 
             animation: `halaska-scale-in 0.15s ${motion.easeOut} both`, transformOrigin: "top right",
           }}>
             {items.map((item, i) => (
-              <SplitButtonItem key={i} item={item} theme={theme} onPick={() => { setOpen(false); item.onClick?.(); }} />
+              <SplitButtonItem key={i} item={item} theme={theme} onPick={() => { closeAndReturn(); item.onClick?.(); }} />
             ))}
           </div>
         </>
@@ -3146,7 +3405,7 @@ function SplitButtonItem({ item, onPick, theme }) {
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
-    <button onClick={onPick}
+    <button type="button" role="menuitem" onClick={onPick}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
         ...interactiveBase, display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -3160,16 +3419,16 @@ function SplitButtonItem({ item, onPick, theme }) {
   );
 }
 
-function StatusDot({ status = "online", pulse, size = 8, theme: tp }) {
+function StatusDot({ status = "online", pulse, size = 8, label, theme: tp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const color = {
     online: pal.success, busy: pal.warning, error: pal.danger,
     offline: pal.textMuted, accent: pal.accent,
   }[status] || pal.textMuted;
   return (
-    <span style={{ position: "relative", display: "inline-flex", width: size, height: size, flexShrink: 0 }}>
+    <span role="img" aria-label={label || status} style={{ position: "relative", display: "inline-flex", width: size, height: size, flexShrink: 0 }}>
       {pulse && (
-        <span style={{
+        <span data-halaska-calm style={{
           position: "absolute", inset: 0, borderRadius: size / 2, background: color,
           animation: "halaska-live-pulse 2s ease-out infinite",
         }} />
@@ -3218,7 +3477,7 @@ function Snippet({ text, prompt = "$", theme: tp, style: sp }) {
     }}>
       <span style={{ ...tokens.type.sm, fontFamily: tokens.font.mono, color: pal.textTertiary, flexShrink: 0, userSelect: "none", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{prompt}</span>
       <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...tokens.type.sm, fontFamily: tokens.font.mono, color: pal.text, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{text}</span>
-      <button onClick={copy} aria-label="Copy command" style={{
+      <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy command"} aria-live="polite" style={{
         ...interactiveBase, width: 26, height: 26, borderRadius: tokens.radius.xs, padding: 0, flexShrink: 0,
         display: "flex", alignItems: "center", justifyContent: "center",
         background: "transparent", color: copied ? pal.success : pal.textTertiary,
@@ -3261,6 +3520,7 @@ function FileTreeNode({ node, depth, theme }) {
   return (
     <div>
       <button
+        type="button" aria-expanded={isFolder ? open : undefined}
         onClick={() => isFolder && setOpen(o => !o)}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
         style={{
@@ -3285,9 +3545,10 @@ function FileTreeNode({ node, depth, theme }) {
         )}
       </button>
       {isFolder && (
-        <div style={{
+        <div aria-hidden={!open} style={{
           overflow: "hidden", maxHeight: open ? node.children.length * 200 : 0, opacity: open ? 1 : 0,
-          transition: `max-height 0.35s ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}`,
+          visibility: open ? "visible" : "hidden",
+          transition: `max-height 0.35s ${motion.emphasized}, opacity ${motion.normal} ${motion.easeInOut}, visibility 0s linear ${open ? "0s" : "0.35s"}`,
         }}>
           {node.children.map((child, i) => (
             <FileTreeNode key={child.name + i} node={child} depth={depth + 1} theme={theme} />
@@ -11590,7 +11851,11 @@ function ChatXModelOption({ model, active, onPick, theme }) {
   );
 }
 
-function ChatParadigmExample({ theme }) {
+// `layout="mobile"` is the phone version: the thread list becomes a drawer
+// behind a menu button and the top bar splits into two rows.
+function ChatParadigmExample({ theme, layout = "desktop" }) {
+  const mobile = layout === "mobile";
+  const [drawer, setDrawer] = useState(false);
   const pal = usePal(theme);
   const [search, setSearch] = useState("");
   const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
@@ -11625,11 +11890,25 @@ function ChatParadigmExample({ theme }) {
       background: pal.bg, fontFamily: tokens.font.sans, color: pal.text,
       display: "flex", transition: surface,
     }}>
-      {/* ── Sidebar ─────────────────────────────────────────────── */}
-      <aside style={{
-        width: 240, flexShrink: 0, display: "flex", flexDirection: "column",
+      {/* ── Sidebar (a drawer on mobile) ────────────────────────── */}
+      {mobile && (
+        <div onClick={() => setDrawer(false)} aria-hidden="true" style={{
+          position: "absolute", inset: 0, zIndex: 29, background: "rgba(0,0,0,0.4)",
+          opacity: drawer ? 1 : 0, pointerEvents: drawer ? "auto" : "none",
+          transition: `opacity ${motion.normal} ${motion.easeInOut}`,
+        }} />
+      )}
+      <aside aria-label="Threads" aria-hidden={mobile && !drawer ? true : undefined} style={{
+        width: mobile ? 300 : 240, flexShrink: 0, display: "flex", flexDirection: "column",
         background: pal.bgSubtle, borderRight: `1px solid ${pal.borderSubtle}`,
         transition: surface,
+        ...(mobile ? {
+          position: "absolute", top: 0, bottom: 0, left: 0, zIndex: 30, maxWidth: "84%",
+          transform: drawer ? "translateX(0)" : "translateX(-100%)",
+          visibility: drawer ? "visible" : "hidden",
+          boxShadow: drawer ? `0 12px 40px ${pal.shadowLg}` : "none",
+          transition: `transform ${motion.smooth} ${motion.emphasized}, visibility 0s linear ${drawer ? "0s" : motion.smooth}, ${surface}`,
+        } : null),
       }}>
         <div style={{ padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 4px", height: 24 }}>
@@ -11648,7 +11927,7 @@ function ChatParadigmExample({ theme }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {visibleThreads.map(t => (
               <ChatXThreadRow key={t.id} title={t.title} time={t.time} theme={theme}
-                active={t.id === activeThread} onClick={() => setActiveThread(t.id)} />
+                active={t.id === activeThread} onClick={() => { setActiveThread(t.id); setDrawer(false); }} />
             ))}
           </div>
         </div>
@@ -11666,6 +11945,23 @@ function ChatParadigmExample({ theme }) {
       {/* ── Main column ─────────────────────────────────────────── */}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
+        {mobile ? (
+          <header style={{ flexShrink: 0, borderBottom: `1px solid ${pal.borderSubtle}`, transition: surface }}>
+            <div style={{ height: 52, display: "flex", alignItems: "center", gap: 4, padding: "0 8px" }}>
+              <IconButton icon="☰" size={36} label="Threads" theme={theme} onClick={() => setDrawer(true)} style={{ fontSize: 15 }} />
+              <Text size="md" weight="semibold" theme={theme} truncate style={{ flex: 1, minWidth: 0, letterSpacing: "-0.01em" }}>{activeTitle}</Text>
+              <IconButton icon="⋯" size={36} label="More" theme={theme} onClick={() => {}} />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 16px 10px" }}>
+              <ChatXModelPill index={modelIdx} theme={theme} onSelect={setModelIdx} />
+              <div style={{ width: 40 }}><Progress value={66} height={4} theme={theme} /></div>
+              <div style={{ flex: 1 }} />
+              <Orb pill theme={theme} size={18}
+                variant={waiting ? "spark" : "orbit"}
+                label={waiting ? "Waiting on you" : "Reading…"} />
+            </div>
+          </header>
+        ) : (
         <header style={{
           height: 56, flexShrink: 0, display: "flex", alignItems: "center", gap: 16,
           padding: "0 24px", borderBottom: `1px solid ${pal.borderSubtle}`, transition: surface,
@@ -11685,14 +11981,15 @@ function ChatParadigmExample({ theme }) {
             <IconButton icon="⋯" size={32} label="More" theme={theme} onClick={() => {}} />
           </div>
         </header>
+        )}
 
         {/* Thread */}
-        <div ref={threadRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "32px 24px" }}>
-          <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+        <div ref={threadRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: mobile ? "20px 16px" : "32px 24px" }}>
+          <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", gap: mobile ? 20 : 24 }}>
             {/* User turn */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, animation: `halaska-step-in 0.4s ${motion.emphasized} both` }}>
               <div style={{
-                maxWidth: "78%", padding: "10px 14px",
+                maxWidth: mobile ? "88%" : "78%", padding: "10px 14px",
                 background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}`,
                 borderRadius: `${tokens.radius.md}px ${tokens.radius.md}px ${tokens.radius.xs}px ${tokens.radius.md}px`,
                 transition: `all ${motion.smooth} ${motion.easeInOut}`,
@@ -11734,7 +12031,7 @@ function ChatParadigmExample({ theme }) {
         {/* Composer */}
         <div style={{
           flexShrink: 0, display: "flex", justifyContent: "center",
-          padding: "16px 24px 20px", borderTop: `1px solid ${pal.borderSubtle}`,
+          padding: mobile ? "12px 12px 14px" : "16px 24px 20px", borderTop: `1px solid ${pal.borderSubtle}`,
           background: pal.bg, transition: surface,
         }}>
           <PromptInputPattern theme={theme} />
@@ -11766,7 +12063,7 @@ const CANVASX_SETTINGS = [
   { title: "Knowledge base", content: "Notion runbooks · 142 pages, synced 2h ago" },
   { title: "Tone",           content: "Match the customer's tone; plain language; no promised dates" },
   { title: "Tools",          content: "Intercom, Linear, Stripe (read-only)" },
-  { title: "Memory",         content: "Save resolved threads to HubSpot" },
+  { title: "Memory",         content: "Save resolved threads to Notion" },
   { title: "Escalation",     content: "Refunds over $500 → human" },
   { title: "Security",       content: "PII redacted before logging" },
   { title: "Webhook",        content: "POST to /alpha/events" },
@@ -11876,10 +12173,12 @@ function CanvasXTransitionRow({ label, checked, onPick, rowRef, theme }) {
 }
 
 // A node card: header tile + title + run/collapse, then the body
-function CanvasXNode({ node, selected, onSelect, cardRef, children, theme }) {
+function CanvasXNode({ node, selected, onSelect, cardRef, children, flow, theme }) {
   const pal = usePal(theme);
+  // `flow` lays the card out in normal document flow (the mobile column).
+  const place = flow ? { position: "relative", width: "100%" } : { position: "absolute", left: node.x, top: node.y, width: node.w };
   return (
-    <div onClick={onSelect} style={{ position: "absolute", left: node.x, top: node.y, width: node.w, zIndex: selected ? 2 : 1, cursor: "pointer" }}>
+    <div onClick={onSelect} style={{ ...place, zIndex: selected ? 2 : 1, cursor: "pointer" }}>
       {selected && (
         <div aria-hidden style={{
           position: "absolute", inset: -6, borderRadius: tokens.radius.lg + 6, pointerEvents: "none",
@@ -11933,7 +12232,31 @@ function CanvasXTransition({ rows, picked, onPick, rowRefs, theme }) {
   );
 }
 
-function CanvasParadigmExample({ theme }) {
+// A labelled branch in the mobile flow: the condition, then the node it leads to.
+function CanvasXBranch({ label, last, children, theme }) {
+  const pal = usePal(theme);
+  const line = `${pal.accent}99`;
+  return (
+    <div style={{ position: "relative", paddingLeft: 28, paddingBottom: last ? 0 : 20 }}>
+      <span aria-hidden="true" style={{ position: "absolute", left: 8, top: 0, bottom: last ? "auto" : 0, height: last ? 13 : "auto", width: 1.5, background: line }} />
+      <span aria-hidden="true" style={{ position: "absolute", left: 8, top: 12, width: 14, height: 1.5, background: line }} />
+      <div style={{ display: "flex", alignItems: "center", height: 26, marginBottom: 10 }}>
+        <span style={{
+          ...tokens.type.xs, fontFamily: tokens.font.sans, fontWeight: tokens.weight.medium, color: pal.accentText,
+          background: pal.accentBg, padding: "3px 10px", borderRadius: tokens.radius.pill, whiteSpace: "nowrap",
+          transition: `all ${motion.smooth} ${motion.easeInOut}`,
+        }}>{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// `layout="mobile"` is the phone version: the flow runs top to bottom with
+// labelled branches, and the settings panel becomes a bottom sheet.
+function CanvasParadigmExample({ theme, layout = "desktop" }) {
+  const mobile = layout === "mobile";
+  const [sheet, setSheet] = useState(false);
   const pal = usePal(theme);
   const [mode, setMode] = useState("Build");
   const [rightTab, setRightTab] = useState("Global settings");
@@ -11995,6 +12318,124 @@ function CanvasParadigmExample({ theme }) {
 
   const hairline = `1px solid ${pal.borderSubtle}`;
   const hairlineT = `border-color ${motion.smooth} ${motion.easeInOut}`;
+
+  if (mobile) {
+    const line = `${pal.accent}99`;
+    const stem = (h) => <span aria-hidden="true" style={{ display: "block", width: 1.5, height: h, background: line, marginLeft: 8 }} />;
+    return (
+      <div style={{
+        position: "relative", width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column",
+        background: pal.bg, fontFamily: tokens.font.sans, color: pal.text,
+        transition: `background ${motion.smooth} ${motion.easeInOut}, color ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        {/* Top bar */}
+        <div style={{
+          flexShrink: 0, height: CANVASX_TOPBAR_H, boxSizing: "border-box", display: "flex", alignItems: "center", gap: 6,
+          padding: "0 12px 0 6px", background: pal.bgElevated, transition: `background ${motion.smooth} ${motion.easeInOut}`,
+        }}>
+          <IconButton icon="←" size={36} theme={theme} label="Back" style={{ fontSize: 15 }} />
+          <Text size="base" weight="semibold" theme={theme} truncate style={{ flex: 1, minWidth: 0 }}>Support triage</Text>
+          <Badge theme={theme}><StatusDot status="busy" size={6} theme={theme} />Staging</Badge>
+          <IconButton icon="▷" size={32} variant="secondary" theme={theme} label="Test" style={{ fontSize: 11 }} />
+          <Button variant="primary" size="sm" theme={theme}>Publish</Button>
+        </div>
+        <div style={{ flexShrink: 0, padding: "0 16px 10px", background: pal.bgElevated, borderBottom: hairline, transition: `background ${motion.smooth} ${motion.easeInOut}, ${hairlineT}` }}>
+          <SegmentedControl options={["Build", "Simulate"]} value={mode} onChange={setMode} theme={theme} />
+        </div>
+
+        {/* Canvas: one column, top to bottom */}
+        <div style={{ position: "relative", flex: 1, minHeight: 0, background: pal.bgSubtle, transition: `background ${motion.smooth} ${motion.easeInOut}` }}>
+          <DotGrid theme={theme} spacing={20} />
+          <div style={{ position: "absolute", inset: 0, overflowY: "auto", overflowX: "hidden", padding: "60px 20px 96px", scrollbarWidth: "none" }}>
+            <div style={{
+              maxWidth: 340, margin: "0 auto", transform: `scale(${zoom / 100})`, transformOrigin: "top center",
+              transition: `transform ${motion.smooth} ${motion.emphasized}`,
+            }}>
+              <div onClick={() => setSelected("begin")} style={{
+                position: "relative", width: begin.w, height: begin.h, boxSizing: "border-box", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                borderRadius: tokens.radius.pill, background: pal.accentBg,
+                boxShadow: selected === "begin" ? `0 0 0 1.5px ${pal.accent}` : "none",
+                transition: `all ${motion.smooth} ${motion.easeInOut}`,
+              }}>
+                <Text size="sm" weight="semibold" color={pal.accentText} theme={theme}>Begin</Text>
+              </div>
+              <div style={{ position: "relative" }}>
+                {stem(36)}
+                <IconButton icon="+" size={24} theme={theme} label="Insert node" style={{
+                  position: "absolute", left: -3, top: 6, fontSize: 14, borderRadius: tokens.radius.pill, background: pal.bgElevated,
+                  boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 1px 3px ${pal.shadow}`,
+                }} />
+              </div>
+              <CanvasXNode flow node={CANVASX_NODES.conv1} selected={selected === "conv1"} onSelect={() => setSelected("conv1")} theme={theme}>
+                <CanvasXBody theme={theme} text="Hi, this is Alpha from Northwind support. I've read your ticket about the calendar sync. Can I confirm which clinic this is for?" />
+                <CanvasXTransition rows={["If ticket is urgent", "Otherwise"]} picked={picked.conv1}
+                  onPick={i => setPicked(p => ({ ...p, conv1: i }))} theme={theme} />
+              </CanvasXNode>
+              {stem(20)}
+              <CanvasXBranch label="If ticket is urgent" theme={theme}>
+                <CanvasXNode flow node={CANVASX_NODES.handoff} selected={selected === "handoff"} onSelect={() => setSelected("handoff")} theme={theme}>
+                  <CanvasXBody theme={theme} text="Escalate to Priya with the thread summary and account status." />
+                  <div style={{ marginTop: 10 }}><Badge theme={theme}>Human in the loop</Badge></div>
+                </CanvasXNode>
+              </CanvasXBranch>
+              <CanvasXBranch label="Otherwise" last theme={theme}>
+                <CanvasXNode flow node={CANVASX_NODES.conv2} selected={selected === "conv2"} onSelect={() => setSelected("conv2")} theme={theme}>
+                  <CanvasXBody theme={theme} text="Here's the workaround while the fix ships Thursday…" />
+                  <CanvasXTransition rows={["If resolved", "If not resolved"]} picked={picked.conv2}
+                    onPick={i => setPicked(p => ({ ...p, conv2: i }))} theme={theme} />
+                </CanvasXNode>
+              </CanvasXBranch>
+            </div>
+          </div>
+
+          {/* Alpha's status */}
+          <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none", zIndex: 4 }}>
+            <Orb pill variant={busy ? "pulse" : "spark"} label={busy ? "Alpha is editing…" : "Ready to test"} theme={theme} />
+          </div>
+
+          {/* Bottom bar: settings and zoom */}
+          <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none", zIndex: 4 }}>
+            <CanvasXGlass theme={theme} style={{ padding: 4, gap: 2, pointerEvents: "auto" }}>
+              <Button variant="ghost" size="sm" icon="⚙" theme={theme} onClick={() => setSheet(true)}>Settings</Button>
+              <div style={{ width: 1, height: 20, margin: "0 6px", background: pal.borderSubtle, transition: `background ${motion.smooth} ${motion.easeInOut}` }} />
+              <ZoomControl zoom={zoom} onChange={setZoom} theme={theme} />
+            </CanvasXGlass>
+          </div>
+        </div>
+
+        {/* Settings: a bottom sheet */}
+        <div onClick={() => setSheet(false)} aria-hidden="true" style={{
+          position: "absolute", inset: 0, zIndex: 8, background: "rgba(0,0,0,0.4)",
+          opacity: sheet ? 1 : 0, pointerEvents: sheet ? "auto" : "none",
+          transition: `opacity ${motion.normal} ${motion.easeInOut}`,
+        }} />
+        <div role="dialog" aria-label="Settings" aria-hidden={!sheet} style={{
+          position: "absolute", left: 0, right: 0, bottom: 0, height: "72%", zIndex: 9,
+          display: "flex", flexDirection: "column", overflow: "hidden",
+          background: pal.bgElevated, borderRadius: `${tokens.radius.lg}px ${tokens.radius.lg}px 0 0`,
+          boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 -8px 32px ${pal.shadowLg}`,
+          transform: sheet ? "translateY(0)" : "translateY(105%)", visibility: sheet ? "visible" : "hidden",
+          transition: `transform ${motion.smooth} ${motion.emphasized}, visibility 0s linear ${sheet ? "0s" : motion.smooth}, background ${motion.smooth} ${motion.easeInOut}`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", padding: "6px 8px 0 8px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Tabs tabs={["Global settings", "Node settings"]} value={rightTab} onChange={setRightTab} theme={theme} />
+            </div>
+            <IconButton icon="✕" size={32} theme={theme} label="Close settings" onClick={() => setSheet(false)} style={{ fontSize: 12 }} />
+          </div>
+          <div style={{ flex: 1, minHeight: 0, padding: "0 16px", overflowY: "auto" }}>
+            <Accordion defaultOpen={0} items={CANVASX_SETTINGS} theme={theme} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "12px 16px", borderTop: hairline, transition: hairlineT }}>
+            <Text size="xs" mono secondary theme={theme}>$0.03 / run</Text>
+            <Text size="xs" mono secondary theme={theme}>1.2s to 1.8s</Text>
+            <Text size="xs" mono secondary theme={theme}>2.3k to 3.2k tokens</Text>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -12152,6 +12593,7 @@ function CanvasParadigmExample({ theme }) {
 // EXAMPLE: CanvasParadigmExample
 
 const PARADIGM_STAGE = { w: 1200, h: 760 };
+const PARADIGM_STAGE_MOBILE = { w: 390, h: 780 };
 
 const PARADIGM_EXAMPLE_COMPONENTS = { ChatParadigmExample, CanvasParadigmExample };
 
@@ -12437,7 +12879,7 @@ const COMPONENT_GROUPS = COMPONENT_CATEGORIES;
 // Claude Code (or any coding agent) to wire the kit into a project.
 // The raw kit file is served from the deployed site (public/ copy, kept
 // in sync by the prebuild script in package.json).
-const INSTALL_PROMPT = `Set up UI by Halaska in this project and use it for all UI from now on.
+const INSTALL_PROMPT = `Set up Halaska UI in this project and use it for all UI from now on.
 
 1. Download the kit: curl -o src/halaska-kit.jsx https://ui.halaska.com/halaska-kit.jsx
 2. Read https://ui.halaska.com/install.md and follow it. It covers usage, theming, the retrofit steps, and links the full API reference.
@@ -12715,7 +13157,10 @@ function ChatBSectionLabel({ children, style }) {
   );
 }
 
-function ChatParadigmBefore({ theme }) {
+// `layout="mobile"` is the same first pass on a phone: the sidebar is dropped
+// behind a Menu button and the rows wrap where they run out of room.
+function ChatParadigmBefore({ theme, layout = "desktop" }) {
+  const mobile = layout === "mobile";
   const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
   const [model, setModel] = useState(CHATX_MODELS[0].id);
   const [search, setSearch] = useState("");
@@ -12732,7 +13177,7 @@ function ChatParadigmBefore({ theme }) {
     }}>
       {/* Sidebar */}
       <div style={{
-        width: 260, flexShrink: 0, display: "flex", flexDirection: "column",
+        width: 260, flexShrink: 0, display: mobile ? "none" : "flex", flexDirection: "column",
         background: CHATB_C.gray50, borderRight: "1px solid " + CHATB_C.gray200, boxSizing: "border-box",
       }}>
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -12781,10 +13226,12 @@ function ChatParadigmBefore({ theme }) {
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 16, padding: "12px 24px", flexShrink: 0,
+          display: "flex", alignItems: "center", gap: mobile ? 8 : 16, padding: mobile ? "12px 16px" : "12px 24px", flexShrink: 0,
+          flexWrap: mobile ? "wrap" : "nowrap",
           background: CHATB_C.white, borderBottom: "1px solid " + CHATB_C.gray200,
         }}>
-          <div style={{ fontSize: 18, fontWeight: 600, lineHeight: "28px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{activeTitle}</div>
+          {mobile && <ChatBButton onClick={() => {}}>☰ Menu</ChatBButton>}
+          <div style={{ fontSize: 18, fontWeight: 600, lineHeight: "28px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, flex: mobile ? 1 : "none" }}>{activeTitle}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <span style={{ color: CHATB_C.gray500 }}>Model:</span>
             <ChatBModelSelect value={model} onChange={setModel} />
@@ -12802,13 +13249,13 @@ function ChatParadigmBefore({ theme }) {
         </div>
 
         {/* Thread */}
-        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 24, background: CHATB_C.white }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: mobile ? 16 : 24, background: CHATB_C.white }}>
           <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
             {/* User message */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: 4 }}>You</div>
               <div style={{
-                maxWidth: "75%", padding: "12px 16px", borderRadius: 8,
+                maxWidth: mobile ? "85%" : "75%", padding: "12px 16px", borderRadius: 8,
                 background: CHATB_C.blue50, border: "1px solid " + CHATB_C.gray200,
               }}>{CHATX_USER_MSG}</div>
               <div style={{ fontSize: 12, color: CHATB_C.gray400, marginTop: 4 }}>9:41 AM</div>
@@ -12906,17 +13353,17 @@ function ChatParadigmBefore({ theme }) {
         </div>
 
         {/* Composer */}
-        <div style={{ flexShrink: 0, padding: "16px 24px", background: CHATB_C.white, borderTop: "1px solid " + CHATB_C.gray200 }}>
+        <div style={{ flexShrink: 0, padding: mobile ? "12px 16px" : "16px 24px", background: CHATB_C.white, borderTop: "1px solid " + CHATB_C.gray200 }}>
           <div style={{ maxWidth: 720, margin: "0 auto" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
               {CHATB_SUGGESTIONS.map(s => (
                 <button key={s} type="button" onClick={() => setDraft(s)} style={{ ...CHATB_PILL, cursor: "pointer" }}>{s}</button>
               ))}
             </div>
-            <textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)}
+            <textarea rows={mobile ? 2 : 3} value={draft} onChange={(e) => setDraft(e.target.value)}
               placeholder="Ask Alpha about your inbox..."
               style={{ ...CHATB_FIELD, width: "100%", resize: "none", display: "block" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: mobile ? "wrap" : "nowrap" }}>
               <ChatBButton onClick={() => {}}>📎 Attach</ChatBButton>
               <ChatBModelSelect value={model} onChange={setModel} />
               <div style={{ flex: 1 }} />
@@ -13514,6 +13961,18 @@ export default function HalaskaKit() {
   );
 }
 
+// ─── shadcn/ui NAMES ──────────────────────────────────────────
+// Aliases so people and coding agents find the names they expect. The
+// original names stay exported; nothing is renamed.
+const Input = TextInput;
+const Textarea = TextArea;
+const Switch = SwitchToggle;
+const Separator = Divider;
+const Alert = AlertBanner;
+const Empty = EmptyState;
+const Item = ListItem;
+const Command = CommandPalette;
+
 // ─── PUBLIC API ───────────────────────────────────────────────
 // Named exports so the kit works as a library, not just a showcase:
 //   import { Button, Orb, PlanPreviewPattern, usePal } from "./halaska-kit";
@@ -13572,6 +14031,9 @@ export {
   ContextBarPattern, SpaceDeckPattern,
   // Example screens (one per UX paradigm)
   ChatParadigmExample, CanvasParadigmExample, ChatParadigmBefore, BeforeAfterSection,
+  PARADIGM_STAGE, PARADIGM_STAGE_MOBILE,
+  // shadcn/ui names (aliases of the components above)
+  Input, Textarea, Switch, Separator, Alert, Empty, Item, Command,
   // Registries (for building indexes and docs)
-  PATTERN_GROUPS, UX_PATTERNS, DESIGN_HEURISTICS,
+  PATTERN_GROUPS, UX_PATTERNS, DESIGN_HEURISTICS, ACCENT_COLORS, INSTALL_PROMPT,
 };

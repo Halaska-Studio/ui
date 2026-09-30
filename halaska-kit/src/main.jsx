@@ -1,9 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import HalaskaKit, { ChatParadigmExample, BeforeAfterSection, ThemeProvider } from "../halaska-kit-v1.0.jsx";
+import { ChatParadigmExample, BeforeAfterSection, ThemeProvider } from "../halaska-kit-v1.0.jsx";
+import App from "./site/App.jsx";
 
 // ?shot=after | ?shot=before-after | ?shot=og render one piece on its own, for the
-// README screenshots (see scripts/shots.sh). Everything else is the showcase.
+// README screenshots. Everything else is the site (src/site).
 const shot = new URLSearchParams(window.location.search).get("shot");
 // Open Graph card, 1200x630: wordmark and one line on the left, the Chat
 // screen rendered live on the right. Captured to public/og.png.
@@ -38,6 +39,6 @@ const Shot = () => shot === "og" ? <OgCard /> : shot === "after" ? (
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {shot ? <Shot /> : <HalaskaKit />}
+    {shot ? <Shot /> : <App />}
   </React.StrictMode>
 );
