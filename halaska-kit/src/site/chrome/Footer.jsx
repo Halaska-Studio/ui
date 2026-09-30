@@ -23,11 +23,13 @@ export function Footer() {
           <Text size="sm" theme={theme} style={{ color: pal.textSecondary, lineHeight: 1.6 }}>New patterns and components land roughly monthly. One email when they do.</Text>
           <UpdatesInline placement="footer" />
           <Link to="/changelog" style={{ ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textTertiary, marginTop: 8 }}>v{VERSION} · MIT · react and react-dom only</Link>
+          <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>Built by <Link to="https://chrishalaska.com" style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>Chris Halaska</Link> and <Link to="https://halaska.com" style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>Halaska Studio</Link></Text>
         </div>
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
           {col("Browse", [["Screens", "/screens"], ["Patterns", "/patterns"], ["Components", "/components"]])}
           {col("Docs", [["Install", "/docs/install"], ["Theming", "/docs/theming"], ["Changelog", "/changelog"], ["llms.txt", "https://ui.halaska.com/llms.txt"]])}
-          {col("More", [["GitHub", REPO_URL], ["Halaska Studio", "https://halaska.com"], ["Dash", "https://dash.halaska.com"], ["Book a call", "https://halaska.com/book"]])}
+          {col("Studio", [["Halaska Studio", "https://halaska.com"], ["Dash", "https://dash.halaska.com"], ["Book a call", "https://halaska.com/book"], ["GitHub", REPO_URL]])}
+          {col("Chris Halaska", [["chrishalaska.com", "https://chrishalaska.com"], ["X", "https://x.com/chalaska"], ["LinkedIn", "https://www.linkedin.com/in/chrishalaska"]])}
         </div>
       </div>
     </footer>

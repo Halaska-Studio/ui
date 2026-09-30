@@ -337,6 +337,9 @@ export function Landing() {
             Made for founders building with coding agents. The shadcn/ui components you already know, plus the screens and AI UX patterns an agent product needs, in one React file.
           </p>
           <InlineGate placement="hero" size="lg" />
+          <p style={{ ...tokens.type.sm, color: pal.textTertiary, margin: "18px 0 0" }}>
+            Built by <Link to="https://chrishalaska.com" style={{ ...textLink, color: pal.textSecondary }}>Chris Halaska</Link> and <Link to="https://halaska.com" style={{ ...textLink, color: pal.textSecondary }}>Halaska Studio</Link>
+          </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${pal.borderSubtle}` }}>
           <Link to="/patterns"><Count n={COUNTS.patterns} label="patterns" /></Link>
@@ -365,7 +368,6 @@ export function Landing() {
         <div className={layout === "mobile" ? "screens-mobile" : undefined} style={{ display: "flex", flexDirection: "column", gap: 56 }}>
           {SCREENS.map((s) => <ScreenBlock key={s.slug} screen={s} layout={layout} />)}
         </div>
-        <div style={{ marginTop: 20 }}><ArrowLink to="/screens" strong>View all screens</ArrowLink></div>
       </Block>
 
       {/* 4. Component sampler */}
@@ -427,8 +429,15 @@ export function Landing() {
       <Block eyebrow="Studio" title="Built by a studio">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24, alignItems: "start" }}>
           <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.7, margin: 0, maxWidth: 520 }}>
-            Halaska UI is made by <Link to="https://halaska.com" style={textLink}>Halaska Studio</Link>, a product design studio.
-            It is the kit behind <Link to="https://dash.halaska.com" style={textLink}>Dash</Link>, where we take a founder's prototype and make it look designed.
+            Halaska UI is made by <Link to="https://chrishalaska.com" style={textLink}>Chris Halaska</Link> and <Link to="https://halaska.com" style={textLink}>Halaska Studio</Link>.
+            Halaska Studio is an AI-first product design studio.
+            This is the kit behind <Link to="https://dash.halaska.com" style={textLink}>Dash</Link>, where we take a founder's prototype and make it look designed.
+            <span style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px", marginTop: 16, ...tokens.type.sm }}>
+              <Link to="https://chrishalaska.com" style={textLink}>chrishalaska.com</Link>
+              <Link to="https://x.com/chalaska" style={textLink}>X</Link>
+              <Link to="https://www.linkedin.com/in/chrishalaska" style={textLink}>LinkedIn</Link>
+              <Link to="https://halaska.com" style={textLink}>halaska.com</Link>
+            </span>
           </p>
           <Card style={{ padding: 24, gap: 8 }}>
             <div style={{ ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text }}>Need a hand with yours?</div>

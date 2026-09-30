@@ -64,4 +64,4 @@ npm run dev
 
 ## Licence
 
-MIT. Use it in anything. Built by [Halaska Studio](https://halaska.com).
+MIT. Use it in anything. Built by [Chris Halaska](https://chrishalaska.com) and [Halaska Studio](https://halaska.com), an AI-first product design studio.
