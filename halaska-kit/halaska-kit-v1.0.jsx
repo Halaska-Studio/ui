@@ -3465,9 +3465,52 @@ function useViewport() {
   return { width: w, isMobile: w < KIT_BP.mobile, compact: w < KIT_BP.rail };
 }
 
-function ShowcaseCard({ children, controls, label, theme = "light", height, align = "center", style: sp }) {
+// Anchor ids for demo cards come from their label: "Text Input" → "c-text-input".
+const showcaseSlug = (label) => "c-" + String(label).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Copies a link to this card: appears top right on hover, always on touch widths.
+function ShareLinkButton({ anchor, visible, theme }) {
+  const pal = usePal(theme);
+  const [copied, setCopied] = useState(false);
+  const [hover, setHover] = useState(false);
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const copy = () => {
+    const url = `${window.location.origin}${window.location.pathname}#${anchor}`;
+    writeClipboard(url, () => {
+      setCopied(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1600);
+      try { window.history.replaceState(null, "", `#${anchor}`); } catch (e) { /* no-op */ }
+    });
+  };
+  return (
+    <button type="button" onClick={copy} aria-label={copied ? "Link copied" : "Copy link to this section"} title={copied ? "Link copied" : "Copy link"}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, width: 30, height: 30, padding: 0, borderRadius: tokens.radius.sm,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        background: hover ? pal.bgMuted : "transparent", color: copied ? pal.success : pal.textTertiary,
+        opacity: visible || copied ? 1 : 0, pointerEvents: visible || copied ? "auto" : "none",
+        transition: `opacity ${motion.normal} ${motion.easeInOut}, background ${motion.fast} ${motion.easeOut}, color ${motion.normal} ${motion.easeInOut}`,
+      }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {copied
+          ? <path d="M20 6 9 17l-5-5" />
+          : <><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" /><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" /></>}
+      </svg>
+    </button>
+  );
+}
+
+function ShowcaseCard({ children, controls, label, anchor, housed, theme = "light", height, align = "center", style: sp }) {
   const pal = usePal(theme);
   const { isMobile } = useViewport();
+  const [hovered, setHovered] = useState(false);
+  // Patterns pass their own anchor (the id lives on their wrapper); labelled
+  // demo cards get one derived from the label.
+  const ownId = !anchor && label ? showcaseSlug(label) : undefined;
+  const linkId = anchor || ownId;
   const justify = align === "top" ? "flex-start" : "center";
   // Mobile: stages keep their desktop layout and scale down to the column
   // width when they don't reflow on their own. Measured, not guessed: the
@@ -3501,14 +3544,17 @@ function ShowcaseCard({ children, controls, label, theme = "light", height, alig
     window.addEventListener("resize", measure);
     return () => { if (ro) ro.disconnect(); window.removeEventListener("resize", measure); };
   }, [isMobile]);
-  const padT = isMobile ? 44 : align === "top" ? 56 : 88;
-  const padB = isMobile ? 28 : align === "top" ? 48 : 88;
+  // Housed stages hang a large card from the top edge, so the content reads
+  // as a component in a surface rather than floating in the stage.
+  const padT = housed ? 0 : isMobile ? 44 : align === "top" ? 56 : 88;
+  const padB = housed ? (isMobile ? 24 : 40) : isMobile ? 28 : align === "top" ? 48 : 88;
   const padX = isMobile ? 16 : align === "top" ? 48 : 88;
-  const stageH = height ? height - 104 : 0; // desktop stage height inside the paddings
+  const stageH = height ? height - (housed ? 40 : 104) : 0; // desktop stage height inside the paddings
   const mobileH = isMobile ? padT + Math.max(Math.round(fit.h * fit.s), Math.round(stageH * fit.s)) + padB + 4 : 0;
   return (
     <ThemeProvider theme={theme}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div id={ownId} style={{ display: "flex", flexDirection: "column", gap: 12 }}
+        onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
         {label && <span style={{ ...tokens.type.base, color: theme === "dark" ? "#555" : "#bbb", fontFamily: tokens.font.sans, paddingLeft: 8 }}>{label}</span>}
         <div style={{
           background: theme === "dark" ? "rgba(26,26,26,0.85)" : "rgba(250,250,250,0.75)",
@@ -3522,17 +3568,28 @@ function ShowcaseCard({ children, controls, label, theme = "light", height, alig
           transition: `all ${motion.smooth} ${motion.easeInOut}`, overflow: "hidden", ...sp,
         }}>
           <div ref={innerRef} style={{
-            flex: align === "top" || isMobile ? "0 0 auto" : 1, display: "flex",
-            alignItems: align === "top" || isMobile ? "flex-start" : "center",
+            flex: housed && !isMobile ? "1 1 auto" : align === "top" || isMobile ? "0 0 auto" : 1, display: "flex", minHeight: 0,
+            alignItems: housed && !isMobile ? "stretch" : align === "top" || isMobile ? "flex-start" : "center",
             justifyContent: isMobile && fit.s < 1 ? "flex-start" : "center",
             width: isMobile && fit.w ? fit.w : "100%",
             transform: isMobile && fit.s < 1 ? `scale(${fit.s})` : "none", transformOrigin: "top left",
           }}>
-            {children}
+            {housed ? (
+              <div style={{
+                boxSizing: "border-box", maxWidth: "100%", display: "flex", justifyContent: "center", alignItems: "flex-start",
+                padding: isMobile ? "52px 16px 20px" : "48px 40px 32px",
+                background: pal.bgElevated,
+                borderLeft: `1px solid ${pal.borderSubtle}`, borderRight: `1px solid ${pal.borderSubtle}`, borderBottom: `1px solid ${pal.borderSubtle}`,
+                borderRadius: `0 0 ${tokens.radius.lg}px ${tokens.radius.lg}px`,
+                boxShadow: `0 12px 32px ${pal.shadow}`,
+                transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+              }}>{children}</div>
+            ) : children}
           </div>
-          {controls && (
-            <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          {(controls || linkId) && (
+            <div style={{ position: "absolute", top: 14, right: 14, display: "flex", alignItems: "center", gap: 4 }}>
               {controls}
+              {linkId && <ShareLinkButton anchor={linkId} visible={hovered || isMobile} theme={theme} />}
             </div>
           )}
         </div>
@@ -5351,7 +5408,6 @@ function CtxBarCalendar({ theme }) {
                   position: "absolute", left: 0, right: 8, top: e.start * hourPx, height: e.len * hourPx - 2,
                   borderRadius: tokens.radius.xs, padding: "3px 6px", overflow: "hidden",
                   background: e.key ? pal.accentBg : pal.bgMuted,
-                  borderLeft: `2px solid ${e.key ? pal.accent : pal.textMuted}`,
                   transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
                 }}>
                   <Text size="xs" weight="medium" theme={theme} style={{ color: e.key ? pal.accentText : pal.textSecondary, display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.label}</Text>
@@ -5815,8 +5871,8 @@ const PATTERN_GROUPS = [
     blurb: "The baseline chat surface. Every AI product ships these, so the play here is craft, not coverage.",
     patterns: [
       { id: "pat-prompt-input",   title: "Prompt input",     desc: "The composer: attachments, model pill, and a stop-while-streaming state.", component: "PromptInputPattern",                   height: 380 },
-      { id: "pat-message",        title: "Message thread",   desc: "User and assistant turns with hover actions and response branches.",        component: "MessageThreadPattern",                 height: 420 },
-      { id: "pat-streaming",      title: "Streaming answer", desc: "Streamed reply with inline sources and follow-ups.",                        component: "StreamingAnswerPattern", replay: true, height: 580 },
+      { id: "pat-message",        title: "Message thread",   desc: "User and assistant turns with hover actions and response branches.",        component: "MessageThreadPattern",                 height: 436, housed: true },
+      { id: "pat-streaming",      title: "Streaming answer", desc: "Streamed reply with inline sources and follow-ups.",                        component: "StreamingAnswerPattern", replay: true, height: 596, housed: true },
       { id: "pat-chat",           title: "Agent chat",       desc: "Chat panel with reasoning chips and a composer.",                           component: "AgentChatPattern",       replay: true, height: 640 },
       { id: "pat-code",           title: "Code block",       desc: "Agent-written code streaming in line by line with syntax tint.",            component: "CodeBlockPattern",       replay: true, height: 460 },
       { id: "pat-model-context",  title: "Model & context",  desc: "Model picker with capability badges and a live context-window meter.",      component: "ModelContextPattern",                  height: 480 },
@@ -5827,9 +5883,9 @@ const PATTERN_GROUPS = [
     title: "Trust & transparency",
     blurb: "Why the user should believe the output: reasoning made visible, sources attached, confidence stated honestly.",
     patterns: [
-      { id: "pat-thinking",       title: "Thinking",         desc: "Expandable reasoning trace while the agent works.",                         component: "ThinkingTracePattern",   replay: true, height: 460 },
-      { id: "pat-citations",      title: "Inline citations", desc: "Numbered source chips with an anchored popover pager.",                     component: "CitationsPattern",                     height: 480 },
-      { id: "pat-context",        title: "Context sources",  desc: "Retrieved knowledge chunks with their sources.",                            component: "ContextSourcesPattern",                height: 500 },
+      { id: "pat-thinking",       title: "Thinking",         desc: "Expandable reasoning trace while the agent works.",                         component: "ThinkingTracePattern",   replay: true, height: 476, housed: true },
+      { id: "pat-citations",      title: "Inline citations", desc: "Numbered source chips with an anchored popover pager.",                     component: "CitationsPattern",                     height: 496, housed: true },
+      { id: "pat-context",        title: "Context sources",  desc: "Retrieved knowledge chunks with their sources.",                            component: "ContextSourcesPattern",                height: 516, housed: true },
       { id: "pat-confidence",     title: "Confidence states", desc: "One claim rendered at three confidence levels. Low is a designed state.", component: "ConfidencePattern",                    height: 520 },
       { id: "pat-recommendation", title: "Recommendation",   desc: "Agent suggestion with confidence and clear actions.",                       component: "RecommendationPattern",  replay: true, height: 580 },
       { id: "pat-feedback",       title: "Feedback capture", desc: "Thumbs with a structured follow-up on negative.",                           component: "FeedbackPattern",                      height: 480 },
@@ -5844,14 +5900,14 @@ const PATTERN_GROUPS = [
       { id: "pat-approval",       title: "Approval card",    desc: "Human-in-the-loop question before the agent acts.",                         component: "ApprovalCardPattern",    replay: true, height: 540 },
       { id: "pat-autonomy",       title: "Autonomy levels",  desc: "Per-task dial for how much the agent may do, observe through autonomous.",  component: "AutonomyPattern",                      height: 620 },
       { id: "pat-permissions",    title: "Permission scope", desc: "Tools, data, and limits the agent can touch, summarised in plain language.", component: "PermissionScopePattern",             height: 740 },
-      { id: "pat-queue",          title: "Task queue",       desc: "What the agent will work through. Reorder, remove, watch it clear.",       component: "QueuePattern",           replay: true, height: 560 },
-      { id: "pat-status",         title: "Agent status",     desc: "Live status pill with rolling phases, a stop control, and a mid-run redirect.",      component: "AgentStatusPattern",     replay: true, height: 340 },
-      { id: "pat-tools",          title: "Tool calls",       desc: "Edits, commands, and reads as a compact activity feed.",                    component: "ToolStreamPattern",      replay: true, height: 600 },
-      { id: "pat-tasks",          title: "Task rows",        desc: "Live agent task status: running, failed, completed.",                      component: "AgentTasksPattern",      replay: true, height: 600 },
+      { id: "pat-queue",          title: "Task queue",       desc: "What the agent will work through. Reorder, remove, watch it clear.",       component: "QueuePattern",           replay: true, height: 576, housed: true },
+      { id: "pat-status",         title: "Agent status",     desc: "Live status pill with rolling phases, a stop control, and a mid-run redirect.",      component: "AgentStatusPattern",     replay: true, height: 356, housed: true },
+      { id: "pat-tools",          title: "Tool calls",       desc: "Edits, commands, and reads as a compact activity feed.",                    component: "ToolStreamPattern",      replay: true, height: 616, housed: true },
+      { id: "pat-tasks",          title: "Task rows",        desc: "Live agent task status: running, failed, completed.",                      component: "AgentTasksPattern",      replay: true, height: 616, housed: true },
       { id: "pat-handoff",        title: "Handoff",          desc: "The agent escalates to a human with prepared context. Calm, not a failure.", component: "HandoffPattern",       replay: true, height: 480 },
       { id: "pat-receipt",        title: "Action receipt",   desc: "Evidence of what changed, under whose authority, with a time-limited undo.", component: "ActionReceiptPattern", replay: true, height: 500 },
-      { id: "pat-checkpoints",    title: "Checkpoints",      desc: "Named restore points. Confirm inline and roll back with re-verification.", component: "CheckpointPattern",      replay: true, height: 460 },
-      { id: "pat-audit",          title: "Audit log",        desc: "The filterable record of agent actions, with inline receipts.",             component: "AuditLogPattern",                      height: 620 },
+      { id: "pat-checkpoints",    title: "Checkpoints",      desc: "Named restore points. Confirm inline and roll back with re-verification.", component: "CheckpointPattern",      replay: true, height: 476, housed: true },
+      { id: "pat-audit",          title: "Audit log",        desc: "The filterable record of agent actions, with inline receipts.",             component: "AuditLogPattern",                      height: 636, housed: true },
       { id: "pat-error-repair",   title: "Error repair",     desc: "The structured mistake: acknowledge, show the fix, offer recourse.",       component: "ErrorRepairPattern",     replay: true, height: 500 },
     ],
   },
@@ -5863,9 +5919,9 @@ const PATTERN_GROUPS = [
       { id: "pat-artifact",       title: "Artifact",         desc: "Generated content in a versioned container with preview and raw views.",    component: "ArtifactPattern",                      height: 540 },
       { id: "pat-diff-view",      title: "Diff view",        desc: "Proposed code edits side by side with per-hunk accept and reject.",    component: "DiffViewPattern",        replay: true, height: 560 },
       { id: "pat-diff",           title: "Diff table",       desc: "AI-proposed edits sweeping through tabular data.",                          component: "DiffTablePattern",       replay: true, height: 540 },
-      { id: "pat-structured",     title: "Structured data",  desc: "Schema output rendered as a readable card, raw JSON one toggle away.",      component: "StructuredDataPattern",                height: 520 },
+      { id: "pat-structured",     title: "Structured data",  desc: "Schema output rendered as a readable card, raw JSON one toggle away.",      component: "StructuredDataPattern",                height: 536, housed: true },
       { id: "pat-insights",       title: "Insight cards",    desc: "Paged agent insights with live charts.",                                    component: "InsightCardsPattern",                  height: 620 },
-      { id: "pat-comparison",     title: "Comparison",       desc: "Two models stream the same prompt side by side. Pick a winner.",           component: "ComparisonPattern",      replay: true, height: 500 },
+      { id: "pat-comparison",     title: "Comparison",       desc: "Two models stream the same prompt side by side. Pick a winner.",           component: "ComparisonPattern",      replay: true, height: 516, housed: true },
     ],
   },
   {
@@ -5873,10 +5929,10 @@ const PATTERN_GROUPS = [
     title: "Ambient & beyond chat",
     blurb: "The agent outside the thread: boards, nudges, digests, and inline assists that don't make you scroll a transcript to reconstruct state.",
     patterns: [
-      { id: "pat-taskboard",      title: "Taskboard",        desc: "The board is primary, chat is secondary. Work moves when decisions are needed.", component: "TaskboardPattern", replay: true, height: 440 },
+      { id: "pat-taskboard",      title: "Taskboard",        desc: "The board is primary, chat is secondary. Work moves when decisions are needed.", component: "TaskboardPattern", replay: true, height: 456, housed: true },
       { id: "pat-inline-assist",  title: "Inline assist",    desc: "Ghost-text completions. Accept, dismiss, and watch the agent adapt.",      component: "InlineAssistPattern",    replay: true, height: 380 },
       { id: "pat-nudge",          title: "Nudge",            desc: "A proactive, non-blocking suggestion with a real escape hatch.",            component: "NudgePattern",           replay: true, height: 320 },
-      { id: "pat-digest",         title: "Digest",           desc: "While-you-were-away summary with rationale and receipts per action.",       component: "DigestPattern",                        height: 560 },
+      { id: "pat-digest",         title: "Digest",           desc: "While-you-were-away summary with rationale and receipts per action.",       component: "DigestPattern",                        height: 576, housed: true },
       { id: "pat-notifications",  title: "Notification center", desc: "The classic panel: agent events with severity, read state, and actions.", component: "NotificationCenterPattern",          height: 560 },
       { id: "pat-search",         title: "Command search",   desc: "Command palette with live filtering and an empty state.",                   component: "CommandSearchPattern",                 height: 540 },
       { id: "pat-agent-setup",    title: "Agent setup",      desc: "Full multi-step setup flow with live preview.",                             component: "AgentSetupPattern",                    height: 760, align: "top" },
@@ -6760,7 +6816,7 @@ function ApprovalCardPattern({
                     ...interactiveBase, display: "flex", alignItems: "center", gap: 12,
                     width: "100%", padding: "12px 14px", textAlign: "left",
                     borderRadius: tokens.radius.md,
-                    background: active ? pal.accentBg : pal.bgSubtle,
+                    background: active ? pal.accentBg : pal.bgElevated,
                     boxShadow: active ? `inset 0 0 0 1.5px ${pal.accent}` : `inset 0 0 0 1px ${pal.borderSubtle}`,
                   }}>
                   <span style={{
@@ -9574,8 +9630,8 @@ function HandoffPattern({
                 <Badge theme={theme} variant="accent">Your turn</Badge>
               </Stack>
               <div style={{
-                borderLeft: `2px solid ${pal.accent}`, background: pal.accentBg,
-                borderRadius: `0 ${tokens.radius.sm}px ${tokens.radius.sm}px 0`,
+                background: pal.accentBg,
+                borderRadius: tokens.radius.sm,
                 padding: "12px 14px",
                 animation: `halaska-step-in 0.4s ${motion.emphasized} 0.05s both`,
                 transition: `all ${motion.smooth} ${motion.easeInOut}`,
@@ -10238,13 +10294,7 @@ function ErrorRepairPattern({
   return (
     <div style={{ width: 440, maxWidth: "100%", fontFamily: tokens.font.sans }}>
       <Card theme={theme} padding={20} style={{ position: "relative", overflow: "hidden" }}>
-        {/* Warning-tinted rail: the only raised voice in the card */}
-        <span style={{
-          position: "absolute", left: 0, top: 18, bottom: 18, width: 3,
-          borderRadius: 2, background: pal.warning,
-          transition: `background ${motion.smooth} ${motion.easeInOut}`,
-        }} />
-        <Stack gap={16} style={{ paddingLeft: 10 }}>
+        <Stack gap={16}>
           {/* Beat 1: acknowledge, plainly */}
           <div style={{ animation: `halaska-step-in 0.45s ${motion.emphasized} both` }}>
             <Stack direction="row" gap={10} align="center" style={{ marginBottom: 6 }}>
@@ -10992,7 +11042,6 @@ function TaskboardCard({ task, col, meta, collapsing, entering, theme }) {
       <div style={{
         background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`,
         borderRadius: tokens.radius.md, padding: "10px 12px",
-        boxShadow: needs ? `inset 3px 0 0 0 ${pal.accent}` : "none",
         transition: `all ${motion.smooth} ${motion.easeInOut}`,
       }}>
         <Text size="sm" weight="medium" theme={theme} style={{ display: "block", marginBottom: 7 }}>{task.title}</Text>
@@ -12344,7 +12393,7 @@ function DemoPatterns({ theme }) {
             return (
               <div key={pat.id} id={pat.id} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <PatternHeader n={pat.n} title={pat.title} desc={pat.desc} theme={theme} />
-                <ShowcaseCard theme={theme} height={pat.height} align="top"
+                <ShowcaseCard theme={theme} height={pat.height} align="top" anchor={pat.id} housed={pat.housed}
                   controls={pat.replay
                     ? <Button theme={theme} variant="ghost" size="sm" onClick={() => bump(pat.id)}>↻ Replay</Button>
                     : undefined}>
@@ -13372,6 +13421,18 @@ export default function HalaskaKit() {
   const [accentColor, setAccentColor] = useState("#8b5cf6");
 
   useEffect(() => { injectStyles(); }, []);
+  // Deep links: /#pat-plan or /#c-buttons scrolls to that section once the
+  // page has rendered (twice, so late layout such as fonts can't leave it short).
+  useEffect(() => {
+    const go = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      const el = id ? document.getElementById(id) : null;
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 32, behavior: "auto" });
+    };
+    const t1 = setTimeout(go, 300), t2 = setTimeout(go, 1400);
+    window.addEventListener("hashchange", go);
+    return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener("hashchange", go); };
+  }, []);
   const { isMobile } = useViewport();
   const gap = isMobile ? 40 : 64;
 
