@@ -411,6 +411,11 @@
    "name": "style",
    "type": "CSSProperties",
    "description": "Inline style merged onto the root element."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "TextArea": [
@@ -459,6 +464,11 @@
    "name": "style",
    "type": "CSSProperties",
    "description": "Inline style merged onto the root element."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "Select": [
@@ -571,6 +581,11 @@
    "name": "theme",
    "type": "\"light\" | \"dark\"",
    "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "RadioGroup": [
@@ -620,6 +635,11 @@
    "name": "theme",
    "type": "\"light\" | \"dark\"",
    "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "SegmentedControl": [
@@ -1132,6 +1152,11 @@
    "name": "theme",
    "type": "\"light\" | \"dark\"",
    "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "Orb": [
@@ -1230,6 +1255,11 @@
    "name": "theme",
    "type": "\"light\" | \"dark\"",
    "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "\"aria-label\"",
+   "type": "any",
+   "description": ""
   }
  ],
  "SpringSlider": [

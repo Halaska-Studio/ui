@@ -4,7 +4,7 @@ You are a coding agent setting up Halaska UI (halaska-kit.jsx) in a project. Fol
 
 ## What it is
 
-A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 40 UX patterns and about 100 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
+A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 40 UX patterns and 77 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
 
 ## Setup
 

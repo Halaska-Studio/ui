@@ -35,7 +35,7 @@ export function WithoutLabel() {
         <Text weight="medium">Linear</Text>
         <Text size="sm" secondary>Create issues from bug reports</Text>
       </Stack>
-      <SwitchToggle checked={connected} onChange={setConnected} />
+      <SwitchToggle checked={connected} onChange={setConnected} aria-label="Linear" />
     </Stack>
   );
 }

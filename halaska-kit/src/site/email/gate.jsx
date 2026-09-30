@@ -2,7 +2,7 @@
 // only; everything else on the site is open. Sign-ups go straight to the
 // studio's Kit form, tagged with where they came from.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, IconButton, Stack, Text, TextInput, INSTALL_PROMPT, usePal, tokens, motion, interactiveBase } from "../kit";
+import { Button, IconButton, Stack, Text, TextInput, INSTALL_PROMPT, usePal, tokens, motion, interactiveBase, useModalFocus } from "../kit";
 import { useSite } from "../state";
 import { Link } from "../router";
 
@@ -105,6 +105,7 @@ export function GateModal() {
   const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
   const close = useCallback(() => setModal(null), [setModal]);
+  const panelRef = useModalFocus(!!modal, close);
   useEffect(() => {
     if (!modal) return;
     setError(""); setCopied(modal.stage === "delivered");
@@ -130,7 +131,7 @@ export function GateModal() {
       background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
-      <div role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
         width: delivered ? 620 : 440, maxWidth: "100%", maxHeight: "calc(100vh - 32px)", overflowY: "auto",
         background: theme === "dark" ? "rgba(30,30,30,0.97)" : "rgba(255,255,255,0.97)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg, padding: 24,
@@ -149,7 +150,7 @@ export function GateModal() {
               You get the prompt now. We will also email you when new components and patterns ship, along with other offers and services from Halaska Studio.
             </Text>
             <div className="stack-sm" style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <TextInput theme={theme} type="email" placeholder="you@company.com" value={email}
+              <TextInput theme={theme} type="email" aria-label="Email address" placeholder="you@company.com" value={email}
                 onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1 }} />
               <Button theme={theme} variant="primary" loading={sending} onClick={submit} style={{ flexShrink: 0 }}>Copy install prompt</Button>
             </div>
@@ -199,7 +200,7 @@ export function InlineGate({ placement, target, label, size = "md", align = "fle
   };
   return (
     <div className="stack-sm" style={{ display: "flex", gap: 8, alignItems: "flex-start", justifyContent: align, width, maxWidth: "100%" }}>
-      <TextInput theme={theme} type="email" placeholder="you@company.com" value={email} size={size === "lg" ? "lg" : "md"}
+      <TextInput theme={theme} type="email" aria-label="Email address" placeholder="you@company.com" value={email} size={size === "lg" ? "lg" : "md"}
         onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1, minWidth: 0 }} />
       <Button theme={theme} variant="primary" size={size} loading={sending} onClick={submit} style={{ flexShrink: 0 }}>{text}</Button>
     </div>
@@ -225,7 +226,7 @@ export function UpdatesInline({ placement, width = 360 }) {
   };
   return (
     <div className="stack-sm" style={{ display: "flex", gap: 8, alignItems: "flex-start", width, maxWidth: "100%" }}>
-      <TextInput theme={theme} type="email" size="sm" placeholder="you@company.com" value={email}
+      <TextInput theme={theme} type="email" size="sm" aria-label="Email address" placeholder="you@company.com" value={email}
         onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1, minWidth: 0 }} />
       <Button theme={theme} variant="secondary" size="sm" loading={state === "sending"} onClick={submit} style={{ flexShrink: 0 }}>Notify me</Button>
     </div>

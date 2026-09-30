@@ -1,7 +1,7 @@
 // The screen template: header, full preview with a desktop and mobile
 // toggle and a full-screen action, anatomy with numbered hotspots, code.
 import { useEffect, useState } from "react";
-import { usePal, tokens, motion, interactiveBase, Button, IconButton, ThemeProvider, AccentContext } from "../kit";
+import { usePal, tokens, motion, interactiveBase, Button, IconButton, ThemeProvider, AccentContext, useModalFocus } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { Link } from "../router";
 import { SCREENS, patternById, screenComponent, relations } from "../registry";
@@ -23,9 +23,10 @@ function Fullscreen({ screen, layout, onClose }) {
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
   }, [onClose]);
   const Example = screenComponent(screen);
+  const panelRef = useModalFocus(true, onClose);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1100, padding: 20, display: "flex", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: `halaska-fade-in ${motion.normal} ${motion.easeOut} both` }}>
-      <div role="dialog" aria-modal="true" aria-label={`${screen.name} screen`} onClick={(e) => e.stopPropagation()} style={{ flex: 1, minWidth: 0, position: "relative", overflow: "auto", background: pal.bg, borderRadius: tokens.radius.xl, border: `1px solid ${pal.borderSubtle}`, boxShadow: "0 24px 80px rgba(0,0,0,0.35)", animation: `halaska-scale-in ${motion.smooth} ${motion.emphasized} both` }}>
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`${screen.name} screen`} onClick={(e) => e.stopPropagation()} style={{ flex: 1, minWidth: 0, position: "relative", overflow: "auto", background: pal.bg, borderRadius: tokens.radius.xl, border: `1px solid ${pal.borderSubtle}`, boxShadow: "0 24px 80px rgba(0,0,0,0.35)", animation: `halaska-scale-in ${motion.smooth} ${motion.emphasized} both` }}>
         <div style={{ position: "absolute", top: 12, right: 12, zIndex: 5 }}>
           <IconButton theme={site.theme} icon="✕" size={36} variant="secondary" label="Close" onClick={onClose} />
         </div>

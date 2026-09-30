@@ -1,7 +1,7 @@
 "use client";
 
 /*!
- * Halaska Kit v1.0: UX patterns & components for AI products
+ * Halaska UI v1.0: UX patterns & components for AI products
  * (c) Halaska · https://ui.halaska.com · MIT License
  * Single-file React kit: import { Button, Orb, PlanPreviewPattern } from "./halaska-kit"
  */
@@ -11,7 +11,7 @@ import { useState, useRef, useEffect, useCallback, createContext, useContext, Fr
 // shadcn/ui components available in Claude artifacts:
 // Badge, Button, Card, Checkbox, Input, Label, Progress, RadioGroup,
 // Select, Separator, Skeleton, Switch, Tabs, Textarea
-// Halaska Kit provides styled versions of all the above.
+// Halaska UI provides styled versions of all the above.
 
 // ═══════════════════════════════════════════════════════════════
 //  HALASKA KIT v1.0: UX patterns & components for AI products
@@ -767,7 +767,7 @@ function LinkButton({ children, onClick, icon, iconRight, size = "md", theme: tp
 
 function TextInput({
   value, onChange, placeholder, label, caption, error, icon, disabled,
-  type = "text", size = "md", theme: tp, style: sp,
+  type = "text", size = "md", theme: tp, style: sp, "aria-label": ariaLabel,
 }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [focused, setFocused] = useState(false);
@@ -794,7 +794,7 @@ function TextInput({
         <input
           type={type} value={value} onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder} disabled={disabled}
-          aria-label={labelText(label)} aria-invalid={error ? true : undefined}
+          aria-label={ariaLabel || labelText(label) || placeholder} aria-invalid={error ? true : undefined}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             ...s, width: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
@@ -817,7 +817,7 @@ function TextInput({
   );
 }
 
-function TextArea({ value, onChange, placeholder, label, caption, rows = 3, disabled, theme: tp, style: sp }) {
+function TextArea({ value, onChange, placeholder, label, caption, rows = 3, disabled, theme: tp, style: sp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [focused, setFocused] = useState(false);
   const [hover, setHover] = useState(false);
@@ -827,7 +827,7 @@ function TextArea({ value, onChange, placeholder, label, caption, rows = 3, disa
       <div style={{ position: "relative" }}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
         <textarea value={value} onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder} rows={rows} disabled={disabled} aria-label={labelText(label)}
+          placeholder={placeholder} rows={rows} disabled={disabled} aria-label={ariaLabel || labelText(label) || placeholder}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
             ...tokens.type.base, width: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
@@ -1003,11 +1003,11 @@ function Checkbox({ checked, onChange, label, disabled, theme: tp, "aria-label":
   );
 }
 
-function Radio({ checked, onChange, label, disabled, tabIndex, theme: tp }) {
+function Radio({ checked, onChange, label, disabled, tabIndex, theme: tp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 }}>
-      <button type="button" role="radio" aria-checked={!!checked} disabled={disabled} tabIndex={tabIndex}
+      <button type="button" role="radio" aria-checked={!!checked} aria-label={ariaLabel} disabled={disabled} tabIndex={tabIndex}
         onClick={() => { if (!disabled) onChange?.(); }}
         style={{
           ...interactiveBase, padding: 0, cursor: disabled ? "default" : "pointer", boxSizing: "border-box",
@@ -1050,11 +1050,11 @@ function RadioGroup({ options, value, onChange, label, theme: tp }) {
   );
 }
 
-function SwitchToggle({ checked, onChange, label, theme: tp }) {
+function SwitchToggle({ checked, onChange, label, theme: tp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   return (
     <label style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
-      <button type="button" onClick={() => onChange?.(!checked)} role="switch" aria-checked={!!checked}
+      <button type="button" onClick={() => onChange?.(!checked)} role="switch" aria-checked={!!checked} aria-label={ariaLabel}
         style={{
           ...interactiveBase, width: 44, height: 24, borderRadius: 12,
           background: checked ? pal.accent : pal.bgMuted, position: "relative", padding: 0, flexShrink: 0,
@@ -1455,7 +1455,7 @@ function BeforeAfterToggle({ before, after, theme: tp }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
         <Text size="sm" weight="medium" theme={theme} style={{ color: !showAfter ? pal.text : pal.textMuted }}>Before</Text>
-        <SwitchToggle checked={showAfter} onChange={setShowAfter} theme={theme} />
+        <SwitchToggle checked={showAfter} onChange={setShowAfter} theme={theme} aria-label="Show after" />
         <Text size="sm" weight="medium" theme={theme} style={{ color: showAfter ? pal.text : pal.textMuted }}>After</Text>
       </div>
     </div>
@@ -1506,14 +1506,14 @@ function Pagination({ current, total, onChange, variant = "numbers", theme: tp }
   );
 }
 
-function Slider({ value, onChange, min = 0, max = 100, label, theme: tp }) {
+function Slider({ value, onChange, min = 0, max = 100, label, theme: tp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {label && <Label theme={theme}>{label}</Label>}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <input type="range" min={min} max={max} value={value} aria-label={labelText(label)} onChange={(e) => onChange(Number(e.target.value))}
+        <input type="range" min={min} max={max} value={value} aria-label={ariaLabel || labelText(label) || "Value"} onChange={(e) => onChange(Number(e.target.value))}
           style={{ flex: 1, height: 4, appearance: "none", background: `linear-gradient(to right, ${pal.accent} ${pct}%, ${pal.bgMuted} ${pct}%)`, borderRadius: 2, outline: "none", cursor: "pointer" }} />
         <span style={{ ...tokens.type.sm, color: pal.textTertiary, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", minWidth: 32, textAlign: "right" }}>{value}</span>
       </div>
@@ -1700,7 +1700,7 @@ function ThinkingSteps({ steps, current = 0, theme: tp }) {
   );
 }
 
-function SpringToggle({ checked, onChange, label, theme: tp }) {
+function SpringToggle({ checked, onChange, label, theme: tp, "aria-label": ariaLabel }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
   const [press, setPress] = useState(false);
   const thumbW = press ? 24 : 20;
@@ -1710,7 +1710,7 @@ function SpringToggle({ checked, onChange, label, theme: tp }) {
         onMouseDown={() => setPress(true)}
         onMouseUp={() => setPress(false)}
         onMouseLeave={() => setPress(false)}
-        role="switch" aria-checked={checked}
+        role="switch" aria-checked={!!checked} aria-label={ariaLabel}
         style={{
           ...interactiveBase, width: 44, height: 24, borderRadius: 12,
           background: checked ? pal.accent : pal.bgMuted, position: "relative", padding: 0, flexShrink: 0,
@@ -1770,7 +1770,7 @@ function SpringSlider({ value, onChange, min = 0, max = 100, label, theme: tp })
       {label && <Label theme={theme}>{label}</Label>}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div ref={trackRef}
-          role="slider" tabIndex={0} aria-label={labelText(label)} aria-valuemin={min} aria-valuemax={max} aria-valuenow={value}
+          role="slider" tabIndex={0} aria-label={labelText(label) || "Value"} aria-valuemin={min} aria-valuemax={max} aria-valuenow={value}
           onKeyDown={(e) => {
             const step = e.shiftKey ? Math.max(1, Math.round((max - min) / 10)) : 1;
             const to = e.key === "ArrowRight" || e.key === "ArrowUp" ? value + step
@@ -2237,7 +2237,7 @@ function InputGroup({ prefix, suffix, value, onChange, placeholder, label, theme
         {prefix != null && (
           <div style={{ display: "flex", alignItems: "center", padding: "0 12px", color: pal.textTertiary, ...tokens.type.sm, fontFamily: tokens.font.sans, borderRight: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle, transition: `all ${motion.smooth} ${motion.easeInOut}` }}>{prefix}</div>
         )}
-        <input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} aria-label={labelText(label)}
+        <input value={value} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder} aria-label={labelText(label) || placeholder || (typeof prefix === "string" ? prefix : undefined) || "Value"}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{ flex: 1, minWidth: 0, padding: "0 16px", border: "none", outline: "none", background: "transparent", color: pal.text, fontFamily: tokens.font.sans, ...tokens.type.base }} />
         {suffix != null && (
@@ -2536,6 +2536,7 @@ function Menubar({ menus, theme: tp }) {
 
 function Sparkline({ data = [], width = 240, height = 72, color, fill = true, theme: tp, style: sp }) {
   const ctx = useThemeContext(); const theme = tp || ctx; const pal = usePal(theme);
+  const gradId = useUid("halaska-spark");
   if (!data.length) return null;
   const values = typeof data[0] === "number" ? data : data.map(d => d.value);
   const stroke = color || pal.accent;
@@ -2556,7 +2557,6 @@ function Sparkline({ data = [], width = 240, height = 72, color, fill = true, th
     d += ` C ${c1[0]} ${c1[1]}, ${c2[0]} ${c2[1]}, ${p2[0]} ${p2[1]}`;
   }
   const area = `${d} L ${pts[pts.length - 1][0]} ${H} L ${pts[0][0]} ${H} Z`;
-  const gradId = `halaska-spark-${stroke.replace(/[^a-z0-9]/gi, "")}`;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true"
       style={{ width, height, display: "block", overflow: "visible", animation: `halaska-fade-in ${motion.smooth} ${motion.easeOut} both`, ...sp }}>
@@ -7553,7 +7553,7 @@ function CommandSearchPattern({ theme }) {
           onClick={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={(e) => { if (e.key === "Escape") close(); }}
-          placeholder="Ask the agent anything."
+          placeholder="Ask the agent anything." aria-label="Ask the agent anything"
           style={{
             ...tokens.type.md, flex: 1, minWidth: 0, background: "transparent",
             border: "none", outline: "none", color: pal.text, fontFamily: tokens.font.sans,
@@ -7741,7 +7741,7 @@ function AgentChatPattern({ theme }) {
         }}>
           <input value={draft} onChange={e => setDraft(e.target.value)}
             onKeyDown={e => e.key === "Enter" && send()}
-            placeholder="Ask about your customers…"
+            placeholder="Ask about your customers…" aria-label="Ask about your customers"
             style={{ ...tokens.type.base, flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", color: pal.text, fontFamily: tokens.font.sans }} />
           <button onClick={send} aria-label="Send"
             style={{
@@ -7972,7 +7972,7 @@ function PromptInputPattern({ theme }) {
             onChange={(e) => setValue(e.target.value)}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-            placeholder="Ask Alpha about your inbox…"
+            placeholder="Ask Alpha about your inbox…" aria-label="Ask Alpha about your inbox"
             style={{
               ...tokens.type.base, display: "block", width: "100%", boxSizing: "border-box",
               fontFamily: tokens.font.sans, color: pal.text, background: "transparent",
@@ -9253,7 +9253,7 @@ const PERMSCOPE_TOOLS = [
 
 const PERMSCOPE_DATA = [
   { id: "history", label: "Ticket history",   sub: "Threads, replies, CSAT scores" },
-  { id: "exports", label: "Customer records", sub: "Plans, seats, and billing status from HubSpot" },
+  { id: "exports", label: "Customer records", sub: "Plans, seats, and billing status from Stripe" },
 ];
 
 function PermScopeRow({ label, sub, checked, onChange, theme }) {
@@ -9264,7 +9264,7 @@ function PermScopeRow({ label, sub, checked, onChange, theme }) {
         <Text size="base" theme={theme} style={{ display: "block" }}>{label}</Text>
         <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{sub}</Text>
       </div>
-      <SwitchToggle checked={checked} onChange={onChange} theme={theme} />
+      <SwitchToggle checked={checked} onChange={onChange} theme={theme} aria-label={label} />
     </div>
   );
 }
@@ -9363,7 +9363,7 @@ function PermissionScopePattern({ theme }) {
                 color: pal.accentText, transition: `color ${motion.smooth} ${motion.easeInOut}`,
               }}>${cap.toLocaleString()}/day</span>
             </div>
-            <input type="range" min={0} max={5000} step={50} value={cap}
+            <input type="range" aria-label="Daily spend cap" min={0} max={5000} step={50} value={cap}
               onChange={(e) => setCap(Number(e.target.value))}
               style={{
                 width: "100%", height: 4, appearance: "none", WebkitAppearance: "none",
@@ -13172,7 +13172,7 @@ function ChatBButton({ variant, onClick, style, children }) {
 
 function ChatBModelSelect({ value, onChange, style }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={{ ...CHATB_FIELD, cursor: "pointer", ...style }}>
+    <select aria-label="Model" value={value} onChange={(e) => onChange(e.target.value)} style={{ ...CHATB_FIELD, cursor: "pointer", ...style }}>
       {CHATX_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
     </select>
   );
@@ -13213,7 +13213,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>✨ Alpha</div>
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search threads" style={{ ...CHATB_FIELD, width: "100%" }} />
+            placeholder="Search threads" aria-label="Search threads" style={{ ...CHATB_FIELD, width: "100%" }} />
           <ChatBButton variant="primary" onClick={() => {}} style={{ width: "100%" }}>New thread</ChatBButton>
         </div>
 
@@ -13391,7 +13391,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
               ))}
             </div>
             <textarea rows={mobile ? 2 : 3} value={draft} onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ask Alpha about your inbox..."
+              placeholder="Ask Alpha about your inbox..." aria-label="Ask Alpha about your inbox"
               style={{ ...CHATB_FIELD, width: "100%", resize: "none", display: "block" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: mobile ? "wrap" : "nowrap" }}>
               <ChatBButton onClick={() => {}}>📎 Attach</ChatBButton>
@@ -14062,6 +14062,8 @@ export {
   // Example screens (one per UX paradigm)
   ChatParadigmExample, CanvasParadigmExample, ChatParadigmBefore, BeforeAfterSection,
   PARADIGM_STAGE, PARADIGM_STAGE_MOBILE,
+  // Accessibility helpers
+  useModalFocus, arrowNav,
   // shadcn/ui names (aliases of the components above)
   Input, Textarea, Switch, Separator, Alert, Empty, Item, Command,
   // Registries (for building indexes and docs)

@@ -52,10 +52,10 @@ const NON_COMPONENT = new Set(["tokens", "motion", "interactiveBase", "usePal", 
   "setKitMotion", "setKitFont", "KIT_MOTION_PRESETS", "KIT_FONT_PRESETS"]);
 
 // ── llms.txt ───────────────────────────────────────────────────
-let out = `# Halaska Kit: API reference for coding agents
+let out = `# Halaska UI: API reference for coding agents
 # https://ui.halaska.com · file: halaska-kit.jsx · by Halaska
 
-Halaska Kit is a single-file React UI kit for AI products: 40 UX patterns + ~100 styled
+Halaska UI is a single-file React UI kit for AI products: 40 UX patterns + 77 styled
 components, inline styles, no CSS/Tailwind setup. Deps: react and react-dom only (no chart library).
 Fonts (Geist) and keyframes self-inject on import. File begins with "use client" (Next.js-safe).
 
@@ -109,7 +109,7 @@ mkdirSync(join(root, "public"), { recursive: true });
 writeFileSync(join(root, "public", "llms.txt"), out);
 
 // ── halaska-kit.d.ts ───────────────────────────────────────────
-let dts = `// Type shim for Halaska Kit (permissive). Generated, do not edit.
+let dts = `// Type shim for Halaska UI (permissive). Generated, do not edit.
 // Drop next to halaska-kit.jsx so TypeScript projects can import it.
 import type { ComponentType, Context } from "react";
 declare const _any: any;

@@ -45,7 +45,7 @@ export function WithAction() {
       <ListItem
         title="Auto reply"
         subtitle="Alpha answers common questions"
-        right={<SwitchToggle checked={autoReply} onChange={setAutoReply} />}
+        right={<SwitchToggle checked={autoReply} onChange={setAutoReply} aria-label="Auto reply" />}
         divider={false}
       />
     </div>

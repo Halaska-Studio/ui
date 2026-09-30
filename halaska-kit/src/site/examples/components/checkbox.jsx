@@ -41,7 +41,7 @@ export function WithoutLabel() {
   const [selected, setSelected] = useState(true);
   return (
     <Stack direction="row" gap={12} align="center">
-      <Checkbox checked={selected} onChange={setSelected} />
+      <Checkbox checked={selected} onChange={setSelected} aria-label="Select ticket #4821" />
       <Text size="sm" secondary>#4821 · Acme · Invoice charged twice</Text>
     </Stack>
   );

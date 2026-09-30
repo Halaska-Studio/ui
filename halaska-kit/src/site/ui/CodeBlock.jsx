@@ -10,10 +10,10 @@ export function highlight(code, pal) {
   for (const m of code.matchAll(TOKEN)) {
     if (m.index > last) out.push(code.slice(last, m.index));
     const [all, comment, str, open, tag, kw, num] = m;
-    if (comment) out.push(<span key={k++} style={{ color: pal.textMuted }}>{all}</span>);
-    else if (str) out.push(<span key={k++} style={{ color: pal.success }}>{all}</span>);
+    if (comment) out.push(<span key={k++} style={{ color: pal.textTertiary }}>{all}</span>);
+    else if (str) out.push(<span key={k++} style={{ color: pal.successHover }}>{all}</span>);
     else if (tag) out.push(<span key={k++}><span style={{ color: pal.textTertiary }}>{open}</span><span style={{ color: pal.accent }}>{tag}</span></span>);
-    else if (kw) out.push(<span key={k++} style={{ color: pal.textTertiary }}>{all}</span>);
+    else if (kw) out.push(<span key={k++} style={{ color: pal.textSecondary }}>{all}</span>);
     else if (num) out.push(<span key={k++} style={{ color: pal.warning }}>{all}</span>);
     last = m.index + all.length;
   }
@@ -52,7 +52,7 @@ export function CodeBlock({ code, theme: tp, maxHeight = 420, bare, style: sp })
     }}>
       <pre style={{
         margin: 0, padding: "16px 48px 16px 18px", overflow: "auto", maxHeight, whiteSpace: "pre", tabSize: 2,
-        fontFamily: tokens.font.mono, fontSize: 12.5, lineHeight: 1.7, color: pal.textSecondary,
+        fontFamily: tokens.font.mono, fontSize: 12.5, lineHeight: 1.7, color: pal.text,
       }}><code>{highlight(text, pal)}</code></pre>
       <div style={{ position: "absolute", top: 8, right: 8 }}><CopyButton text={text} label="Copy code" theme={theme} /></div>
     </div>
