@@ -2,6 +2,9 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/((?!assets/|api/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!assets/|api/|.*\\.[a-zA-Z0-9]+$).*)",
+      "destination": "/"
+    }
   ]
 }
