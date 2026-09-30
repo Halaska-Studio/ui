@@ -5237,6 +5237,9 @@ const CTXBAR_ITEMS = {
   ],
 };
 
+// The microphone is always first in the bar, whatever the context.
+const CTXBAR_MIC = { kind: "mic", label: "Dictate", done: "Listening" };
+
 // What the heading above the surface says for each context.
 const CTXBAR_TITLES = { Thread: "Support thread", Doc: "Document", Calendar: "Calendar" };
 
@@ -5247,6 +5250,7 @@ function CtxBarIcon({ name }) {
     check: <path d="M20 6 9 17l-5-5" />,
     clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     share: <><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="M16 6l-4-4-4 4" /><path d="M12 2v13" /></>,
+    mic: <><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v3" /></>,
   };
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -5283,6 +5287,11 @@ const CTXBAR_DAY_HEIGHT = 150;
 const CTXBAR_CYCLE_MS = 2400;
 const CTXBAR_BUSY_MS = 1800;
 const CTXBAR_DONE_MS = 1300;
+// The bar's width change: duration grows with the distance, on a long soft curve.
+const CTXBAR_RESIZE_MIN_MS = 240;
+const CTXBAR_RESIZE_MAX_MS = 760;
+const CTXBAR_RESIZE_MS_PER_PX = 1.6;
+const CTXBAR_RESIZE_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
 const CTXBAR_STAGGER_MS = 60;
 
 // Panel geometry: the content box is fixed so no context can move the bar.
@@ -5367,6 +5376,8 @@ function ContextBarPattern({ theme }) {
   const [busy, setBusy] = useState(null);               // { kind: "agent" | "user", label }
   const [hovered, setHovered] = useState(-1);
   const [barW, setBarW] = useState(0);                  // measured content width, animated
+  const [barMs, setBarMs] = useState(0);                // how long this resize takes: longer for bigger changes
+  const lastW = useRef(0);
   const rowRef = useRef(null);
   const statusRef = useRef(null);
   const cancels = useRef([]);
@@ -5398,12 +5409,18 @@ function ContextBarPattern({ theme }) {
   // and let the width ease to it.
   useEffect(() => {
     const el = busy ? statusRef.current : rowRef.current;
-    if (el) setBarW(Math.ceil(el.scrollWidth));
+    if (!el) return;
+    const next = Math.ceil(el.scrollWidth);
+    const delta = Math.abs(next - lastW.current);
+    // A nudge of a few pixels is quick; a big change takes its time.
+    setBarMs(lastW.current ? Math.round(Math.min(CTXBAR_RESIZE_MAX_MS, CTXBAR_RESIZE_MIN_MS + delta * CTXBAR_RESIZE_MS_PER_PX)) : 0);
+    lastW.current = next;
+    setBarW(next);
   }, [context, busy]);
 
   const run = (item) => {
     setHovered(-1); setBusy(item);
-    later(() => setBusy(null), item.kind === "agent" ? CTXBAR_BUSY_MS : CTXBAR_DONE_MS);
+    later(() => setBusy(null), item.kind === "user" || item.kind === "icon" ? CTXBAR_DONE_MS : CTXBAR_BUSY_MS);
   };
 
   const shown = visibleFor === context && !busy;
@@ -5437,18 +5454,28 @@ function ContextBarPattern({ theme }) {
           {/* The contextual bar: docked bottom centre, fixed height, width follows its content. */}
           <div style={{
             position: "absolute", left: "50%", bottom: 28, transform: "translateX(-50%)",
-            height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 7px 0 12px",
-            display: "flex", alignItems: "center", gap: 10,
+            height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 7px",
+            display: "flex", alignItems: "center", gap: 8,
             borderRadius: tokens.radius.pill,
             background: CTXBAR_alpha(inv.bg, 0.92), border: `1px solid ${inv.border}`,
             backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
             boxShadow: theme === "dark" ? "0 8px 32px rgba(0,0,0,0.12)" : "0 8px 32px rgba(0,0,0,0.3)",
             transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
           }}>
-            <Orb size={16} variant={busy && busy.kind === "agent" ? "orbit" : "pulse"} color={inv.accent} theme={theme} />
+            <button type="button" aria-label="Dictate" title="Dictate" onClick={() => run(CTXBAR_MIC)}
+              onMouseEnter={() => setHovered("mic")} onMouseLeave={() => setHovered(-1)}
+              style={{
+                ...interactiveBase, width: 30, height: 30, padding: 0, flexShrink: 0, borderRadius: 15,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                background: busy && busy.kind === "mic" ? inv.accent : CTXBAR_alpha(inv.text, hovered === "mic" ? 0.2 : 0.1),
+                color: busy && busy.kind === "mic" ? inv.bg : inv.text,
+                transition: `background ${motion.normal} ${motion.easeInOut}, color ${motion.normal} ${motion.easeInOut}`,
+              }}>
+              <CtxBarIcon name="mic" />
+            </button>
             <div style={{
               position: "relative", height: 30, width: barW || "auto", overflow: "hidden",
-              transition: `width ${motion.smooth} ${motion.emphasized}`,
+              transition: `width ${barMs}ms ${CTXBAR_RESIZE_EASE}`,
             }}>
               {/* Items: two agent suggestions (tinted, with a spark) and one action of your own (solid). */}
               <div key={context} ref={rowRef} style={{ position: "absolute", top: 0, left: 0, height: 30, display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", pointerEvents: shown ? "auto" : "none" }}>
@@ -5500,11 +5527,18 @@ function ContextBarPattern({ theme }) {
               </div>
               {/* Status line, same box: what Alpha is doing, or that your action went through. */}
               <div ref={statusRef} aria-live="polite" style={{
-                position: "absolute", top: 0, left: 0, height: 30, display: "inline-flex", alignItems: "center", gap: 6, padding: "0 8px 0 2px", whiteSpace: "nowrap",
+                position: "absolute", top: 0, left: 0, height: 30, display: "inline-flex", alignItems: "center", gap: 6, padding: "0 10px 0 6px", whiteSpace: "nowrap",
                 pointerEvents: "none", opacity: busy ? 1 : 0, transform: busy ? "translateY(0)" : "translateY(4px)",
                 transition: `opacity ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms, transform ${motion.normal} ${motion.emphasized} ${busy ? 80 : 0}ms`,
               }}>
-                {busy && busy.kind !== "agent" ? (
+                {busy && busy.kind === "mic" ? (
+                  <>
+                    <span style={{ position: "relative", width: 6, height: 6, borderRadius: 3, background: inv.accent, flexShrink: 0 }}>
+                      <span style={{ position: "absolute", inset: 0, borderRadius: 3, background: inv.accent, animation: `halaska-live-pulse 1.4s ${motion.easeOut} infinite` }} />
+                    </span>
+                    <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text }}>Listening</span>
+                  </>
+                ) : busy && busy.kind !== "agent" ? (
                   <>
                     <span style={{ ...tokens.type.sm, color: inv.success }}>✓</span>
                     <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: inv.text }}>{busy.done}</span>
@@ -5767,6 +5801,15 @@ function SpaceDeckPattern({ theme }) {
 
 const PATTERN_GROUPS = [
   {
+    id: "grp-agentic-nav",
+    title: "Agentic navigation",
+    blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
+    patterns: [
+      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 470 },
+      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 590 },
+    ],
+  },
+  {
     id: "grp-conversation",
     title: "Conversation core",
     blurb: "The baseline chat surface. Every AI product ships these, so the play here is craft, not coverage.",
@@ -5837,15 +5880,6 @@ const PATTERN_GROUPS = [
       { id: "pat-notifications",  title: "Notification center", desc: "The classic panel: agent events with severity, read state, and actions.", component: "NotificationCenterPattern",          height: 560 },
       { id: "pat-search",         title: "Command search",   desc: "Command palette with live filtering and an empty state.",                   component: "CommandSearchPattern",                 height: 540 },
       { id: "pat-agent-setup",    title: "Agent setup",      desc: "Full multi-step setup flow with live preview.",                             component: "AgentSetupPattern",                    height: 760, align: "top" },
-    ],
-  },
-  {
-    id: "grp-agentic-nav",
-    title: "Agentic navigation",
-    blurb: "Moving between what the agent can do right now, and between the agents themselves: a bar that follows context, and a deck of spaces you swipe through.",
-    patterns: [
-      { id: "pat-context-bar",    title: "Contextual taskbar", desc: "A floating bar that resizes to its context: tinted agent suggestions beside your own solid action.",           component: "ContextBarPattern",                    height: 470 },
-      { id: "pat-space-deck",     title: "Spaces and agents", desc: "One fixed frame. Swipe sideways for agents, up and down for spaces, each with its own scheme.", component: "SpaceDeckPattern",             height: 590 },
     ],
   },
 ];

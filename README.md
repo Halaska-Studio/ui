@@ -33,7 +33,7 @@ Agent guide: https://ui.halaska.com/install.md. API reference: https://ui.halask
 ## What's inside
 
 - **Two UX paradigms**: a Chat screen and a Canvas (workflow builder) screen, each built only from the kit.
-- **40 UX patterns** in six groups: Conversation core, Trust & transparency, Agentic control, Output & generative UI, Ambient & beyond chat, Agentic navigation. Eight of them are prop-driven (`ThinkingTracePattern`, `StreamingAnswerPattern`, `PlanPreviewPattern`, `ApprovalCardPattern`, `AgentStatusPattern`, `HandoffPattern`, `ActionReceiptPattern`, `ErrorRepairPattern`); the rest are reference implementations to copy and adapt.
+- **40 UX patterns** in six groups: Agentic navigation, Conversation core, Trust & transparency, Agentic control, Output & generative UI, Ambient & beyond chat. Eight of them are prop-driven (`ThinkingTracePattern`, `StreamingAnswerPattern`, `PlanPreviewPattern`, `ApprovalCardPattern`, `AgentStatusPattern`, `HandoffPattern`, `ActionReceiptPattern`, `ErrorRepairPattern`); the rest are reference implementations to copy and adapt.
 - **Components**: buttons, inputs, selectors, navigation, overlays, feedback, data display, AI elements (orbs, streaming text, confidence), and dev surfaces (snippet, file tree, browser and phone frames).
 - **Foundations**: Geist type, 1px icons, an 8px spacing scale, iOS-style radii, light and dark themes, a swappable accent, and runtime switches for typeface (`setKitFont`) and motion (`setKitMotion`).
 
