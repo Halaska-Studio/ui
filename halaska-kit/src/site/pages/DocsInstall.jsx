@@ -105,7 +105,7 @@ export function DocsInstall() {
       <Section id="prompt" title="The prompt"
         lead={gate.subscribed
           ? "Paste this as the first message in the project you want to improve."
-          : "Enter your email to get the prompt. You get it straight away, plus new patterns and components by email as they ship."}>
+          : "Enter your email to get the prompt. You get it straight away, plus updates on new components and patterns, and other offers from Halaska Studio."}>
         {gate.subscribed ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
             <CodeBlock code={INSTALL_PROMPT} style={{ width: "100%" }} />

@@ -146,16 +146,13 @@ export function GateModal() {
         {!delivered ? (
           <Stack gap={12}>
             <Text size="sm" theme={theme} style={{ color: pal.textSecondary, display: "block", lineHeight: 1.6 }}>
-              You get the prompt now, and new patterns and components by email as they ship.
+              You get the prompt now. We will also email you when new components and patterns ship, along with other offers and services from Halaska Studio.
             </Text>
             <div className="stack-sm" style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
               <TextInput theme={theme} type="email" placeholder="you@company.com" value={email}
                 onChange={(v) => { setEmail(v); setError(""); }} error={error || undefined} style={{ flex: 1 }} />
               <Button theme={theme} variant="primary" loading={sending} onClick={submit} style={{ flexShrink: 0 }}>Copy install prompt</Button>
             </div>
-            <Text size="xs" theme={theme} style={{ color: pal.textTertiary, display: "block" }}>
-              One list, no selling on. Unsubscribe from any email.
-            </Text>
           </Stack>
         ) : (
           <Stack gap={14}>

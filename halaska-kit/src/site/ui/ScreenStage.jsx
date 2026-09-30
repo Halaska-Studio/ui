@@ -35,16 +35,15 @@ export function LayoutToggle({ value, onChange }) {
       {["desktop", "mobile"].map((id) => {
         const on = value === id;
         return (
-          <button key={id} type="button" role="radio" aria-checked={on} onClick={() => onChange(id)}
+          <button key={id} type="button" role="radio" aria-checked={on} aria-label={id === "desktop" ? "Desktop" : "Mobile"} title={id === "desktop" ? "Desktop" : "Mobile"} onClick={() => onChange(id)}
             style={{
-              ...interactiveBase, height: 28, padding: "0 10px", borderRadius: tokens.radius.sm, display: "inline-flex", alignItems: "center", gap: 6,
+              ...interactiveBase, height: 28, width: 34, padding: 0, borderRadius: tokens.radius.sm, display: "inline-flex", alignItems: "center", justifyContent: "center",
               ...tokens.type.xs, fontWeight: on ? tokens.weight.medium : tokens.weight.regular,
               background: on ? pal.bgElevated : "transparent", color: on ? pal.text : pal.textTertiary,
               boxShadow: on ? `0 1px 2px ${pal.shadow}, 0 0 0 1px ${pal.borderSubtle}` : "none",
               transition: `background ${motion.fast} ${motion.easeOut}, color ${motion.normal} ${motion.easeInOut}`,
             }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[id]}</svg>
-            {id === "desktop" ? "Desktop" : "Mobile"}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[id]}</svg>
           </button>
         );
       })}

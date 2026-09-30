@@ -62,3 +62,11 @@ body { -webkit-font-smoothing: antialiased; }
 
 /* Controls that only make sense with room to spare. */
 @media (max-width: 560px) { .hide-phone { display: none !important; } }
+
+/* Collapsible left menu */
+.site-nav { position: sticky; }
+.site-nav .nav-collapse { position: absolute; top: 14px; right: 8px; z-index: 2; }
+.site-shell.nav-closed { grid-template-columns: 45px minmax(0, 1fr); }
+.site-shell.nav-closed .site-nav { padding: 0; overflow: hidden; }
+.site-shell.nav-closed .site-nav .nav-collapse { right: 8px; }
+@media (max-width: 900px) { .site-shell.nav-closed { grid-template-columns: minmax(0, 1fr); } }

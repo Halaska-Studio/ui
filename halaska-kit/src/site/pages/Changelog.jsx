@@ -52,7 +52,7 @@ export function Changelog() {
       }}>
         <span style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>Get new patterns by email</span>
         <span style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, maxWidth: 480 }}>
-          One short email when patterns or components ship. Nothing else.
+          An email when components or patterns ship, plus other offers from Halaska Studio.
         </span>
         <UpdatesInline placement="changelog" />
       </div>

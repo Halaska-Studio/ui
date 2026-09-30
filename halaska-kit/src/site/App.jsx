@@ -1,8 +1,8 @@
 // The site: a landing page that sells the kit and a browser that documents
 // it. Built from the kit itself; the chrome stays quiet.
 import { useEffect, useMemo, useState } from "react";
-import { ThemeProvider, AccentContext, usePal, injectStyles } from "./kit";
-import { SiteContext } from "./state";
+import { ThemeProvider, AccentContext, usePal, injectStyles, tokens, interactiveBase } from "./kit";
+import { SiteContext, useSite } from "./state";
 import { useLocation, redirectLegacyHash } from "./router";
 import { useGateController, GateModal, GateToast } from "./email/gate";
 import { Header } from "./chrome/Header";
@@ -42,6 +42,22 @@ function route(path) {
 const patternTarget = (slug) => { const p = patternBySlug(slug); return p && { type: "pattern", slug: p.slug, title: p.title, component: p.component, desc: p.desc, useWhen: p.docs.useWhen }; };
 const screenTarget = (slug) => { const s = screenBySlug(slug); return s && { type: "screen", slug: s.slug, name: s.name, component: s.component }; };
 
+// Collapses the left menu to a thin strip, and brings it back.
+function NavCollapse({ open, onChange }) {
+  const { theme } = useSite();
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" className="nav-collapse" aria-label={open ? "Collapse menu" : "Expand menu"} title={open ? "Collapse menu" : "Expand menu"} aria-expanded={open}
+      onClick={() => onChange(!open)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: tokens.radius.sm, display: "inline-flex", alignItems: "center", justifyContent: "center", background: hover ? pal.bgMuted : "transparent", color: pal.textTertiary }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15" />{open ? <path d="m15.5 10-2 2 2 2" /> : <path d="m14 10 2 2-2 2" />}
+      </svg>
+    </button>
+  );
+}
+
 const systemTheme = () => (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 export default function App() {
@@ -49,6 +65,8 @@ export default function App() {
   const [theme, setThemeState] = useState(() => stored("halaska:theme", null) || systemTheme());
   const [accent, setAccentState] = useState(() => stored("halaska:accent", "#8b5cf6"));
   const [search, setSearch] = useState(false);
+  const [navOpen, setNavOpenState] = useState(() => stored("halaska:nav", "open") !== "closed");
+  const setNavOpen = (open) => { setNavOpenState(open); keep("halaska:nav", open ? "open" : "closed"); };
   const gate = useGateController();
   const { path } = useLocation();
   useEffect(() => { injectStyles(); redirectLegacyHash(); }, []);
@@ -70,8 +88,11 @@ export default function App() {
           <Shell theme={theme}>
             <Header />
             {landing ? page : (
-              <div className="site-shell">
-                <nav className="site-nav" aria-label="Browse"><SideNav /></nav>
+              <div className={navOpen ? "site-shell" : "site-shell nav-closed"}>
+                <nav className="site-nav" aria-label="Browse">
+                  <NavCollapse open={navOpen} onChange={setNavOpen} />
+                  {navOpen && <SideNav />}
+                </nav>
                 <main>{page}</main>
               </div>
             )}

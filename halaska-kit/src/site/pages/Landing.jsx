@@ -302,11 +302,18 @@ export function Landing() {
       {/* 1. Hero */}
       <section style={{ paddingTop: 88 }}>
         <div style={{ maxWidth: 640 }}>
+          <a href="https://ui.shadcn.com" target="_blank" rel="noreferrer" style={{
+            display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "5px 12px 5px 10px", borderRadius: tokens.radius.pill,
+            border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle, ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ color: pal.text }}><path d="M20 12 12 20M18.5 3.5 3.5 18.5" /></svg>
+            Built on shadcn/ui
+          </a>
           <h1 style={{ fontSize: "clamp(34px, 6.4vw, 56px)", lineHeight: 1.06, fontWeight: tokens.weight.bold, letterSpacing: "-0.03em", color: pal.text, margin: 0 }}>
             Make your AI prototype look designed.
           </h1>
           <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "20px 0 28px" }}>
-            Made for founders building with coding agents. Screens, AI UX patterns and components in one React file.
+            Made for founders building with coding agents. The shadcn/ui components you already know, plus the screens and AI UX patterns an agent product needs, in one React file.
           </p>
           <InlineGate placement="hero" size="lg" />
           <div style={{ marginTop: 18 }}><ArrowLink to="/components">Browse components</ArrowLink></div>

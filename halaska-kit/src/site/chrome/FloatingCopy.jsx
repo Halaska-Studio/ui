@@ -1,81 +1,110 @@
 // The action bar: on every page, bottom centre. It holds the things that
-// change the page in front of you: the install prompt, light or dark, and the
-// colour scheme. On pattern and screen pages the copy label reflects the page
-// and copies the scoped prompt.
+// change the page in front of you: the install prompt, a light and dark
+// toggle, and the colour scheme. On pattern and screen pages the copy label
+// reflects the page and copies the scoped prompt.
 import { useEffect, useRef, useState } from "react";
 import { tokens, motion, interactiveBase, ACCENT_COLORS } from "../kit";
 import { useSite } from "../state";
 import { promptLabel } from "../email/gate";
 
-function BarButton({ dark, label, onClick, children, wide, expanded }) {
-  const [hover, setHover] = useState(false);
-  const idle = dark ? "#d8d8d8" : "#444";
-  const lit = dark ? "#fff" : "#111";
-  return (
-    <button type="button" aria-label={wide ? undefined : label} title={wide ? undefined : label} aria-expanded={expanded} onClick={onClick}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{
-        ...interactiveBase, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0,
-        height: 36, minWidth: 36, padding: wide ? "0 14px 0 12px" : 0, borderRadius: tokens.radius.sm + 2, whiteSpace: "nowrap",
-        background: hover ? (dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)") : "transparent", color: hover ? lit : idle,
-        ...tokens.type.sm, fontWeight: tokens.weight.medium, fontFamily: tokens.font.sans,
-        transition: `color ${motion.fast} ${motion.easeOut}, background ${motion.fast} ${motion.easeOut}`,
-      }}>{children}</button>
-  );
-}
+const EASE = "cubic-bezier(0.2, 0, 0, 1)";
 
 export function FloatingCopy({ target }) {
   const { theme, setTheme, accent, setAccent, gate } = useSite();
-  const [swatches, setSwatches] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
+  const [hover, setHover] = useState(false);
   const rootRef = useRef(null);
-  const dark = theme !== "dark"; // the bar inverts against the page
+  const isDark = theme === "dark";
+  const barIsDark = !isDark; // the bar inverts against the page
+  const barBg = barIsDark ? "rgba(12,12,12,0.88)" : "rgba(250,250,250,0.88)";
+  const barBorder = barIsDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+  const barText = barIsDark ? "#999" : "#666";
+  const barTextActive = barIsDark ? "#fff" : "#111";
+  const activeBg = barIsDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+  const hoverBg = barIsDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const thumbBg = barIsDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
+  const thumb = 22, pad = 2;
+
   useEffect(() => {
-    if (!swatches) return;
-    const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setSwatches(false); };
-    const onKey = (e) => { if (e.key === "Escape") setSwatches(false); };
+    if (!colorOpen) return;
+    const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setColorOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setColorOpen(false); };
     document.addEventListener("mousedown", onDown);
     window.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDown); window.removeEventListener("keydown", onKey); };
-  }, [swatches]);
-  const rule = <span aria-hidden="true" style={{ width: 1, height: 20, margin: "0 4px", flexShrink: 0, background: dark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)" }} />;
+  }, [colorOpen]);
+
+  const divider = <div aria-hidden="true" style={{ width: 1, height: 20, background: barBorder, margin: "0 4px", flexShrink: 0 }} />;
+  const half = (on) => ({ width: thumb + pad, height: thumb + pad * 2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: on ? barTextActive : barText, position: "relative", zIndex: 1, transition: "color 0.2s ease" });
+
   return (
     <div ref={rootRef} role="toolbar" aria-label="Page actions" style={{
       position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 800, maxWidth: "calc(100vw - 24px)", boxSizing: "border-box",
-      display: "flex", alignItems: "center", gap: 2, padding: 4, borderRadius: tokens.radius.md,
-      background: dark ? "rgba(12,12,12,0.9)" : "rgba(250,250,250,0.92)",
-      border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
-      backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      boxShadow: dark ? "0 8px 32px rgba(0,0,0,0.3)" : "0 8px 32px rgba(0,0,0,0.12)",
-      transition: `background ${motion.smooth} ${motion.easeInOut}`,
+      display: "flex", alignItems: "center", gap: 4, padding: 6, borderRadius: tokens.radius.md,
+      background: barBg, border: `1px solid ${barBorder}`, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      boxShadow: barIsDark ? "0 8px 32px rgba(0,0,0,0.3)" : "0 8px 32px rgba(0,0,0,0.12)",
+      transition: `background 0.35s ${EASE}, border-color 0.35s ${EASE}, box-shadow 0.35s ${EASE}`,
     }}>
-      <BarButton dark={dark} wide onClick={() => gate.requestPrompt({ placement: "floating", target })}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h9" /></svg>
-        {promptLabel(target)}
-      </BarButton>
-      {rule}
-      <BarButton dark={dark} label={theme === "dark" ? "Switch to light" : "Switch to dark"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          {theme === "dark" ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></> : <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />}
-        </svg>
-      </BarButton>
-      <BarButton dark={dark} label="Colour scheme" expanded={swatches} onClick={() => setSwatches((s) => !s)}>
-        <span style={{ width: 14, height: 14, borderRadius: 7, background: accent, display: "block", boxShadow: `0 0 0 1.5px ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)"}` }} />
-      </BarButton>
-      {swatches && (
-        <div role="radiogroup" aria-label="Colour scheme" style={{
-          position: "absolute", bottom: "calc(100% + 8px)", right: 0, display: "flex", gap: 10, padding: "10px 12px", borderRadius: tokens.radius.md,
-          background: dark ? "rgba(12,12,12,0.94)" : "rgba(250,250,250,0.96)", border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
-          backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxShadow: dark ? "0 8px 32px rgba(0,0,0,0.3)" : "0 8px 32px rgba(0,0,0,0.12)",
-          animation: `halaska-scale-in ${motion.fast} ${motion.easeOut} both`, transformOrigin: "bottom right",
+      <button type="button" onClick={() => { setColorOpen(false); gate.requestPrompt({ placement: "floating", target }); }}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        style={{
+          ...interactiveBase, fontFamily: tokens.font.sans, ...tokens.type.sm, fontWeight: tokens.weight.medium,
+          padding: "8px 16px", borderRadius: tokens.radius.md, whiteSpace: "nowrap", letterSpacing: "-0.01em",
+          color: hover ? barTextActive : barText, background: hover ? hoverBg : "transparent",
+          transition: `background ${motion.normal} ${motion.easeInOut}, color ${motion.normal} ${motion.easeInOut}`,
+        }}>{promptLabel(target)}</button>
+
+      {divider}
+
+      {/* Light and dark: a sliding toggle */}
+      <button type="button" role="switch" aria-checked={isDark} aria-label="Dark mode" onClick={() => setTheme(isDark ? "light" : "dark")}
+        style={{
+          ...interactiveBase, width: thumb * 2 + pad * 2, height: thumb + pad * 2, borderRadius: 999, flexShrink: 0,
+          background: activeBg, position: "relative", padding: 0, display: "flex", alignItems: "center",
+          transition: `background ${motion.smooth} ${motion.emphasized}`,
         }}>
-          {ACCENT_COLORS.map((c) => (
-            <button key={c.name} type="button" role="radio" aria-checked={accent === c.value} aria-label={c.name} title={c.name}
-              onClick={() => { setAccent(c.value); setSwatches(false); }}
-              style={{ ...interactiveBase, width: 20, height: 20, padding: 0, borderRadius: 10, background: c.value, flexShrink: 0,
-                boxShadow: accent === c.value ? `0 0 0 2px ${dark ? "#0c0c0c" : "#fafafa"}, 0 0 0 3.5px ${c.value}` : "none" }} />
-          ))}
+        <div style={{
+          position: "absolute", width: thumb, height: thumb, borderRadius: thumb / 2, background: thumbBg,
+          left: isDark ? pad + thumb : pad, top: pad, transition: `left 0.35s ${EASE}, background ${motion.smooth} ${motion.emphasized}`,
+        }} />
+        <div aria-hidden="true" style={half(!isDark)}>&#9728;</div>
+        <div aria-hidden="true" style={half(isDark)}>&#9790;</div>
+      </button>
+
+      {divider}
+
+      {/* Colour scheme: a paint bucket, with the swatches opening beside it */}
+      <div style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
+        <button type="button" onClick={() => setColorOpen((o) => !o)} aria-label="Colour scheme" aria-expanded={colorOpen}
+          style={{
+            ...interactiveBase, width: 28, height: 28, padding: 0, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            background: colorOpen ? activeBg : "transparent", color: colorOpen ? barTextActive : barText, borderRadius: tokens.radius.sm, marginRight: 6,
+            transition: `background ${motion.normal} ${motion.easeInOut}, color ${motion.normal} ${motion.easeInOut}`,
+          }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z" />
+            <path d="m5 2 5 5" />
+            <path d="M2 13h15" />
+            <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z" />
+          </svg>
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: colorOpen ? 6 : 0, transition: `gap 0.3s ${EASE}` }}>
+          {ACCENT_COLORS.map((c) => {
+            const active = accent === c.value;
+            const show = colorOpen || active;
+            return (
+              <button key={c.name} type="button" aria-label={`${c.name} colour scheme`} title={c.name} tabIndex={show ? 0 : -1}
+                onClick={() => { if (!colorOpen) setColorOpen(true); else { setAccent(c.value); setColorOpen(false); } }}
+                style={{
+                  ...interactiveBase, padding: 0, flexShrink: 0, width: show ? 16 : 0, height: 16, borderRadius: 8,
+                  background: c.value, overflow: "hidden", opacity: show ? 1 : 0,
+                  boxShadow: active && colorOpen ? `0 0 0 2px ${barBg}, 0 0 0 3.5px ${c.value}` : "none",
+                  transition: `width 0.3s ${EASE}, opacity 0.2s ease, box-shadow 0.2s ease`,
+                }} />
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

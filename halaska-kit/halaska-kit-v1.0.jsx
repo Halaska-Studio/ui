@@ -13101,12 +13101,41 @@ function BeforeAfterSection({ theme }) {
 const CHATB_FONT = "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 // Tailwind default palette, as an AI first pass would reach for it.
+// Every colour is a CSS variable with the light value as its fallback, so the
+// dark version (Tailwind's dark: equivalents) is one set of overrides on the root.
 const CHATB_C = {
-  white: "#ffffff",
-  gray50: "#f9fafb", gray100: "#f3f4f6", gray200: "#e5e7eb", gray300: "#d1d5db",
-  gray400: "#9ca3af", gray500: "#6b7280", gray700: "#374151", gray900: "#111827",
-  blue50: "#eff6ff", blue500: "#3b82f6", blue600: "#2563eb",
-  green500: "#22c55e", yellow100: "#fef9c3", yellow800: "#854d0e",
+  white: "var(--chatb-white, #ffffff)",
+  gray50: "var(--chatb-gray50, #f9fafb)",
+  gray100: "var(--chatb-gray100, #f3f4f6)",
+  gray200: "var(--chatb-gray200, #e5e7eb)",
+  gray300: "var(--chatb-gray300, #d1d5db)",
+  gray400: "var(--chatb-gray400, #9ca3af)",
+  gray500: "var(--chatb-gray500, #6b7280)",
+  gray700: "var(--chatb-gray700, #374151)",
+  gray900: "var(--chatb-gray900, #111827)",
+  blue50: "var(--chatb-blue50, #eff6ff)",
+  blue500: "var(--chatb-blue500, #3b82f6)",
+  blue600: "var(--chatb-blue600, #2563eb)",
+  green500: "var(--chatb-green500, #22c55e)",
+  yellow100: "var(--chatb-yellow100, #fef9c3)",
+  yellow800: "var(--chatb-yellow800, #854d0e)",
+};
+const CHATB_DARK = {
+  "--chatb-white": "#111827",
+  "--chatb-gray50": "#0f172a",
+  "--chatb-gray100": "#1f2937",
+  "--chatb-gray200": "#374151",
+  "--chatb-gray300": "#4b5563",
+  "--chatb-gray400": "#6b7280",
+  "--chatb-gray500": "#9ca3af",
+  "--chatb-gray700": "#d1d5db",
+  "--chatb-gray900": "#f9fafb",
+  "--chatb-blue50": "#172554",
+  "--chatb-blue500": "#3b82f6",
+  "--chatb-blue600": "#60a5fa",
+  "--chatb-green500": "#22c55e",
+  "--chatb-yellow100": "#422006",
+  "--chatb-yellow800": "#fde68a",
 };
 
 const CHATB_SHADOW = "0 1px 2px rgba(0,0,0,0.05)";
@@ -13121,7 +13150,7 @@ const CHATB_BTN = {
   fontFamily: CHATB_FONT, fontSize: 14, fontWeight: 500, lineHeight: "20px",
   padding: "8px 16px", borderRadius: 6, cursor: "pointer", whiteSpace: "nowrap",
 };
-const CHATB_BTN_PRIMARY = { ...CHATB_BTN, background: CHATB_C.blue500, color: CHATB_C.white, border: "1px solid " + CHATB_C.blue500 };
+const CHATB_BTN_PRIMARY = { ...CHATB_BTN, background: CHATB_C.blue500, color: "#ffffff", border: "1px solid " + CHATB_C.blue500 };
 const CHATB_BTN_SECONDARY = { ...CHATB_BTN, background: CHATB_C.white, color: CHATB_C.gray700, border: "1px solid " + CHATB_C.gray300 };
 
 const CHATB_FIELD = {
@@ -13173,7 +13202,8 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
     <div style={{
       position: "relative", width: "100%", height: "100%", overflow: "hidden",
       background: CHATB_C.white, color: CHATB_C.gray900, fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
-      display: "flex",
+      display: "flex", colorScheme: theme === "dark" ? "dark" : "light",
+      ...(theme === "dark" ? CHATB_DARK : null),
     }}>
       {/* Sidebar */}
       <div style={{
@@ -13264,7 +13294,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
             {/* Assistant message */}
             <div style={{ display: "flex", gap: 12 }}>
               <div style={{
-                width: 32, height: 32, borderRadius: 9999, background: CHATB_C.blue500, color: CHATB_C.white,
+                width: 32, height: 32, borderRadius: 9999, background: CHATB_C.blue500, color: "#ffffff",
                 display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, flexShrink: 0,
               }}>A</div>
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
