@@ -13101,8 +13101,8 @@ function BeforeAfterSection({ theme }) {
 const CHATB_FONT = "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif";
 
 // Tailwind default palette, as an AI first pass would reach for it.
-// Every colour is a CSS variable with the light value as its fallback, so the
-// dark version (Tailwind's dark: equivalents) is one set of overrides on the root.
+// Every colour is a CSS variable; CHATB_vars sets them from the kit palette,
+// and the Tailwind defaults below are only the fallback.
 const CHATB_C = {
   white: "var(--chatb-white, #ffffff)",
   gray50: "var(--chatb-gray50, #f9fafb)",
@@ -13120,23 +13120,14 @@ const CHATB_C = {
   yellow100: "var(--chatb-yellow100, #fef9c3)",
   yellow800: "var(--chatb-yellow800, #854d0e)",
 };
-const CHATB_DARK = {
-  "--chatb-white": "#111827",
-  "--chatb-gray50": "#0f172a",
-  "--chatb-gray100": "#1f2937",
-  "--chatb-gray200": "#374151",
-  "--chatb-gray300": "#4b5563",
-  "--chatb-gray400": "#6b7280",
-  "--chatb-gray500": "#9ca3af",
-  "--chatb-gray700": "#d1d5db",
-  "--chatb-gray900": "#f9fafb",
-  "--chatb-blue50": "#172554",
-  "--chatb-blue500": "#3b82f6",
-  "--chatb-blue600": "#60a5fa",
-  "--chatb-green500": "#22c55e",
-  "--chatb-yellow100": "#422006",
-  "--chatb-yellow800": "#fde68a",
-};
+// The same palette as the kit, so the before and after differ in craft, not
+// in colour. Built from the active palette at render time.
+const CHATB_vars = (pal) => ({
+  "--chatb-white": pal.bg, "--chatb-gray50": pal.bgSubtle, "--chatb-gray100": pal.bgMuted, "--chatb-gray200": pal.border,
+  "--chatb-gray300": pal.border, "--chatb-gray400": pal.textMuted, "--chatb-gray500": pal.textTertiary, "--chatb-gray700": pal.textSecondary,
+  "--chatb-gray900": pal.text, "--chatb-blue50": pal.accentBg, "--chatb-blue500": pal.accent, "--chatb-blue600": pal.accentHover,
+  "--chatb-green500": pal.success, "--chatb-yellow100": pal.warningBg, "--chatb-yellow800": pal.warning,
+});
 
 const CHATB_SHADOW = "0 1px 2px rgba(0,0,0,0.05)";
 
@@ -13190,6 +13181,7 @@ function ChatBSectionLabel({ children, style }) {
 // behind a Menu button and the rows wrap where they run out of room.
 function ChatParadigmBefore({ theme, layout = "desktop" }) {
   const mobile = layout === "mobile";
+  const pal = usePal(theme);
   const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
   const [model, setModel] = useState(CHATX_MODELS[0].id);
   const [search, setSearch] = useState("");
@@ -13203,7 +13195,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
       position: "relative", width: "100%", height: "100%", overflow: "hidden",
       background: CHATB_C.white, color: CHATB_C.gray900, fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
       display: "flex", colorScheme: theme === "dark" ? "dark" : "light",
-      ...(theme === "dark" ? CHATB_DARK : null),
+      ...CHATB_vars(pal),
     }}>
       {/* Sidebar */}
       <div style={{
