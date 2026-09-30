@@ -316,11 +316,6 @@ export function Landing() {
             Made for founders building with coding agents. The shadcn/ui components you already know, plus the screens and AI UX patterns an agent product needs, in one React file.
           </p>
           <InlineGate placement="hero" size="lg" />
-          <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: "8px 24px" }}>
-            <ArrowLink to="/components">Browse components</ArrowLink>
-            <ArrowLink to="/patterns">Browse patterns</ArrowLink>
-            <ArrowLink to="/screens">Browse screens</ArrowLink>
-          </div>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${pal.borderSubtle}` }}>
           <Link to="/patterns"><Count n={COUNTS.patterns} label="patterns" /></Link>
