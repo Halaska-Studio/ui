@@ -10,7 +10,7 @@ import {
 } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { GROUPS, COMPONENTS, SCREENS, COUNTS } from "../registry";
-import { Link } from "../router";
+import { Link, navigate } from "../router";
 import { ScreenStage, BeforeAfter, LayoutToggle, useLayout, spotsFor } from "../ui/ScreenStage";
 import { LiveThumb } from "../ui/PreviewFrame";
 import { Count, TagPill, tagTone, Card } from "../ui/bits";
@@ -44,6 +44,27 @@ function ArrowLink({ to, children, strong }) {
     </Link>
   );
 }
+
+// A large, centred button that leads from a sample into the full index.
+function ViewAll({ to, children }) {
+  const { theme } = useSite();
+  return (
+    <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+      <Button theme={theme} variant="secondary" size="lg" iconRight="→" onClick={() => navigate(to)}>{children}</Button>
+    </div>
+  );
+}
+
+const FAQ = [
+  ["Which tools does this work with?", "Any coding agent that can fetch a file and edit your project: Claude Code, Cursor, Codex, Windsurf and similar. For browser builders like Lovable or Bolt, paste the prompt and, if the tool can't fetch, upload the kit file from the link in the prompt."],
+  ["Why do you ask for an email?", "So you hear when new components and patterns land, along with other offers and services from Halaska Studio. The prompt is copied the moment you submit, and you can unsubscribe from any email."],
+  ["Do I need to install anything?", "No. The kit is a single file with inline styles. It needs react and react-dom, which your project already has. No Tailwind, no CSS setup, no chart library."],
+  ["Will it work on a project that already has a UI?", "Yes, that's the main use. The prompt tells the agent to keep your routing, state and data, and to swap screens over to the kit one at a time."],
+  ["Can I change the look?", "Yes. Light or dark, the colour scheme, the typeface and the motion are all switchable. Try the first two in the bar at the bottom of this page. The rest is on the Theming page."],
+  ["Is this the same as shadcn/ui?", "It's built on the same foundations and the same component names, so it feels familiar. The difference is the AI patterns on top and the styling, which is already decided for you."],
+  ["Can I use this commercially?", "Yes. MIT licensed, use it in anything."],
+  ["Where's the source?", "On GitHub at github.com/Halaska-Studio/ui. Open an issue there if something is missing or broken."],
+];
 
 // ─── 3. Screens ───────────────────────────────────────────────
 function ScreenBlock({ screen, layout }) {
@@ -353,6 +374,7 @@ export function Landing() {
           <ButtonTile /><CalendarTile /><OrbTile /><InputTile /><ThinkingTile /><CardTile /><TableTile />
           <ConfidenceTile /><SwitchTile /><AlertTile /><TabsTile /><AvatarTile /><ProgressTile /><SnippetTile />
         </div>
+        <ViewAll to="/components">{`View all ${COUNTS.components} components`}</ViewAll>
       </Block>
 
       {/* 5. Patterns by lifecycle */}
@@ -360,6 +382,7 @@ export function Landing() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))", gap: 16 }}>
           {GROUPS.map((g) => <GroupCard key={g.id} group={g} />)}
         </div>
+        <ViewAll to="/patterns">{`View all ${COUNTS.patterns} patterns`}</ViewAll>
       </Block>
 
       {/* 6. Components index */}
@@ -386,6 +409,18 @@ export function Landing() {
           ))}
         </ol>
         <InlineGate placement="how-it-works" />
+      </Block>
+
+      {/* FAQ */}
+      <Block id="faq" eyebrow="FAQ" title="Questions people ask">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: "28px 40px" }}>
+          {FAQ.map(([q, a]) => (
+            <div key={q}>
+              <h3 style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: pal.text, margin: "0 0 6px" }}>{q}</h3>
+              <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: 0 }}>{a}</p>
+            </div>
+          ))}
+        </div>
       </Block>
 
       {/* 8. Built by a studio */}

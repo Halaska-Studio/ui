@@ -25,3 +25,6 @@ halaska-kit/public/source-map.json
 
 # internal working notes (never published)
 docs/internal/
+
+# project notes for the studio's own coding agents (not published)
+CLAUDE.md

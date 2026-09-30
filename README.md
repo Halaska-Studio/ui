@@ -47,7 +47,6 @@ halaska-kit/
     examples/            one real file per component and pattern; the site shows the code it runs
     pages/ ui/ chrome/   the three page templates, the preview frame, header, nav and search
   scripts/               generates llms.txt, the .d.ts shim, site data and the pre-rendered pages
-  CLAUDE.md              project notes for coding agents
 ```
 
 ## Run the site locally
