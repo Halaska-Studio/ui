@@ -4,7 +4,7 @@ import { useSite } from "../state";
 import { Link } from "../router";
 import { UpdatesInline } from "../email/gate";
 import { VERSION } from "../data/changelog.js";
-import { REPO_URL } from "./Header";
+import { REPO_URL } from "./SideNav";
 
 export function Footer() {
   const { theme } = useSite();

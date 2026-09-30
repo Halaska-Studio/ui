@@ -27,7 +27,7 @@ function Eyebrow({ children }) {
 function Block({ eyebrow, title, lead, children, id }) {
   const pal = usePalette();
   return (
-    <section id={id} style={{ marginTop: GAP, scrollMarginTop: 84 }}>
+    <section id={id} style={{ marginTop: GAP, scrollMarginTop: 28 }}>
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <h2 style={{ ...tokens.type.xl, fontWeight: tokens.weight.semibold, letterSpacing: "-0.02em", color: pal.text, margin: 0 }}>{title}</h2>
       {lead && <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "10px 0 0", maxWidth: 640 }}>{lead}</p>}
@@ -300,7 +300,7 @@ export function Landing() {
   return (
     <div className="site-landing">
       {/* 1. Hero */}
-      <section style={{ paddingTop: 88 }}>
+      <section style={{ paddingTop: 72 }}>
         <div style={{ maxWidth: 640 }}>
           <a href="https://ui.shadcn.com" target="_blank" rel="noreferrer" style={{
             display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20, padding: "5px 12px 5px 10px", borderRadius: tokens.radius.pill,
@@ -316,7 +316,11 @@ export function Landing() {
             Made for founders building with coding agents. The shadcn/ui components you already know, plus the screens and AI UX patterns an agent product needs, in one React file.
           </p>
           <InlineGate placement="hero" size="lg" />
-          <div style={{ marginTop: 18 }}><ArrowLink to="/components">Browse components</ArrowLink></div>
+          <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: "8px 24px" }}>
+            <ArrowLink to="/components">Browse components</ArrowLink>
+            <ArrowLink to="/patterns">Browse patterns</ArrowLink>
+            <ArrowLink to="/screens">Browse screens</ArrowLink>
+          </div>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${pal.borderSubtle}` }}>
           <Link to="/patterns"><Count n={COUNTS.patterns} label="patterns" /></Link>

@@ -7,7 +7,7 @@ import { GROUPS, PATTERNS, COMPONENTS, SCREENS, COUNTS } from "../registry";
 import { COMPONENT_GROUPS } from "../data/components/index.js";
 import { GROUP_INTROS } from "../data/patterns/index.js";
 import { PARITY, CONVERSATION_MAP, PARITY_SUMMARY } from "../data/parity.js";
-import { LiveThumb } from "../ui/PreviewFrame";
+import { LiveThumb, ComponentThumb } from "../ui/PreviewFrame";
 import { ScreenStage, LayoutToggle, useLayout } from "../ui/ScreenStage";
 import { PageHeader, Section, DetailLayout, Card, TagPill, tagTone, ChipLink } from "../ui/bits";
 
@@ -91,9 +91,10 @@ export function ComponentsIndex() {
       <PageHeader eyebrow="Components" title={`${COUNTS.components} components`} lead={PARITY_SUMMARY || "The base layer under the patterns. Names follow shadcn/ui where an equivalent exists; the Halaska additions are tagged."} />
       {groups.map(([g, list]) => (
         <Section key={g} id={`g-${g.toLowerCase().replace(/[^a-z]+/g, "-")}`} title={g} lead={`${list.length} components`}>
-          <div className="grid-cards">
+          <div className="grid-cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
             {list.map((c) => (
-              <Card key={c.slug} to={`/components/${c.slug}`} style={{ gap: 6, padding: 16 }}>
+              <Card key={c.slug} to={`/components/${c.slug}`} style={{ gap: 6 }}>
+                <div style={{ marginBottom: 6 }}><ComponentThumb slug={c.slug} /></div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: pal.text, flex: 1, minWidth: 0 }}>{c.name}</span>
                   {(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}

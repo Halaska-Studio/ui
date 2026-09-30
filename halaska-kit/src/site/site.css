@@ -1,6 +1,6 @@
 /* Layout and responsive rules for the site chrome only. Colours come from the
    kit's palette through CSS variables set on .site by App.jsx. */
-:root { --hdr: 56px; --nav: 256px; }
+:root { --hdr: 0px; --nav: 264px; }
 html, body { margin: 0; padding: 0; }
 * { box-sizing: border-box; }
 body { -webkit-font-smoothing: antialiased; }
@@ -8,14 +8,8 @@ body { -webkit-font-smoothing: antialiased; }
 .site a { color: inherit; text-decoration: none; }
 .site ::selection { background: var(--s-accent-bg); }
 
-.site-hdr { position: sticky; top: 0; z-index: 900; height: var(--hdr); display: flex; align-items: center; gap: 20px; padding: 0 20px;
-  background: var(--s-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--s-border); }
-.site-hdr .hdr-links { display: flex; align-items: center; gap: 4px; }
-.site-hdr .hdr-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.site-hdr .hdr-burger { display: none !important; }
-
 .site-shell { display: grid; grid-template-columns: var(--nav) minmax(0, 1fr); }
-.site-nav { position: sticky; top: var(--hdr); height: calc(100vh - var(--hdr)); overflow-y: auto; padding: 24px 12px 80px 16px; border-right: 1px solid var(--s-border); scrollbar-width: thin; }
+.site-nav { position: sticky; top: var(--hdr); height: calc(100vh - var(--hdr)); overflow-y: auto; padding: 16px 12px 24px 12px; border-right: 1px solid var(--s-border); scrollbar-width: thin; }
 .site-main { min-width: 0; display: flex; justify-content: center; gap: 56px; padding: 44px 48px 160px; }
 .site-article { width: 100%; max-width: 780px; min-width: 0; }
 .site-article.wide { max-width: 1040px; }
@@ -44,9 +38,6 @@ body { -webkit-font-smoothing: antialiased; }
   .site-shell { grid-template-columns: minmax(0, 1fr); }
   .site-nav { display: none; }
   .site-main { padding: 28px 16px 160px; }
-  .site-hdr { gap: 10px; padding: 0 12px; }
-  .site-hdr .hdr-links, .site-hdr .hdr-hide-sm { display: none !important; }
-  .site-hdr .hdr-burger { display: inline-flex !important; }
   .site-landing { padding: 0 16px 160px; }
 }
 @media (max-width: 620px) {
@@ -64,9 +55,10 @@ body { -webkit-font-smoothing: antialiased; }
 @media (max-width: 560px) { .hide-phone { display: none !important; } }
 
 /* Collapsible left menu */
-.site-nav { position: sticky; }
-.site-nav .nav-collapse { position: absolute; top: 14px; right: 8px; z-index: 2; }
 .site-shell.nav-closed { grid-template-columns: 45px minmax(0, 1fr); }
-.site-shell.nav-closed .site-nav { padding: 0; overflow: hidden; }
-.site-shell.nav-closed .site-nav .nav-collapse { right: 8px; }
+.site-shell.nav-closed .site-nav { padding: 16px 8px; overflow: hidden; }
 @media (max-width: 900px) { .site-shell.nav-closed { grid-template-columns: minmax(0, 1fr); } }
+
+/* Action bar: the menu button and the short label only show on small screens. */
+.bar-sm { display: none !important; }
+@media (max-width: 900px) { .bar-sm { display: inline-flex !important; } .bar-lg { display: none !important; } }

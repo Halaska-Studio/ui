@@ -46,7 +46,7 @@ export function PageHeader({ eyebrow, eyebrowTo, title, lead, tags = [], childre
 export function Section({ id, title, lead, children, style: sp }) {
   const { theme } = useSite(); const pal = usePal(theme);
   return (
-    <section id={id} style={{ marginTop: 48, scrollMarginTop: 84, ...sp }}>
+    <section id={id} style={{ marginTop: 48, scrollMarginTop: 28, ...sp }}>
       <h2 style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text, margin: "0 0 6px", letterSpacing: "-0.01em" }}>{title}</h2>
       {lead && <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 16px", maxWidth: 620 }}>{lead}</p>}
       <div style={{ marginTop: lead ? 0 : 14 }}>{children}</div>
@@ -90,7 +90,7 @@ export function DetailLayout({ sections = [], wide, children }) {
         <aside className="site-rail" aria-label="On this page">
           <div style={{ ...tokens.type.xs, color: pal.textTertiary, marginBottom: 10 }}>On this page</div>
           {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`} onClick={(e) => { e.preventDefault(); const el = document.getElementById(s.id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" }); }}
+            <a key={s.id} href={`#${s.id}`} onClick={(e) => { e.preventDefault(); const el = document.getElementById(s.id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 28, behavior: "smooth" }); }}
               style={{ display: "block", padding: "5px 0", ...tokens.type.sm, color: pal.textSecondary }}>{s.title}</a>
           ))}
         </aside>

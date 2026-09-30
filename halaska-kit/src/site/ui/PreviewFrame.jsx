@@ -5,6 +5,7 @@ import { Component, useEffect, useRef, useState } from "react";
 import { ThemeProvider, AccentContext, ACCENT_COLORS, usePal, tokens, motion, interactiveBase } from "../kit";
 import { useSite } from "../state";
 import { CodeBlock, CopyButton } from "./CodeBlock";
+import { loadComponentExamples } from "./examples";
 
 export function useInView(margin = "400px") {
   const ref = useRef(null);
@@ -140,21 +141,23 @@ export function PreviewFrame({
 
 // A small, non-interactive live preview scaled into a fixed box: used on
 // index cards and the landing page.
-export function LiveThumb({ children, width = 480, height = 300, scale = 0.5, housed = false, style: sp }) {
+export function LiveThumb({ children, width = 480, height = 300, scale = 0.5, housed = false, center = false, style: sp }) {
   const site = useSite();
   const pal = usePal(site.theme);
   const [ref, seen] = useInView("300px");
   return (
     <div ref={ref} aria-hidden="true" style={{
       position: "relative", width: "100%", height: Math.round(height * scale), overflow: "hidden", borderRadius: tokens.radius.md,
-      backgroundColor: pal.bgSubtle, backgroundImage: `radial-gradient(${site.theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.045)"} 1px, transparent 1px)`, backgroundSize: "14px 14px",
+      backgroundColor: center ? pal.bg : pal.bgSubtle, backgroundImage: center ? "none" : `radial-gradient(${site.theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.045)"} 1px, transparent 1px)`, backgroundSize: "14px 14px",
+      boxShadow: center ? `inset 0 0 0 1px ${pal.borderSubtle}` : "none",
       transition: `background-color ${motion.smooth} ${motion.easeInOut}`, ...sp,
     }}>
       {seen && (
         <div style={{
           position: "absolute", top: 0, left: "50%", width, height, marginLeft: -width / 2, pointerEvents: "none",
           transform: `scale(${scale})`, transformOrigin: "top center",
-          display: "flex", justifyContent: "center", alignItems: "flex-start", paddingTop: housed ? 0 : 28, boxSizing: "border-box",
+          display: "flex", justifyContent: "center", alignItems: center ? "safe center" : "flex-start", paddingTop: housed || center ? 0 : 28, boxSizing: "border-box",
+          ...(center ? { padding: 24, overflow: "hidden" } : null),
         }}>
           {housed ? (
             <div style={{
@@ -165,6 +168,26 @@ export function LiveThumb({ children, width = 480, height = 300, scale = 0.5, ho
           ) : children}
         </div>
       )}
+    </div>
+  );
+}
+
+// A component's first example as a small live preview, for index cards. The
+// example file loads when the card nears the viewport.
+export function ComponentThumb({ slug }) {
+  const [ref, seen] = useInView("300px");
+  const [Example, setExample] = useState(null);
+  useEffect(() => {
+    if (!seen) return;
+    let live = true;
+    loadComponentExamples(slug).then((d) => { const first = d?.examples?.[0]?.Component; if (live && first) setExample(() => first); });
+    return () => { live = false; };
+  }, [seen, slug]);
+  return (
+    <div ref={ref}>
+      <LiveThumb width={420} height={240} scale={0.68} center>
+        {Example ? <Boundary><div style={{ maxWidth: "100%", display: "flex", justifyContent: "center" }}><Example /></div></Boundary> : null}
+      </LiveThumb>
     </div>
   );
 }

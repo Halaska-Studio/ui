@@ -5,7 +5,6 @@ import { ThemeProvider, AccentContext, usePal, injectStyles, tokens, interactive
 import { SiteContext, useSite } from "./state";
 import { useLocation, redirectLegacyHash } from "./router";
 import { useGateController, GateModal, GateToast } from "./email/gate";
-import { Header } from "./chrome/Header";
 import { SideNav } from "./chrome/SideNav";
 import { Footer } from "./chrome/Footer";
 import { FloatingCopy } from "./chrome/FloatingCopy";
@@ -65,6 +64,7 @@ export default function App() {
   const [theme, setThemeState] = useState(() => stored("halaska:theme", null) || systemTheme());
   const [accent, setAccentState] = useState(() => stored("halaska:accent", "#8b5cf6"));
   const [search, setSearch] = useState(false);
+  const [drawer, setDrawer] = useState(false);
   const [navOpen, setNavOpenState] = useState(() => stored("halaska:nav", "open") !== "closed");
   const setNavOpen = (open) => { setNavOpenState(open); keep("halaska:nav", open ? "open" : "closed"); };
   const gate = useGateController();
@@ -79,24 +79,28 @@ export default function App() {
   }, []);
   const setTheme = (t) => { setThemeState(t); keep("halaska:theme", t); };
   const setAccent = (a) => { setAccentState(a); keep("halaska:accent", a); };
-  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate }), [theme, accent, search, gate]);
+  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, openMenu: () => setDrawer(true) }), [theme, accent, search, gate]);
   const { page, landing, target } = route(path);
   return (
     <SiteContext.Provider value={site}>
       <AccentContext.Provider value={accent}>
         <ThemeProvider theme={theme}>
           <Shell theme={theme}>
-            <Header />
-            {landing ? page : (
-              <div className={navOpen ? "site-shell" : "site-shell nav-closed"}>
-                <nav className="site-nav" aria-label="Browse">
-                  <NavCollapse open={navOpen} onChange={setNavOpen} />
-                  {navOpen && <SideNav />}
-                </nav>
-                <main>{page}</main>
-              </div>
+            <div className={navOpen ? "site-shell" : "site-shell nav-closed"}>
+              <nav className="site-nav" aria-label="Site">
+                {navOpen ? <SideNav onCollapse={<NavCollapse open onChange={setNavOpen} />} /> : <NavCollapse open={false} onChange={setNavOpen} />}
+              </nav>
+              <main style={{ minWidth: 0 }}>
+                {page}
+                <Footer />
+              </main>
+            </div>
+            {drawer && (
+              <>
+                <div className="site-drawer-scrim" onClick={() => setDrawer(false)} />
+                <aside className="site-drawer" aria-label="Navigation"><SideNav onNavigate={() => setDrawer(false)} /></aside>
+              </>
             )}
-            <Footer />
             <FloatingCopy target={target} />
             <GateToast />
             <GateModal />

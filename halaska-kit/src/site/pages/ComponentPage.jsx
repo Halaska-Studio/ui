@@ -1,46 +1,18 @@
 // The component template. Every component page uses it, no exceptions:
-// header, hero preview, usage, examples, props, accessibility, used in,
-// previous and next.
+// header, hero preview (its Code tab holds the usage snippet), examples,
+// used in, accessibility, previous and next.
 import { useEffect, useState } from "react";
 import { usePal, tokens, Text } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { COMPONENTS, relations, patternById, SCREENS } from "../registry";
 import { componentBySlug } from "../data/components/index.js";
-import api from "../generated/api.json";
 import { loadComponentExamples } from "../ui/examples";
 import { PreviewFrame } from "../ui/PreviewFrame";
-import { CodeBlock } from "../ui/CodeBlock";
 import { PageHeader, Section, ChipLink, PrevNext, DetailLayout, Prose, TagPill } from "../ui/bits";
 import { AddToProject } from "../email/gate";
 import { NotFound } from "./NotFound";
 
 const STATUS_LABEL = { match: "Matches shadcn/ui", partial: "Partial parity", halaska: "Halaska only" };
-
-function PropsTable({ name }) {
-  const { theme } = useSite(); const pal = usePal(theme);
-  const rows = api[name];
-  if (!rows?.length) return null;
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ ...tokens.type.sm, fontFamily: tokens.font.mono, color: pal.text, marginBottom: 8 }}>{name}</div>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
-          <tbody>
-            {rows.map((p) => (
-              <tr key={p.name}>
-                <td style={{ fontFamily: tokens.font.mono, color: pal.text, whiteSpace: "nowrap" }}>{p.name}</td>
-                <td style={{ fontFamily: tokens.font.mono, color: pal.textSecondary, fontSize: 12 }}>{p.type}</td>
-                <td style={{ fontFamily: tokens.font.mono, color: pal.textTertiary, fontSize: 12, whiteSpace: "nowrap" }}>{p.default ?? "·"}</td>
-                <td style={{ color: pal.textSecondary }}>{p.description || ""}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
 
 export function ComponentPage({ slug }) {
   const { theme } = useSite(); const pal = usePal(theme);
@@ -57,11 +29,9 @@ export function ComponentPage({ slug }) {
   const rel = relations.components[slug] || { patterns: [], screens: [] };
   const [hero, ...rest] = data?.examples || [];
   const sections = [
-    { id: "usage", title: "Usage" },
     ...(rest.length ? [{ id: "examples", title: "Examples" }] : []),
-    { id: "props", title: "Props" },
-    ...(meta.a11y?.length ? [{ id: "accessibility", title: "Accessibility" }] : []),
     ...(rel.patterns.length || rel.screens.length ? [{ id: "used-in", title: "Used in" }] : []),
+    ...(meta.a11y?.length ? [{ id: "accessibility", title: "Accessibility" }] : []),
   ];
   const link = (c) => c && { to: `/components/${c.slug}`, label: c.name };
   return (
@@ -75,14 +45,10 @@ export function ComponentPage({ slug }) {
       </PageHeader>
 
       {hero ? (
-        <PreviewFrame code={hero.code} minHeight={280}><hero.Component /></PreviewFrame>
+        <PreviewFrame code={data.usage ? `${data.usage.trim()}\n\n// The example in the preview\n${hero.code}` : hero.code} minHeight={280}><hero.Component /></PreviewFrame>
       ) : (
         <PreviewFrame minHeight={280} toolbar={false}><Text size="sm" style={{ color: pal.textTertiary }}>{data ? "Examples for this component are on their way." : "Loading"}</Text></PreviewFrame>
       )}
-
-      <Section id="usage" title="Usage">
-        <CodeBlock code={data?.usage || `import { ${(meta.exports || [meta.name])[0]} } from "./halaska-kit";`} />
-      </Section>
 
       {rest.length > 0 && (
         <Section id="examples" title="Examples">
@@ -98,22 +64,18 @@ export function ComponentPage({ slug }) {
         </Section>
       )}
 
-      <Section id="props" title="Props" lead="Read from the kit's own function signatures at build time.">
-        {(meta.exports || []).map((name) => <PropsTable key={name} name={name} />)}
-      </Section>
-
-      {meta.a11y?.length > 0 && (
-        <Section id="accessibility" title="Accessibility">
-          <Prose><ul style={{ margin: 0, paddingLeft: 18 }}>{meta.a11y.map((line, k) => <li key={k} style={{ marginBottom: 6 }}>{line}</li>)}</ul></Prose>
-        </Section>
-      )}
-
       {(rel.patterns.length > 0 || rel.screens.length > 0) && (
-        <Section id="used-in" title="Used in">
+        <Section id="used-in" title="Used in" lead="The screens and patterns that are built with this component.">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {rel.screens.map((s) => { const sc = SCREENS.find((x) => x.slug === s); return sc && <ChipLink key={s} to={`/screens/${s}`}>{sc.name} screen</ChipLink>; })}
             {rel.patterns.map((id) => { const p = patternById(id); return p && <ChipLink key={id} to={`/patterns/${p.slug}`}>{p.title}</ChipLink>; })}
           </div>
+        </Section>
+      )}
+
+      {meta.a11y?.length > 0 && (
+        <Section id="accessibility" title="Accessibility">
+          <Prose><ul style={{ margin: 0, paddingLeft: 18 }}>{meta.a11y.map((line, k) => <li key={k} style={{ marginBottom: 6 }}>{line}</li>)}</ul></Prose>
         </Section>
       )}
 

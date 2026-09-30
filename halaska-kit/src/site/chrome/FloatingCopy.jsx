@@ -10,7 +10,7 @@ import { promptLabel } from "../email/gate";
 const EASE = "cubic-bezier(0.2, 0, 0, 1)";
 
 export function FloatingCopy({ target }) {
-  const { theme, setTheme, accent, setAccent, gate } = useSite();
+  const { theme, setTheme, accent, setAccent, gate, setSearch, openMenu } = useSite();
   const [colorOpen, setColorOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const rootRef = useRef(null);
@@ -34,6 +34,7 @@ export function FloatingCopy({ target }) {
     return () => { document.removeEventListener("mousedown", onDown); window.removeEventListener("keydown", onKey); };
   }, [colorOpen]);
 
+  const iconBtn = { ...interactiveBase, width: 32, height: 32, padding: 0, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", color: barText, borderRadius: tokens.radius.sm };
   const divider = <div aria-hidden="true" style={{ width: 1, height: 20, background: barBorder, margin: "0 4px", flexShrink: 0 }} />;
   const half = (on) => ({ width: thumb + pad, height: thumb + pad * 2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: on ? barTextActive : barText, position: "relative", zIndex: 1, transition: "color 0.2s ease" });
 
@@ -45,14 +46,23 @@ export function FloatingCopy({ target }) {
       boxShadow: barIsDark ? "0 8px 32px rgba(0,0,0,0.3)" : "0 8px 32px rgba(0,0,0,0.12)",
       transition: `background 0.35s ${EASE}, border-color 0.35s ${EASE}, box-shadow 0.35s ${EASE}`,
     }}>
+      <button type="button" className="bar-sm" aria-label="Menu" onClick={() => { setColorOpen(false); openMenu(); }} style={iconBtn}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </button>
       <button type="button" onClick={() => { setColorOpen(false); gate.requestPrompt({ placement: "floating", target }); }}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
         style={{
           ...interactiveBase, fontFamily: tokens.font.sans, ...tokens.type.sm, fontWeight: tokens.weight.medium,
-          padding: "8px 16px", borderRadius: tokens.radius.md, whiteSpace: "nowrap", letterSpacing: "-0.01em",
+          padding: "8px 12px", borderRadius: tokens.radius.md, whiteSpace: "nowrap", letterSpacing: "-0.01em",
           color: hover ? barTextActive : barText, background: hover ? hoverBg : "transparent",
           transition: `background ${motion.normal} ${motion.easeInOut}, color ${motion.normal} ${motion.easeInOut}`,
-        }}>{promptLabel(target)}</button>
+        }}><span className="bar-lg">{promptLabel(target)}</span><span className="bar-sm">Copy prompt</span></button>
+
+      {divider}
+
+      <button type="button" aria-label="Search" title="Search" onClick={() => { setColorOpen(false); setSearch(true); }} style={iconBtn}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+      </button>
 
       {divider}
 
