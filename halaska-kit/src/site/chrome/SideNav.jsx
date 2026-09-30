@@ -78,7 +78,9 @@ export function SideNav({ onNavigate, onCollapse }) {
         <span style={{ flex: 1 }}>Search</span>
         <Kbd theme={theme}>⌘K</Kbd>
       </button>
-      <div style={{ margin: "8px 0 18px" }}>
+      <div style={{ margin: "16px 0 22px", padding: 14, borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
+        <div style={{ ...tokens.type.sm, fontWeight: tokens.weight.semibold, color: pal.text, marginBottom: 4 }}>Use the kit</div>
+        <div style={{ ...tokens.type.xs, color: pal.textSecondary, lineHeight: 1.55, marginBottom: 12 }}>Copy the prompt and paste it into your coding agent. It installs the kit and applies it to what you have built.</div>
         <Button theme={theme} variant="primary" size="sm" fullWidth onClick={() => { gate.requestPrompt({ placement: "nav" }); onNavigate?.(); }}>Copy prompt</Button>
       </div>
 

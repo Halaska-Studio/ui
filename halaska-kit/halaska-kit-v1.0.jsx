@@ -13120,16 +13120,17 @@ const CHATB_C = {
   yellow100: "var(--chatb-yellow100, #fef9c3)",
   yellow800: "var(--chatb-yellow800, #854d0e)",
 };
-// The same palette as the kit, so the before and after differ in craft, not
-// in colour. Built from the active palette at render time.
+// The same palette as the kit, flattened: one background, one border, one
+// secondary grey, and the accent only on the main call to action. So the
+// before and after differ in craft, not in colour.
 const CHATB_vars = (pal) => ({
-  "--chatb-white": pal.bg, "--chatb-gray50": pal.bgSubtle, "--chatb-gray100": pal.bgMuted, "--chatb-gray200": pal.border,
-  "--chatb-gray300": pal.border, "--chatb-gray400": pal.textMuted, "--chatb-gray500": pal.textTertiary, "--chatb-gray700": pal.textSecondary,
-  "--chatb-gray900": pal.text, "--chatb-blue50": pal.accentBg, "--chatb-blue500": pal.accent, "--chatb-blue600": pal.accentHover,
-  "--chatb-green500": pal.success, "--chatb-yellow100": pal.warningBg, "--chatb-yellow800": pal.warning,
+  "--chatb-white": pal.bg, "--chatb-gray50": pal.bg, "--chatb-gray100": pal.bgSubtle, "--chatb-gray200": pal.border,
+  "--chatb-gray300": pal.border, "--chatb-gray400": pal.textSecondary, "--chatb-gray500": pal.textSecondary, "--chatb-gray700": pal.textSecondary,
+  "--chatb-gray900": pal.text, "--chatb-blue50": pal.bgSubtle, "--chatb-blue500": pal.accent, "--chatb-blue600": pal.textSecondary,
+  "--chatb-green500": pal.textSecondary, "--chatb-yellow100": pal.bgSubtle, "--chatb-yellow800": pal.textSecondary,
 });
 
-const CHATB_SHADOW = "0 1px 2px rgba(0,0,0,0.05)";
+const CHATB_SHADOW = "none";
 
 const CHATB_SUGGESTIONS = [
   "What's open with Acme?",
@@ -13139,20 +13140,20 @@ const CHATB_SUGGESTIONS = [
 
 const CHATB_BTN = {
   fontFamily: CHATB_FONT, fontSize: 14, fontWeight: 500, lineHeight: "20px",
-  padding: "8px 16px", borderRadius: 6, cursor: "pointer", whiteSpace: "nowrap",
+  padding: "8px 16px", borderRadius: 2, cursor: "pointer", whiteSpace: "nowrap",
 };
 const CHATB_BTN_PRIMARY = { ...CHATB_BTN, background: CHATB_C.blue500, color: "#ffffff", border: "1px solid " + CHATB_C.blue500 };
 const CHATB_BTN_SECONDARY = { ...CHATB_BTN, background: CHATB_C.white, color: CHATB_C.gray700, border: "1px solid " + CHATB_C.gray300 };
 
 const CHATB_FIELD = {
   fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", color: CHATB_C.gray900,
-  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray300, borderRadius: 6,
+  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray300, borderRadius: 2,
   padding: "8px 12px", boxSizing: "border-box",
 };
 
 const CHATB_PILL = {
   display: "inline-block", fontFamily: CHATB_FONT, fontSize: 12, lineHeight: "16px",
-  padding: "4px 10px", borderRadius: 9999, background: CHATB_C.gray100,
+  padding: "4px 10px", borderRadius: 2, background: CHATB_C.gray100,
   border: "1px solid " + CHATB_C.gray200, color: CHATB_C.gray700, whiteSpace: "nowrap",
 };
 
@@ -13203,10 +13204,10 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
         background: CHATB_C.gray50, borderRight: "1px solid " + CHATB_C.gray200, boxSizing: "border-box",
       }}>
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>✨ Alpha</div>
+          <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>Alpha</div>
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Search threads" aria-label="Search threads" style={{ ...CHATB_FIELD, width: "100%" }} />
-          <ChatBButton variant="primary" onClick={() => {}} style={{ width: "100%" }}>New thread</ChatBButton>
+          <ChatBButton onClick={() => {}} style={{ width: "100%" }}>New thread</ChatBButton>
         </div>
 
         <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 8px 8px" }}>
@@ -13217,7 +13218,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
               <button key={t.id} type="button" onClick={() => setActiveThread(t.id)}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-                  width: "100%", padding: "8px 12px", borderRadius: 6, border: "none", cursor: "pointer", textAlign: "left",
+                  width: "100%", padding: "8px 12px", borderRadius: 2, border: "none", cursor: "pointer", textAlign: "left",
                   background: active ? CHATB_C.gray100 : "transparent",
                   fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px",
                   color: active ? CHATB_C.gray900 : CHATB_C.gray700, fontWeight: active ? 500 : 400,
@@ -13234,7 +13235,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
           borderTop: "1px solid " + CHATB_C.gray200,
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 9999, background: CHATB_C.gray300, color: CHATB_C.gray700,
+            width: 32, height: 32, borderRadius: 2, background: CHATB_C.gray300, color: CHATB_C.gray700,
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, flexShrink: 0,
           }}>SK</div>
           <div style={{ minWidth: 0 }}>
@@ -13260,7 +13261,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
           </div>
           <span style={{ color: CHATB_C.gray500, whiteSpace: "nowrap", flexShrink: 0 }}>Context: 132K / 200K</span>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 9999, background: CHATB_C.green500, display: "inline-block" }} />
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: CHATB_C.green500, display: "inline-block" }} />
             <span>Online</span>
           </div>
           <div style={{ flex: 1 }} />
@@ -13277,7 +13278,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: 4 }}>You</div>
               <div style={{
-                maxWidth: mobile ? "85%" : "75%", padding: "12px 16px", borderRadius: 8,
+                maxWidth: mobile ? "85%" : "75%", padding: "12px 16px", borderRadius: 2,
                 background: CHATB_C.blue50, border: "1px solid " + CHATB_C.gray200,
               }}>{CHATX_USER_MSG}</div>
               <div style={{ fontSize: 12, color: CHATB_C.gray400, marginTop: 4 }}>9:41 AM</div>
@@ -13286,14 +13287,14 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
             {/* Assistant message */}
             <div style={{ display: "flex", gap: 12 }}>
               <div style={{
-                width: 32, height: 32, borderRadius: 9999, background: CHATB_C.blue500, color: "#ffffff",
+                width: 32, height: 32, borderRadius: 2, background: CHATB_C.gray300, color: CHATB_C.gray900,
                 display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, flexShrink: 0,
               }}>A</div>
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{ fontSize: 12, color: CHATB_C.gray500, marginBottom: -8 }}>Alpha</div>
 
                 {/* Thinking */}
-                <div style={{ background: CHATB_C.gray50, border: "1px solid " + CHATB_C.gray200, borderRadius: 8, padding: "12px 16px" }}>
+                <div style={{ background: CHATB_C.gray50, border: "1px solid " + CHATB_C.gray200, borderRadius: 2, padding: "12px 16px" }}>
                   <div style={{ fontWeight: 600, marginBottom: 8 }}>Thinking...</div>
                   <ul style={{ margin: 0, paddingLeft: 20, color: CHATB_C.gray700 }}>
                     {CHATX_THINK_STEPS.map((s, i) => (
@@ -13303,14 +13304,14 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
                 </div>
 
                 {/* Answer bubble */}
-                <div style={{ background: CHATB_C.gray100, borderRadius: 8, padding: "12px 16px" }}>
+                <div style={{ background: CHATB_C.gray100, borderRadius: 2, padding: "12px 16px" }}>
                   <p style={{ margin: 0 }}>
                     {CHATX_ANSWER_SEGMENTS.map((seg, i) => {
                       if (seg.chip) {
                         return (
                           <span key={i} style={{
                             display: "inline-block", fontSize: 12, lineHeight: "16px", padding: "1px 8px", marginLeft: 4,
-                            borderRadius: 9999, background: CHATB_C.gray200, color: CHATB_C.gray700, verticalAlign: "middle",
+                            borderRadius: 2, background: CHATB_C.gray200, color: CHATB_C.gray700, verticalAlign: "middle",
                           }}>{seg.chip}</span>
                         );
                       }
@@ -13333,7 +13334,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {CHATX_ANSWER_FOLLOWUPS.map(f => (
                     <button key={f} type="button" onClick={() => setDraft(f)} style={{
-                      fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", padding: "6px 12px", borderRadius: 9999,
+                      fontFamily: CHATB_FONT, fontSize: 14, lineHeight: "20px", padding: "6px 12px", borderRadius: 2,
                       background: CHATB_C.white, border: "1px solid " + CHATB_C.blue600, color: CHATB_C.blue600, cursor: "pointer",
                     }}>{f}</button>
                   ))}
@@ -13341,13 +13342,13 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
 
                 {/* Approval card */}
                 <div style={{
-                  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray200, borderRadius: 8,
+                  background: CHATB_C.white, border: "1px solid " + CHATB_C.gray200, borderRadius: 2,
                   boxShadow: CHATB_SHADOW, padding: 16,
                 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
                     <div style={{ fontSize: 16, fontWeight: 600, lineHeight: "24px" }}>How should I reply to Acme?</div>
                     <span style={{
-                      fontSize: 12, lineHeight: "16px", fontWeight: 500, padding: "2px 8px", borderRadius: 9999,
+                      fontSize: 12, lineHeight: "16px", fontWeight: 500, padding: "2px 8px", borderRadius: 2,
                       background: CHATB_C.yellow100, color: CHATB_C.yellow800, whiteSpace: "nowrap",
                     }}>Paused</span>
                   </div>
@@ -13365,7 +13366,7 @@ function ChatParadigmBefore({ theme, layout = "desktop" }) {
                     ))}
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <ChatBButton variant="primary" onClick={() => {}}>Confirm</ChatBButton>
+                    <ChatBButton onClick={() => {}}>Confirm</ChatBButton>
                     <ChatBButton onClick={() => {}}>Skip</ChatBButton>
                   </div>
                 </div>
