@@ -1,6 +1,6 @@
 /* The studio's display face, for the landing headline only. Licensed, so the
    file lives outside the repo and ships with the deploy. */
-@font-face { font-family: 'FK Raster Roman Compact'; src: url('/fonts/FKRasterRomanCompact-Sharp.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'FK Raster Roman Compact'; src: url('/fonts/FKRasterRomanCompact-Smooth.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 .hero-title { font-family: 'FK Raster Roman Compact', var(--halaska-sans, 'Geist'), system-ui, sans-serif; font-weight: 400; letter-spacing: 0; }
 
 /* Layout and responsive rules for the site chrome only. Colours come from the
