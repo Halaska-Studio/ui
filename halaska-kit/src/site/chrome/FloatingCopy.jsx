@@ -12,6 +12,10 @@ const EASE = "cubic-bezier(0.2, 0, 0, 1)";
 export function FloatingCopy({ target }) {
   const { theme, setTheme, accent, setAccent, gate, setSearch, menuOpen, setMenuOpen } = useSite();
   const [colorOpen, setColorOpen] = useState(false);
+  // When the menu opens the bar collapses towards its left edge, so the close
+  // control lands exactly where the menu button was.
+  const [anchor, setAnchor] = useState(null);
+  const openMenu = () => { setColorOpen(false); setAnchor(rootRef.current ? Math.round(rootRef.current.getBoundingClientRect().left) : null); setMenuOpen(true); };
   const [hover, setHover] = useState(false);
   const rootRef = useRef(null);
   const isDark = theme === "dark";
@@ -40,15 +44,16 @@ export function FloatingCopy({ target }) {
 
   return (
     <div ref={rootRef} role="toolbar" aria-label="Page actions" style={{
-      position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 800, maxWidth: "calc(100vw - 24px)", boxSizing: "border-box",
-      display: "flex", alignItems: "center", gap: 0, padding: menuOpen ? 4 : 6, borderRadius: menuOpen ? 999 : tokens.radius.md,
+      position: "fixed", bottom: 20, zIndex: 800, maxWidth: "calc(100vw - 24px)", boxSizing: "border-box",
+      left: menuOpen && anchor != null ? anchor : "50%", transform: menuOpen && anchor != null ? "none" : "translateX(-50%)",
+      display: "flex", alignItems: "center", gap: 0, padding: 6, borderRadius: menuOpen ? 999 : tokens.radius.md,
       background: barBg, border: `1px solid ${barBorder}`, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       boxShadow: barIsDark ? "0 8px 32px rgba(0,0,0,0.3)" : "0 8px 32px rgba(0,0,0,0.12)",
-      transition: `background 0.35s ${EASE}, border-color 0.35s ${EASE}, box-shadow 0.35s ${EASE}, border-radius 0.35s ${EASE}, padding 0.35s ${EASE}`,
+      transition: `background 0.35s ${EASE}, border-color 0.35s ${EASE}, box-shadow 0.35s ${EASE}, border-radius 0.35s ${EASE}, left 0.35s ${EASE}, transform 0.35s ${EASE}`,
     }}>
       {/* While the menu is open the bar shrinks to a single close control. */}
       <button type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} tabIndex={menuOpen ? 0 : -1} aria-hidden={!menuOpen}
-        style={{ ...iconBtn, width: menuOpen ? 40 : 0, height: 40, borderRadius: 20, opacity: menuOpen ? 1 : 0, overflow: "hidden", padding: 0,
+        style={{ ...iconBtn, width: menuOpen ? 32 : 0, height: 32, borderRadius: 16, opacity: menuOpen ? 1 : 0, overflow: "hidden", padding: 0,
           transition: `width 0.35s ${EASE}, opacity 0.2s ease ${menuOpen ? "0.15s" : "0s"}` }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
       </button>
@@ -57,7 +62,7 @@ export function FloatingCopy({ target }) {
         maxWidth: menuOpen ? 0 : 600, opacity: menuOpen ? 0 : 1,
         transition: `max-width 0.35s ${EASE}, opacity 0.2s ease ${menuOpen ? "0s" : "0.1s"}`,
       }}>
-      <button type="button" className="bar-sm" aria-label="Menu" tabIndex={menuOpen ? -1 : 0} onClick={() => { setColorOpen(false); setMenuOpen(true); }} style={iconBtn}>
+      <button type="button" className="bar-sm" aria-label="Menu" tabIndex={menuOpen ? -1 : 0} onClick={openMenu} style={iconBtn}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
       <button type="button" onClick={() => { setColorOpen(false); gate.requestPrompt({ placement: "floating", target }); }}
