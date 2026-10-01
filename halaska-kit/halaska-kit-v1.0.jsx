@@ -436,6 +436,42 @@ function useUid(prefix = "hk") {
   return ref.current;
 }
 
+// Measures the element it is attached to and reports whether it is narrower
+// than `limit`, so a pattern can switch to a stacked layout wherever it is
+// rendered (a phone, a narrow column, a preview frame).
+function useNarrow(limit = 480) {
+  const ref = useRef(null);
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => setNarrow(el.getBoundingClientRect().width < limit);
+    check();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(check) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener("resize", check);
+    return () => { if (ro) ro.disconnect(); window.removeEventListener("resize", check); };
+  }, [limit]);
+  return [ref, narrow];
+}
+
+// Scales a fixed-size stage down to fit the width it is given.
+function useFitScale(stageWidth) {
+  const ref = useRef(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => setScale(Math.min(1, el.getBoundingClientRect().width / stageWidth));
+    check();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(check) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener("resize", check);
+    return () => { if (ro) ro.disconnect(); window.removeEventListener("resize", check); };
+  }, [stageWidth]);
+  return [ref, scale];
+}
+
 // A plain-text label can name a control for assistive tech.
 const labelText = (label) => (typeof label === "string" ? label : undefined);
 
@@ -5806,6 +5842,7 @@ function ContextBarPattern({ theme: themeProp}) {
           <div style={{
             position: "absolute", left: "50%", bottom: 28, transform: "translateX(-50%)",
             height: CTXBAR_BAR_H, boxSizing: "border-box", padding: "0 7px",
+            maxWidth: "calc(100% - 24px)", overflowX: "auto", overflowY: "hidden", scrollbarWidth: "none",
             display: "flex", alignItems: "center", gap: 8,
             borderRadius: tokens.radius.pill,
             background: CTXBAR_alpha(inv.bg, 0.92), border: `1px solid ${inv.border}`,
@@ -6039,6 +6076,9 @@ function SpaceDeckCross({ row, col, rows, cols, accent, theme: themeProp}) {
 
 function SpaceDeckPattern({ theme: themeProp}) {
   const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  // The panel takes the width it is given (down to a phone); cards keep their size and peek at the edges.
+  const [fitRef, fit] = useFitScale(SPACEDECK_PANEL_W);
+  const panelW = Math.round(SPACEDECK_PANEL_W * fit);
   const pal = usePal(theme);
   const [row, setRow] = useState(1);
   const [col, setCol] = useState(1);
@@ -6099,12 +6139,12 @@ function SpaceDeckPattern({ theme: themeProp}) {
   const band = (d, atStart, atEnd) => ((d > 0 && atStart) || (d < 0 && atEnd) ? d / 3 : d);
   const offX = drag && drag.axis === "x" ? band(drag.dx, col === 0, col === cols - 1) : 0;
   const offY = drag && drag.axis === "y" ? band(drag.dy, row === 0, row === rows - 1) : 0;
-  const tx = SPACEDECK_PANEL_W / 2 - SPACEDECK_CARD_W / 2 - col * SPACEDECK_STEP_X + offX;
+  const tx = panelW / 2 - SPACEDECK_CARD_W / 2 - col * SPACEDECK_STEP_X + offX;
   const ty = SPACEDECK_PANEL_H / 2 - SPACEDECK_CARD_H / 2 - SPACEDECK_LIFT - row * SPACEDECK_STEP_Y + offY;
   const glide = drag ? "none" : `transform ${SPACEDECK_MS}ms ${SPACEDECK_EASE}`;
 
   return (
-    <div style={{ width: SPACEDECK_PANEL_W, maxWidth: "100%", fontFamily: tokens.font.sans }}>
+    <div ref={fitRef} style={{ width: SPACEDECK_PANEL_W, maxWidth: "100%", fontFamily: tokens.font.sans }}>
       <Stack gap={10}>
         <div tabIndex={0} role="group" aria-label={`Agents. ${space.name} space, ${space.agents[col].name}. Arrow keys move between agents and spaces.`}
           onKeyDown={onKey}
@@ -7685,7 +7725,7 @@ function InsightCardsPattern({ theme: themeProp}) {
             <Sparkline key={page} data={insight.data} width="100%" height={120} theme={theme} />
           </div>
           <Divider theme={theme} />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px 16px", flexWrap: "wrap" }}>
             <span style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
               <LinkButton theme={theme} size="sm" iconRight="→">What should I do next?</LinkButton>
             </span>
@@ -11260,6 +11300,7 @@ function CompareVoteBtn({ children, onClick, theme: themeProp}) {
 
 function ComparisonPattern({ theme: themeProp}) {
   const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const [narrowRef, narrow] = useNarrow(440);
   const pal = usePal(theme);
   const [tick, setTick] = useState(0);
   const [voteVisible, setVoteVisible] = useState(false);
@@ -11287,7 +11328,7 @@ function ComparisonPattern({ theme: themeProp}) {
   const winnerName = winner && winner !== "tie" ? winner : null;
 
   return (
-    <div style={{ width: 520, maxWidth: "100%", fontFamily: tokens.font.sans }}>
+    <div ref={narrowRef} style={{ width: 520, maxWidth: "100%", fontFamily: tokens.font.sans }}>
       <Stack gap={14}>
         {/* Header */}
         <Stack gap={8}>
@@ -11298,7 +11339,7 @@ function ComparisonPattern({ theme: themeProp}) {
         </Stack>
 
         {/* Columns */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: narrow ? "1fr" : "1fr 1fr", gap: 12 }}>
           {COMPARE_MODELS.map(m => {
             const shown = Math.min(m.text.length, tick * m.cps);
             const streaming = tick > 0 && shown < m.text.length;
@@ -11438,6 +11479,7 @@ function TaskboardCard({ task, col, meta, collapsing, entering, theme: themeProp
 
 function TaskboardPattern({ theme: themeProp}) {
   const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const [narrowRef, narrow] = useNarrow(460);
   const pal = usePal(theme);
   const [phase, setPhase] = useState(0); // 0 initial · 1 old cards collapse · 2 moved + settled
 
@@ -11450,8 +11492,8 @@ function TaskboardPattern({ theme: themeProp}) {
   const layout = phase === 2 ? TASKBOARD_AFTER : TASKBOARD_BEFORE;
 
   return (
-    <div style={{ width: 520, maxWidth: "100%", fontFamily: tokens.font.sans }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+    <div ref={narrowRef} style={{ width: 520, maxWidth: "100%", fontFamily: tokens.font.sans }}>
+      <div style={{ display: "grid", gridTemplateColumns: narrow ? "1fr" : "1fr 1fr 1fr", gap: 10 }}>
         {TASKBOARD_COLUMNS.map(col => {
           const cards = TASKBOARD_TASKS.filter(t => layout[t.id] === col.id);
           return (
@@ -14196,6 +14238,8 @@ export {
   PARADIGM_STAGE, PARADIGM_STAGE_MOBILE,
   // Accessibility helpers
   useModalFocus, arrowNav,
+  // Layout helpers
+  useNarrow, useFitScale,
   // shadcn/ui names (aliases of the components above)
   Input, Textarea, Switch, Separator, Alert, Empty, Item, Command,
   // Registries (for building indexes and docs)
