@@ -23,8 +23,10 @@ body { -webkit-font-smoothing: antialiased; }
 
 .site-landing { max-width: 1120px; margin: 0 auto; padding: 0 32px 160px; }
 
-.site-drawer-scrim { position: fixed; inset: 0; z-index: 950; background: rgba(0,0,0,0.45); }
-.site-drawer { position: fixed; top: 0; bottom: 0; left: 0; z-index: 960; width: min(320px, 86vw); overflow-y: auto; padding: 20px 14px 60px; background: var(--s-bg); border-right: 1px solid var(--s-border); }
+/* Mobile menu: a floating panel above the action bar, in the bar's style. */
+.site-menu { position: fixed; top: 12px; left: 12px; right: 12px; bottom: 84px; z-index: 790; overflow-y: auto; padding: 16px 14px 24px;
+  border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); scrollbar-width: thin;
+  transition: opacity 0.3s cubic-bezier(0.2, 0, 0, 1), transform 0.35s cubic-bezier(0.2, 0, 0, 1); }
 
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
 .grid-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 2px 16px; }

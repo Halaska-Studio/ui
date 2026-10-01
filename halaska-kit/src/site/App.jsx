@@ -41,6 +41,36 @@ function route(path) {
 const patternTarget = (slug) => { const p = patternBySlug(slug); return p && { type: "pattern", slug: p.slug, title: p.title, component: p.component, desc: p.desc, useWhen: p.docs.useWhen }; };
 const screenTarget = (slug) => { const s = screenBySlug(slug); return s && { type: "screen", slug: s.slug, name: s.name, component: s.component }; };
 
+// On small screens the sidebar opens as a floating panel above the action
+// bar, in the bar's style. The bar itself turns into the close control.
+function MobileMenu({ open, onClose }) {
+  const { theme } = useSite();
+  const pal = usePal(theme);
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) { setShown(true); return; }
+    const t = setTimeout(() => setShown(false), 300);
+    return () => clearTimeout(t);
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [open, onClose]);
+  if (!shown) return null;
+  return (
+    <div className="site-menu" role="dialog" aria-modal="true" aria-label="Navigation" style={{
+      background: theme === "dark" ? "rgba(26,26,26,0.94)" : "rgba(250,250,250,0.94)",
+      border: `1px solid ${pal.borderSubtle}`, boxShadow: theme === "dark" ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.12)",
+      opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(16px)",
+    }}>
+      <SideNav onNavigate={onClose} />
+    </div>
+  );
+}
+
 // Collapses the left menu to a thin strip, and brings it back.
 function NavCollapse({ open, onChange }) {
   const { theme } = useSite();
@@ -79,7 +109,7 @@ export default function App() {
   }, []);
   const setTheme = (t) => { setThemeState(t); keep("halaska:theme", t); };
   const setAccent = (a) => { setAccentState(a); keep("halaska:accent", a); };
-  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, openMenu: () => setDrawer(true) }), [theme, accent, search, gate]);
+  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, menuOpen: drawer, setMenuOpen: setDrawer }), [theme, accent, search, gate, drawer]);
   const { page, landing, target } = route(path);
   return (
     <SiteContext.Provider value={site}>
@@ -95,12 +125,7 @@ export default function App() {
                 <Footer />
               </main>
             </div>
-            {drawer && (
-              <>
-                <div className="site-drawer-scrim" onClick={() => setDrawer(false)} />
-                <aside className="site-drawer" aria-label="Navigation"><SideNav onNavigate={() => setDrawer(false)} /></aside>
-              </>
-            )}
+            <MobileMenu open={drawer} onClose={() => setDrawer(false)} />
             <FloatingCopy target={target} />
             <GateToast />
             <GateModal />
