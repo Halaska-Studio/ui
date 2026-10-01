@@ -1,7 +1,8 @@
 /* The studio's display face, for the landing headline only. Licensed, so the
    file lives outside the repo and ships with the deploy. */
 @font-face { font-family: 'FK Raster Roman Compact'; src: url('/fonts/FKRasterRomanCompact-Smooth.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-.hero-title { font-family: 'FK Raster Roman Compact', var(--halaska-sans, 'Geist'), system-ui, sans-serif; font-weight: 400; letter-spacing: 0; }
+.hero-title { font-family: 'FK Raster Roman Compact', var(--halaska-sans, 'Geist'), system-ui, sans-serif; font-weight: 400; letter-spacing: 0; line-height: 1.2; }
+@media (max-width: 620px) { .hero-title { line-height: 1.32; } }
 
 /* Layout and responsive rules for the site chrome only. Colours come from the
    kit's palette through CSS variables set on .site by App.jsx. */
@@ -22,6 +23,9 @@ body { -webkit-font-smoothing: antialiased; }
 @media (min-width: 1320px) { .site-rail { display: block; } }
 
 .site-landing { max-width: 1120px; margin: 0 auto; padding: 0 32px 160px; }
+
+/* Keyboard hints mean nothing on a phone. */
+@media (max-width: 900px) { .nav-kbd { display: none !important; } }
 
 /* Mobile menu: a floating panel above the action bar, in the bar's style. */
 .site-menu { position: fixed; top: 12px; left: 12px; right: 12px; bottom: 84px; z-index: 790; overflow-y: auto; padding: 16px 14px 24px;

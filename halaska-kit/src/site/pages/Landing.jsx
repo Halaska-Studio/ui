@@ -330,7 +330,7 @@ export function Landing() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ color: pal.text }}><path d="M20 12 12 20M18.5 3.5 3.5 18.5" /></svg>
             Built on shadcn/ui
           </a>
-          <h1 className="hero-title" style={{ fontSize: "clamp(34px, 6.4vw, 56px)", lineHeight: 1.2, color: pal.text, margin: 0 }}>
+          <h1 className="hero-title" style={{ fontSize: "clamp(34px, 6.4vw, 56px)", color: pal.text, margin: 0 }}>
             Make your AI prototype look designed.
           </h1>
           <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "20px 0 28px", maxWidth: 430 }}>

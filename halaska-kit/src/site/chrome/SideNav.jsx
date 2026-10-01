@@ -78,7 +78,7 @@ export function SideNav({ onNavigate, onCollapse }) {
         style={{ ...interactiveBase, width: "100%", height: 34, padding: "0 8px 0 10px", borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", gap: 8, background: pal.bgSubtle, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}`, color: pal.textTertiary, ...tokens.type.sm, textAlign: "left" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         <span style={{ flex: 1 }}>Search</span>
-        <Kbd theme={theme}>⌘K</Kbd>
+        <span className="nav-kbd" style={{ display: "inline-flex" }}><Kbd theme={theme}>⌘K</Kbd></span>
       </button>
       <div style={{ margin: "16px 0 22px", padding: 14, borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
         <div style={{ ...tokens.type.sm, fontWeight: tokens.weight.semibold, color: pal.text, marginBottom: 4 }}>Use the kit</div>
