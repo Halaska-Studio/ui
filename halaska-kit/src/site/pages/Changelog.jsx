@@ -38,7 +38,7 @@ export function Changelog() {
               <h2 style={{ ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text, margin: 0 }}>{entry.title}</h2>
               <ul style={{ margin: "8px 0 0", padding: "0 0 0 18px", display: "flex", flexDirection: "column", gap: 6 }}>
                 {(entry.items || []).map((item) => (
-                  <li key={item} style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.65, maxWidth: 600 }}>{item}</li>
+                  <li key={item} style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.65, maxWidth: 420 }}>{item}</li>
                 ))}
               </ul>
             </div>
@@ -51,7 +51,7 @@ export function Changelog() {
         display: "flex", flexDirection: "column", gap: 10,
       }}>
         <span style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>Get new patterns by email</span>
-        <span style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, maxWidth: 480 }}>
+        <span style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, maxWidth: 420 }}>
           An email when components or patterns ship, plus other offers from Halaska Studio.
         </span>
         <UpdatesInline placement="changelog" />

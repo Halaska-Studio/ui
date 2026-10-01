@@ -95,6 +95,7 @@ export default function App() {
   const [accent, setAccentState] = useState(() => stored("halaska:accent", "#8b5cf6"));
   const [search, setSearch] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [activeId, setActiveId] = useState(null); // the index block in view, for the nav highlight
   const [navOpen, setNavOpenState] = useState(() => stored("halaska:nav", "open") !== "closed");
   const setNavOpen = (open) => { setNavOpenState(open); keep("halaska:nav", open ? "open" : "closed"); };
   const gate = useGateController();
@@ -109,7 +110,7 @@ export default function App() {
   }, []);
   const setTheme = (t) => { setThemeState(t); keep("halaska:theme", t); };
   const setAccent = (a) => { setAccentState(a); keep("halaska:accent", a); };
-  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, menuOpen: drawer, setMenuOpen: setDrawer }), [theme, accent, search, gate, drawer]);
+  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, menuOpen: drawer, setMenuOpen: setDrawer, activeId, setActiveId }), [theme, accent, search, gate, drawer, activeId]);
   const { page, landing, target } = route(path);
   return (
     <SiteContext.Provider value={site}>

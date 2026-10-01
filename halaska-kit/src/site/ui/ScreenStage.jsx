@@ -93,7 +93,7 @@ export function ScreenStage({ screen, layout = "desktop", hotspots = false, inte
             const pattern = patternById(h.pattern);
             const on = activeSpot === i;
             return (
-              <Link key={i} to={pattern ? `/patterns/${pattern.slug}` : "/patterns"} aria-label={`${i + 1}. ${pattern?.title || "Pattern"}`} title={pattern?.title}
+              <Link key={i} to={pattern ? `/patterns/${pattern.slug}` : "/patterns"} aria-label={`${i + 1}. ${pattern?.title || "Pattern"}`}
                 onMouseEnter={() => onSpot?.(i)} onMouseLeave={() => onSpot?.(null)} onFocus={() => onSpot?.(i)} onBlur={() => onSpot?.(null)}
                 style={{
                   position: "absolute", left: `${h.x}%`, top: `${h.y}%`, width: 24, height: 24, marginLeft: -12, marginTop: -12, borderRadius: 12,
@@ -101,7 +101,17 @@ export function ScreenStage({ screen, layout = "desktop", hotspots = false, inte
                   background: pal.accent, color: "#fff", fontFamily: tokens.font.mono, fontSize: 11, fontWeight: 600,
                   boxShadow: on ? `0 0 0 6px ${pal.accentBg}, 0 4px 12px rgba(0,0,0,0.25)` : `0 0 0 3px ${pal.bg}, 0 2px 8px rgba(0,0,0,0.2)`,
                   transform: on ? "scale(1.15)" : "scale(1)", transition: `transform ${motion.fast} ${motion.easeOut}, box-shadow ${motion.fast} ${motion.easeOut}`,
-                }}>{i + 1}</Link>
+                }}>
+                {i + 1}
+                {/* An instant label: the native title tooltip waits too long. */}
+                <span aria-hidden="true" style={{
+                  position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: `translateX(-50%) translateY(${on ? 0 : 4}px)`,
+                  padding: "5px 10px", borderRadius: tokens.radius.sm, whiteSpace: "nowrap", pointerEvents: "none",
+                  background: site.theme === "dark" ? "#fff" : "#222", color: site.theme === "dark" ? "#222" : "#fff",
+                  ...tokens.type.xs, fontFamily: tokens.font.sans, fontWeight: 500, opacity: on ? 1 : 0,
+                  transition: `opacity 0.12s ease, transform 0.12s ease`,
+                }}>{pattern?.title || "Pattern"}</span>
+              </Link>
             );
           })}
         </div>

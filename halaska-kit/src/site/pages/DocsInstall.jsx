@@ -131,7 +131,7 @@ export function DocsInstall() {
               <span style={{ fontFamily: tokens.font.mono, ...tokens.type.sm, color: pal.textTertiary, width: 20, flexShrink: 0, paddingTop: 1 }}>{String(i + 1).padStart(2, "0")}</span>
               <div style={{ minWidth: 0 }}>
                 <div style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>{s.title}</div>
-                <div style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, marginTop: 2, maxWidth: 580, overflowWrap: "anywhere" }}>{s.body}</div>
+                <div style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, marginTop: 2, maxWidth: 420, overflowWrap: "anywhere" }}>{s.body}</div>
               </div>
             </li>
           ))}

@@ -191,3 +191,41 @@ export function ComponentThumb({ slug }) {
     </div>
   );
 }
+
+// Reports which block (by id) is nearest the top of the viewport, for the
+// nav highlight on the index pages. Cleared when the page unmounts.
+export function useScrollSpy(ids) {
+  const { setActiveId } = useSite();
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined" || !ids.length) return;
+    const visible = new Map();
+    const pick = () => {
+      let best = null;
+      visible.forEach((top, id) => { if (best == null || top < visible.get(best)) best = id; });
+      if (best) setActiveId(best);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) visible.set(e.target.id, e.boundingClientRect.top); else visible.delete(e.target.id); });
+      pick();
+    }, { rootMargin: "-10% 0px -60% 0px", threshold: 0 });
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => { io.disconnect(); setActiveId(null); };
+  }, [ids.join("|")]);
+}
+
+// A component's first example, full size, for the components index.
+export function ComponentPreview({ slug, minHeight = 260 }) {
+  const [ref, seen] = useInView("400px");
+  const [ex, setEx] = useState(null);
+  useEffect(() => {
+    if (!seen) return;
+    let live = true;
+    loadComponentExamples(slug).then((d) => { const first = d?.examples?.[0]; if (live && first) setEx(first); });
+    return () => { live = false; };
+  }, [seen, slug]);
+  return (
+    <div ref={ref}>
+      <PreviewFrame toolbar={false} minHeight={minHeight}>{ex ? <ex.Component /> : null}</PreviewFrame>
+    </div>
+  );
+}

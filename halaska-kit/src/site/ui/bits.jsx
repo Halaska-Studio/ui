@@ -37,7 +37,7 @@ export function PageHeader({ eyebrow, eyebrowTo, title, lead, tags = [], childre
         <h1 style={{ ...tokens.type.xxl, fontWeight: tokens.weight.bold, letterSpacing: "-0.02em", color: pal.text, margin: 0 }}>{title}</h1>
         {tags.map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}
       </div>
-      {lead && <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "12px 0 0", maxWidth: 640 }}>{lead}</p>}
+      {lead && <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "12px 0 0", maxWidth: 420 }}>{lead}</p>}
       {children}
     </header>
   );
@@ -48,7 +48,7 @@ export function Section({ id, title, lead, children, style: sp }) {
   return (
     <section id={id} style={{ marginTop: 48, scrollMarginTop: 28, ...sp }}>
       <h2 style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text, margin: "0 0 6px", letterSpacing: "-0.01em" }}>{title}</h2>
-      {lead && <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 16px", maxWidth: 620 }}>{lead}</p>}
+      {lead && <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 16px", maxWidth: 420 }}>{lead}</p>}
       <div style={{ marginTop: lead ? 0 : 14 }}>{children}</div>
     </section>
   );
@@ -111,5 +111,5 @@ export function Card({ to, children, style: sp }) {
 
 export function Prose({ children }) {
   const { theme } = useSite(); const pal = usePal(theme);
-  return <div style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.7, maxWidth: 640 }}>{children}</div>;
+  return <div style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.7, maxWidth: 420 }}>{children}</div>;
 }

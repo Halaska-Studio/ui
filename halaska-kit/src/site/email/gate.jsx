@@ -243,7 +243,7 @@ export function AddToProject({ target, placement = "detail-foot" }) {
       display: "flex", flexDirection: "column", gap: 12,
     }}>
       <Text size="md" weight="semibold" theme={theme}>Add this to your project</Text>
-      <Text size="sm" theme={theme} style={{ color: pal.textSecondary, lineHeight: 1.6, maxWidth: 520 }}>
+      <Text size="sm" theme={theme} style={{ color: pal.textSecondary, lineHeight: 1.6, maxWidth: 420 }}>
         {target ? "One prompt sets up the kit and tells your coding agent to build this piece where it belongs." : "One prompt sets up the whole kit in Claude Code or Cursor. Then ask for any component by name."}
       </Text>
       <InlineGate placement={placement} target={target} />

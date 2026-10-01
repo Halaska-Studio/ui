@@ -30,7 +30,7 @@ function Block({ eyebrow, title, lead, children, id }) {
     <section id={id} style={{ marginTop: GAP, scrollMarginTop: 28 }}>
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <h2 style={{ ...tokens.type.xl, fontWeight: tokens.weight.semibold, letterSpacing: "-0.02em", color: pal.text, margin: 0 }}>{title}</h2>
-      {lead && <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "10px 0 0", maxWidth: 640 }}>{lead}</p>}
+      {lead && <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "10px 0 0", maxWidth: 420 }}>{lead}</p>}
       <div style={{ marginTop: 32 }}>{children}</div>
     </section>
   );
@@ -61,7 +61,7 @@ const FAQ = [
   ["Do I need to install anything?", "No. The kit is a single file with inline styles. It needs react and react-dom, which your project already has. No Tailwind, no CSS setup, no chart library."],
   ["Will it work on a project that already has a UI?", "Yes, that's the main use. The prompt tells the agent to keep your routing, state and data, and to swap screens over to the kit one at a time."],
   ["Can I change the look?", "Yes. Light or dark, the colour scheme, the typeface and the motion are all switchable. Try the first two in the bar at the bottom of this page. The rest is on the Theming page."],
-  ["Is this the same as shadcn/ui?", "It's built on the same foundations and the same component names, so it feels familiar. The difference is the AI patterns on top and the styling, which is already decided for you."],
+  ["Is this the same as shadcn/ui?", "It starts from the shadcn/ui base, so the foundations and the component names are the ones you already know. On top of that we have added our own adaptations for AI interfaces, the patterns for thinking, approvals and agent activity, and our own styling, so the look is already decided for you."],
   ["Can I use this commercially?", "Yes. MIT licensed, use it in anything."],
   ["Where's the source?", "On GitHub at github.com/Halaska-Studio/ui. Open an issue there if something is missing or broken."],
 ];
@@ -79,7 +79,7 @@ function ScreenBlock({ screen, layout }) {
         <Link to={`/screens/${screen.slug}`} style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text }}>{screen.name}</Link>
         <span style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: pal.textTertiary }}>{screen.paradigm}</span>
       </div>
-      <p style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 20px", maxWidth: 640 }}>{screen.description}</p>
+      <p style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 20px", maxWidth: 420 }}>{screen.description}</p>
       <ScreenStage screen={screen} layout={layout} hotspots activeSpot={spot} onSpot={setSpot} />
       <p aria-live="polite" style={{ ...tokens.type.sm, color: active ? pal.text : pal.textTertiary, minHeight: 44, margin: "14px 0 0", transition: `color ${motion.fast} ${motion.easeOut}` }}>
         {active
@@ -333,8 +333,8 @@ export function Landing() {
           <h1 className="hero-title" style={{ fontSize: "clamp(34px, 6.4vw, 56px)", color: pal.text, margin: 0 }}>
             Make your AI prototype look designed.
           </h1>
-          <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "20px 0 28px", maxWidth: 430 }}>
-            Made for founders building with coding agents. The shadcn/ui components you already know, plus the screens and AI UX patterns an agent product needs, in one React file.
+          <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "20px 0 28px", maxWidth: 420 }}>
+            Built on the shadcn/ui base, so the foundations are already solid. On top of it, our own UI and UX adaptations for AI interfaces, and a styling pass so the result looks designed. One React file, made for founders building with coding agents.
           </p>
           <InlineGate placement="hero" size="lg" />
           <p style={{ ...tokens.type.sm, color: pal.textTertiary, margin: "18px 0 0" }}>
@@ -353,7 +353,7 @@ export function Landing() {
           <div style={{ flex: "1 1 320px", minWidth: 0 }}>
             <Eyebrow>Before and after</Eyebrow>
             <h2 style={{ ...tokens.type.xl, fontWeight: tokens.weight.semibold, letterSpacing: "-0.02em", color: pal.text, margin: 0 }}>The same screen, with the kit applied</h2>
-            <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "10px 0 0", maxWidth: 640 }}>
+            <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.65, margin: "10px 0 0", maxWidth: 420 }}>
               On the left, a chat screen as a coding agent left it. On the right, the same content and data built from the kit.
             </p>
           </div>
@@ -391,7 +391,7 @@ export function Landing() {
       <Block eyebrow="Index" title="Every component" lead={`Follows the shadcn/ui component list, with Halaska additions tagged. ${COUNTS.components} components in total.`}>
         <div className="grid-names">
           {COMPONENTS.map((c) => (
-            <Link key={c.slug} to={`/components/${c.slug}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", minWidth: 0, ...tokens.type.base, color: pal.textSecondary }}>
+            <Link key={c.slug} to={`/components#${c.slug}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", minWidth: 0, ...tokens.type.base, color: pal.textSecondary }}>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
               {(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}
             </Link>
@@ -428,7 +428,7 @@ export function Landing() {
       {/* 8. Built by a studio */}
       <Block eyebrow="Studio" title="Built by a studio">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24, alignItems: "start" }}>
-          <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.7, margin: 0, maxWidth: 520 }}>
+          <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.7, margin: 0, maxWidth: 420 }}>
             Halaska UI is made by <Link to="https://chrishalaska.com" style={textLink}>Chris Halaska</Link> and <Link to="https://halaska.com" style={textLink}>Halaska Studio</Link>.
             Halaska Studio is an AI-first product design studio.
             This is the kit behind <Link to="https://dash.halaska.com" style={textLink}>Dash</Link>, where we take a founder's prototype and make it look designed.

@@ -1,5 +1,7 @@
 // The site's only navigation: the name, search, the Copy prompt button, and
-// four accordions (Screens, Patterns, Components, Get started). Sections start
+// four accordions (Screens, Patterns, Components, Get started). Pattern and
+// component links scroll to the item's block on its index page, where the
+// previews live; the detail page is one link further. Sections start
 // collapsed; the one holding the current page opens by itself, and Screens
 // opens on the landing page. Also used
 // inside the mobile drawer.
@@ -54,7 +56,7 @@ function Accordion({ id, title, count, open, onToggle, pal, children }) {
 const sectionOf = (path) => (path.startsWith("/screens") ? "screens" : path.startsWith("/patterns") ? "patterns" : path.startsWith("/components") ? "components" : path.startsWith("/docs") || path.startsWith("/changelog") ? "start" : null);
 
 export function SideNav({ onNavigate, onCollapse }) {
-  const { theme, setSearch, gate } = useSite();
+  const { theme, setSearch, gate, activeId } = useSite();
   const pal = usePal(theme);
   const { path } = useLocation();
   // Screens start open on the landing page (there are few); elsewhere the current section opens.
@@ -63,6 +65,8 @@ export function SideNav({ onNavigate, onCollapse }) {
   useEffect(() => { const s = sectionOf(path); if (s) setOpen((o) => (o[s] ? o : { ...o, [s]: true })); }, [path]);
   const toggle = (id) => () => setOpen((o) => ({ ...o, [id]: !o[id] }));
   const is = (to) => path === to;
+  // An item is current on its detail page, or while its block is in view on the index.
+  const isItem = (index, slug) => path === `${index}/${slug}` || (path === index && activeId === slug);
   const [ghHover, setGhHover] = useState(false);
   return (
     <div onClick={(e) => { if (e.target.closest("a")) onNavigate?.(); }} style={{ fontFamily: tokens.font.sans, display: "flex", flexDirection: "column", minHeight: "100%" }}>
@@ -96,14 +100,14 @@ export function SideNav({ onNavigate, onCollapse }) {
           {GROUPS.map((g) => (
             <div key={g.id}>
               <div style={{ padding: "12px 10px 4px", ...tokens.type.xs, fontFamily: tokens.font.mono, letterSpacing: "0.06em", textTransform: "uppercase", color: pal.textTertiary }}>{g.title}</div>
-              {g.patterns.map((p) => <NavLink key={p.id} pal={pal} to={`/patterns/${p.slug}`} active={is(`/patterns/${p.slug}`)}>{p.title}</NavLink>)}
+              {g.patterns.map((p) => <NavLink key={p.id} pal={pal} to={`/patterns#${p.slug}`} active={isItem("/patterns", p.slug)}>{p.title}</NavLink>)}
             </div>
           ))}
         </Accordion>
         <Accordion id="components" title="Components" count={COMPONENTS.length} open={!!open.components} onToggle={toggle("components")} pal={pal}>
           <NavLink pal={pal} to="/components" active={is("/components")}>All components</NavLink>
           {COMPONENTS.map((c) => (
-            <NavLink key={c.slug} pal={pal} to={`/components/${c.slug}`} active={is(`/components/${c.slug}`)}
+            <NavLink key={c.slug} pal={pal} to={`/components#${c.slug}`} active={isItem("/components", c.slug)}
               right={(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}>{c.name}</NavLink>
           ))}
         </Accordion>

@@ -7,53 +7,69 @@ import { GROUPS, PATTERNS, COMPONENTS, SCREENS, COUNTS } from "../registry";
 import { COMPONENT_GROUPS } from "../data/components/index.js";
 import { GROUP_INTROS } from "../data/patterns/index.js";
 import { PARITY, CONVERSATION_MAP, PARITY_SUMMARY } from "../data/parity.js";
-import { LiveThumb, ComponentThumb } from "../ui/PreviewFrame";
+import { PreviewFrame, ComponentPreview, useScrollSpy } from "../ui/PreviewFrame";
 import { ScreenStage, LayoutToggle, useLayout } from "../ui/ScreenStage";
 import { PageHeader, Section, DetailLayout, Card, TagPill, tagTone, ChipLink } from "../ui/bits";
 
-export function PatternCard({ pattern }) {
+// One block per item on an index page: name, one line, a full-width live
+// preview, and a link to the detail page. The id is the anchor the nav scrolls to.
+function IndexBlock({ id, title, tags = [], line, detail, children }) {
   const { theme } = useSite(); const pal = usePal(theme);
-  const Comp = pattern.Component;
   return (
-    <Card to={`/patterns/${pattern.slug}`}>
-      <LiveThumb width={600} height={Math.min(400, (pattern.height || 480) - 80)} scale={0.5} housed={pattern.housed}>{Comp && <Comp />}</LiveThumb>
-      <div>
-        <div style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: pal.text }}>{pattern.title}</div>
-        <div style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.55, marginTop: 2 }}>{pattern.docs.useWhen || pattern.desc}</div>
+    <article id={id} style={{ scrollMarginTop: 28 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <h3 style={{ ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text, margin: 0, letterSpacing: "-0.01em" }}>{title}</h3>
+            {tags.map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}
+          </div>
+          {line && <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, margin: "4px 0 0", maxWidth: 420 }}>{line}</p>}
+        </div>
+        <Link to={detail} style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, paddingTop: 4 }}>
+          Details <span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
+        </Link>
       </div>
-    </Card>
+      {children}
+    </article>
+  );
+}
+
+function JumpChips({ items }) {
+  const { theme } = useSite(); const pal = usePal(theme);
+  return (
+    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+      {items.map(([to, label, n]) => (
+        <Link key={to} to={to} style={{ height: 30, padding: "0 12px", borderRadius: tokens.radius.pill, display: "inline-flex", alignItems: "center", gap: 8, ...tokens.type.sm, whiteSpace: "nowrap", background: pal.bgSubtle, color: pal.textSecondary, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}` }}>
+          {label}{n != null && <span style={{ fontFamily: tokens.font.mono, ...tokens.type.xs, opacity: 0.7 }}>{n}</span>}
+        </Link>
+      ))}
+    </div>
   );
 }
 
 export function PatternsIndex() {
-  const { theme } = useSite(); const pal = usePal(theme);
-  const [filter, setFilter] = useState("all");
   usePageMeta("Patterns", `${COUNTS.patterns} AI UX patterns grouped by lifecycle.`);
-  const shown = filter === "all" ? GROUPS : GROUPS.filter((g) => g.id === filter);
-  const chip = (id, label, n) => (
-    <button key={id} type="button" aria-pressed={filter === id} onClick={() => setFilter(id)}
-      style={{ ...interactiveBase, height: 30, padding: "0 12px", borderRadius: tokens.radius.pill, display: "inline-flex", alignItems: "center", gap: 8, ...tokens.type.sm, whiteSpace: "nowrap", background: filter === id ? pal.text : pal.bgSubtle, color: filter === id ? pal.bg : pal.textSecondary, boxShadow: filter === id ? "none" : `inset 0 0 0 1px ${pal.borderSubtle}` }}>
-      {label}<span style={{ fontFamily: tokens.font.mono, ...tokens.type.xs, opacity: 0.7 }}>{n}</span>
-    </button>
-  );
+  useScrollSpy(PATTERNS.map((p) => p.slug));
   return (
-    <DetailLayout wide>
-      <PageHeader eyebrow="Patterns" title={`${COUNTS.patterns} AI UX patterns`} lead="The moments every AI product has to get right, grouped by where they sit in the life of a task. Each one says when to use it." />
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-        {chip("all", "All", COUNTS.patterns)}
-        {GROUPS.map((g) => chip(g.id, g.title, g.patterns.length))}
-      </div>
-      {shown.map((g) => (
+    <DetailLayout wide sections={GROUPS.map((g) => ({ id: g.id, title: g.title }))}>
+      <PageHeader eyebrow="Patterns" title={`${COUNTS.patterns} AI UX patterns`} lead="The moments every AI product has to get right, grouped by where they sit in the life of a task. Scroll through them here; open one for the states, guidance and code." />
+      <JumpChips items={GROUPS.map((g) => [`/patterns#${g.id}`, g.title, g.patterns.length])} />
+      {GROUPS.map((g) => (
         <Section key={g.id} id={g.id} title={g.title} lead={GROUP_INTROS[g.id] || g.blurb}>
-          <div className="grid-cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-            {g.patterns.map((p) => <PatternCard key={p.id} pattern={p} />)}
+          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+            {g.patterns.map((p) => (
+              <IndexBlock key={p.id} id={p.slug} title={p.title} line={p.docs.useWhen || p.desc} detail={`/patterns/${p.slug}`}>
+                <PreviewFrame toolbar={false} housed={p.housed} align="top" minHeight={Math.max(280, (p.height || 480) - 72)}>
+                  {p.Component && <p.Component />}
+                </PreviewFrame>
+              </IndexBlock>
+            ))}
           </div>
         </Section>
       ))}
     </DetailLayout>
   );
 }
-
 export function ScreensIndex() {
   const { theme } = useSite(); const pal = usePal(theme);
   usePageMeta("Screens", "Full example screens built only from the kit.");
@@ -72,7 +88,7 @@ export function ScreensIndex() {
               <Link to={`/screens/${s.slug}`} style={{ ...tokens.type.sm, color: pal.textSecondary, textDecoration: "underline", textUnderlineOffset: 3 }}>Open the anatomy</Link>
             </div>
             <Link to={`/screens/${s.slug}`} aria-label={`${s.name} screen`} style={{ display: "block" }}><ScreenStage screen={s} layout={layout} /></Link>
-            <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "12px 0 0", maxWidth: 640 }}>{s.description}</p>
+            <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "12px 0 0", maxWidth: 420 }}>{s.description}</p>
           </div>
         ))}
       </div>
@@ -86,21 +102,19 @@ export function ComponentsIndex() {
   const { theme } = useSite(); const pal = usePal(theme);
   usePageMeta("Components", `${COUNTS.components} components: shadcn/ui parity plus the Halaska additions.`);
   const groups = COMPONENT_GROUPS.map((g) => [g, COMPONENTS.filter((c) => c.group === g)]).filter(([, list]) => list.length);
+  const gid = (g) => `g-${g.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+  useScrollSpy(COMPONENTS.map((c) => c.slug));
   return (
-    <DetailLayout wide sections={[...groups.map(([g]) => ({ id: `g-${g.toLowerCase().replace(/[^a-z]+/g, "-")}`, title: g })), ...(PARITY.length ? [{ id: "parity", title: "shadcn/ui parity" }] : [])]}>
+    <DetailLayout wide sections={[...groups.map(([g]) => ({ id: gid(g), title: g })), ...(PARITY.length ? [{ id: "parity", title: "shadcn/ui parity" }] : [])]}>
       <PageHeader eyebrow="Components" title={`${COUNTS.components} components`} lead={PARITY_SUMMARY || "The base layer under the patterns. Names follow shadcn/ui where an equivalent exists; the Halaska additions are tagged."} />
+      <JumpChips items={groups.map(([g, list]) => [`/components#${gid(g)}`, g, list.length])} />
       {groups.map(([g, list]) => (
-        <Section key={g} id={`g-${g.toLowerCase().replace(/[^a-z]+/g, "-")}`} title={g} lead={`${list.length} components`}>
-          <div className="grid-cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
+        <Section key={g} id={gid(g)} title={g} lead={`${list.length} components`}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
             {list.map((c) => (
-              <Card key={c.slug} to={`/components/${c.slug}`} style={{ gap: 6 }}>
-                <div style={{ marginBottom: 6 }}><ComponentThumb slug={c.slug} /></div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: pal.text, flex: 1, minWidth: 0 }}>{c.name}</span>
-                  {(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}
-                </div>
-                <div style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.55 }}>{c.description}</div>
-              </Card>
+              <IndexBlock key={c.slug} id={c.slug} title={c.name} tags={c.tags || []} line={c.description} detail={`/components/${c.slug}`}>
+                <ComponentPreview slug={c.slug} />
+              </IndexBlock>
             ))}
           </div>
         </Section>

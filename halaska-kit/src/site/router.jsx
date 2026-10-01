@@ -6,19 +6,24 @@ import { useEffect, useState } from "react";
 const listeners = new Set();
 const emit = () => listeners.forEach((fn) => fn());
 
+// Scrolls to an anchor now and again shortly after, because previews above
+// it mount lazily and can push it down after the first scroll.
+export function scrollToHash(hash, offset = 28) {
+  const go = (behavior) => {
+    const el = document.getElementById(hash);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior });
+  };
+  requestAnimationFrame(() => go("smooth"));
+  [500, 1200].forEach((ms) => setTimeout(() => go("auto"), ms));
+}
+
 export function navigate(to, { replace = false } = {}) {
   const current = window.location.pathname + window.location.search + window.location.hash;
   if (to !== current) window.history[replace ? "replaceState" : "pushState"](null, "", to);
   emit();
   const hash = to.includes("#") ? to.split("#")[1] : "";
-  if (hash) {
-    requestAnimationFrame(() => {
-      const el = document.getElementById(hash);
-      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
-    });
-  } else {
-    window.scrollTo(0, 0);
-  }
+  if (hash) scrollToHash(hash);
+  else window.scrollTo(0, 0);
 }
 
 export function useLocation() {
@@ -51,7 +56,9 @@ export function Link({ to, children, onClick, style, ...rest }) {
 // Old single-page anchors (#pat-plan, #c-buttons, #grp-control) map onto the new routes.
 export function redirectLegacyHash() {
   const h = window.location.hash.slice(1);
-  if (window.location.pathname !== "/" || !h) return;
+  if (!h) return;
+  // A deep link straight to an anchor on an index page.
+  if (window.location.pathname !== "/") { scrollToHash(h); return; }
   if (h.startsWith("pat-")) navigate(`/patterns/${h.slice(4)}`, { replace: true });
   else if (h.startsWith("grp-")) navigate(`/patterns#${h}`, { replace: true });
   else if (h.startsWith("paradigm-")) navigate(`/screens/${h.slice(9)}`, { replace: true });
