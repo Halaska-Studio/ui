@@ -1,6 +1,7 @@
 // The site's only navigation: the name, search, the Copy prompt button, and
-// four accordions (Get started, Screens, Patterns, Components). Sections start
-// collapsed; the one holding the current page opens by itself. Also used
+// four accordions (Screens, Patterns, Components, Get started). Sections start
+// collapsed; the one holding the current page opens by itself, and Screens
+// opens on the landing page. Also used
 // inside the mobile drawer.
 import { useEffect, useState } from "react";
 import { Button, Kbd, usePal, tokens, motion, interactiveBase } from "../kit";
@@ -56,7 +57,8 @@ export function SideNav({ onNavigate, onCollapse }) {
   const { theme, setSearch, gate } = useSite();
   const pal = usePal(theme);
   const { path } = useLocation();
-  const [open, setOpen] = useState(() => { const s = sectionOf(path); return s ? { [s]: true } : {}; });
+  // Screens start open on the landing page (there are few); elsewhere the current section opens.
+  const [open, setOpen] = useState(() => { const s = sectionOf(path) || (path === "/" ? "screens" : null); return s ? { [s]: true } : {}; });
   // Arriving on a page opens its section; nothing closes on its own.
   useEffect(() => { const s = sectionOf(path); if (s) setOpen((o) => (o[s] ? o : { ...o, [s]: true })); }, [path]);
   const toggle = (id) => () => setOpen((o) => ({ ...o, [id]: !o[id] }));
@@ -85,12 +87,7 @@ export function SideNav({ onNavigate, onCollapse }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
-        <Accordion id="start" title="Get started" open={!!open.start} onToggle={toggle("start")} pal={pal}>
-          <NavLink pal={pal} to="/docs/install" active={is("/docs/install")}>Install</NavLink>
-          <NavLink pal={pal} to="/docs/theming" active={is("/docs/theming")}>Theming</NavLink>
-          <NavLink pal={pal} to="/changelog" active={is("/changelog")}>Changelog</NavLink>
-        </Accordion>
-        <Accordion id="screens" title="Screens" open={!!open.screens} onToggle={toggle("screens")} pal={pal}>
+        <Accordion id="screens" title="Screens" count={SCREENS.length} open={!!open.screens} onToggle={toggle("screens")} pal={pal}>
           <NavLink pal={pal} to="/screens" active={is("/screens")}>All screens</NavLink>
           {SCREENS.map((s) => <NavLink key={s.slug} pal={pal} to={`/screens/${s.slug}`} active={is(`/screens/${s.slug}`)}>{s.name}</NavLink>)}
         </Accordion>
@@ -109,6 +106,11 @@ export function SideNav({ onNavigate, onCollapse }) {
             <NavLink key={c.slug} pal={pal} to={`/components/${c.slug}`} active={is(`/components/${c.slug}`)}
               right={(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}>{c.name}</NavLink>
           ))}
+        </Accordion>
+        <Accordion id="start" title="Get started" open={!!open.start} onToggle={toggle("start")} pal={pal}>
+          <NavLink pal={pal} to="/docs/install" active={is("/docs/install")}>Install</NavLink>
+          <NavLink pal={pal} to="/docs/theming" active={is("/docs/theming")}>Theming</NavLink>
+          <NavLink pal={pal} to="/changelog" active={is("/changelog")}>Changelog</NavLink>
         </Accordion>
       </div>
 
