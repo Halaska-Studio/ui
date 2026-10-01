@@ -1071,7 +1071,8 @@ function SwitchToggle({ checked, onChange, label, theme: tp, "aria-label": ariaL
   );
 }
 
-function ThemeToggle({ theme, onChange, size = 32 }) {
+function ThemeToggle({ theme: themeProp, onChange, size = 32 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const isDark = theme === "dark";
   const pad = 3;
   const trackW = size * 2 + pad * 2;
@@ -3401,7 +3402,8 @@ function SplitButton({ children, onClick, items = [], variant = "primary", size 
   );
 }
 
-function SplitButtonItem({ item, onPick, theme }) {
+function SplitButtonItem({ item, onPick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -3512,7 +3514,8 @@ function FileTreeFileIcon({ color }) {
   );
 }
 
-function FileTreeNode({ node, depth, theme }) {
+function FileTreeNode({ node, depth, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [open, setOpen] = useState(node.defaultOpen ?? true);
   const [hover, setHover] = useState(false);
@@ -3673,7 +3676,8 @@ const DESIGN_HEURISTICS = [
   },
 ];
 
-function HeuristicsSection({ theme }) {
+function HeuristicsSection({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ paddingLeft: 4, fontFamily: tokens.font.sans }}>
@@ -3730,7 +3734,8 @@ function useViewport() {
 const showcaseSlug = (label) => "c-" + String(label).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 // Copies a link to this card: appears top right on hover, always on touch widths.
-function ShareLinkButton({ anchor, visible, theme }) {
+function ShareLinkButton({ anchor, visible, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [copied, setCopied] = useState(false);
   const [hover, setHover] = useState(false);
@@ -3764,7 +3769,8 @@ function ShareLinkButton({ anchor, visible, theme }) {
   );
 }
 
-function ShowcaseCard({ children, controls, label, anchor, housed, theme = "light", height, align = "center", style: sp }) {
+function ShowcaseCard({ children, controls, label, anchor, housed, theme: themeProp, height, align = "center", style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   const [hovered, setHovered] = useState(false);
@@ -3865,7 +3871,8 @@ const STUDIO_BOOK_URL = "https://halaska.com/book";
 
 // Quiet inline link for "Halaska" mentions: inherits the surrounding
 // text color, underlines subtly, and brightens on hover.
-function StudioLink({ theme, href = STUDIO_URL, children = "Halaska", style: sp }) {
+function StudioLink({ theme: themeProp, href = STUDIO_URL, children = "Halaska", style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const isDark = theme === "dark";
   const [hover, setHover] = useState(false);
   return (
@@ -4155,7 +4162,8 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
 // Text input variants shown in the merged "Text Input" card (DemoFormInputs).
 const DEMOFORM_TEXT_VARIANTS = ["Default", "With icon", "Error", "Input group", "Copy input", "Search"];
 
-function DemoButtons({ theme }) {
+function DemoButtons({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [loading, setLoading] = useState(false);
   const loadTimer = useRef(null);
@@ -4228,7 +4236,8 @@ function DemoButtons({ theme }) {
 }
 
 // Motion mode for the whole kit: spring (as designed), smooth, or instant.
-function DemoMotion({ theme }) {
+function DemoMotion({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [mode, setMode] = useState("spring");
   const [demo, setDemo] = useState(false);
@@ -4258,7 +4267,8 @@ function DemoMotion({ theme }) {
   );
 }
 
-function DemoTypography({ theme }) {
+function DemoTypography({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [fonts, setFonts] = useState(KIT_FONT_PRESETS);
   const [font, setFont] = useState("Geist");
   const [customOpen, setCustomOpen] = useState(false);
@@ -4321,7 +4331,8 @@ function DemoTypography({ theme }) {
   );
 }
 
-function DemoFormInputs({ theme }) {
+function DemoFormInputs({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [variant, setVariant] = useState(DEMOFORM_TEXT_VARIANTS[0]);
   const [amount, setAmount] = useState("2,500.00");
   const [email, setEmail] = useState("");
@@ -4388,7 +4399,8 @@ function DemoFormInputs({ theme }) {
   );
 }
 
-function DemoTogglesSelections({ theme }) {
+function DemoTogglesSelections({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [sw1, setSw1] = useState(true);
   const [sw2, setSw2] = useState(false);
   const [c1, setC1] = useState(true);
@@ -4440,7 +4452,8 @@ const DEMOTBL_VIEWS = ["Simple", "Data table"];
 // child is contained by the phone, never the page; the scrim and panel
 // are positioned against that wrapper. Starts open so the drawer is the
 // first thing the visitor sees; Done or the scrim dismisses it.
-function DrawerPhonePreview({ theme }) {
+function DrawerPhonePreview({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [open, setOpen] = useState(true);
   const tickets = [
@@ -4487,7 +4500,8 @@ function DrawerPhonePreview({ theme }) {
   );
 }
 
-function DemoFeedbackStatus({ theme }) {
+function DemoFeedbackStatus({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <ShowcaseCard theme={theme} label="Feedback & Status" height={800} align="top">
@@ -4538,7 +4552,8 @@ function DemoFeedbackStatus({ theme }) {
   );
 }
 
-function DemoDataDisplay({ theme }) {
+function DemoDataDisplay({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <ShowcaseCard theme={theme} label="Data Display" height={760} align="top">
       <Stack gap={28} style={{ width: 380 }}>
@@ -4584,7 +4599,8 @@ function DemoDataDisplay({ theme }) {
 // Composed AI flows (chat, streaming answers, tool feeds…) live in the
 // UX Patterns section; these cards demo the individual building blocks.
 
-function DemoAIElements({ theme }) {
+function DemoAIElements({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [streamKey, setStreamKey] = useState(0);
   const [stepKey, setStepKey] = useState(0);
@@ -4680,7 +4696,8 @@ function DemoAIElements({ theme }) {
 // Inline panel preview: renders dialog or drawer chrome inline so a demo can
 // show the panel without covering the page. The drawer shape is used by
 // DrawerPhonePreview, docked to the bottom of a PhoneFrame screen.
-function InlinePanelPreview({ title, children, actions, theme, shape = "dialog" }) {
+function InlinePanelPreview({ title, children, actions, theme: themeProp, shape = "dialog" }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const isSheet = shape === "sheet";
   const isDrawer = shape === "drawer";
@@ -4703,7 +4720,8 @@ function InlinePanelPreview({ title, children, actions, theme, shape = "dialog" 
   );
 }
 
-function DemoOverlays({ theme }) {
+function DemoOverlays({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -4794,7 +4812,8 @@ function DemoOverlays({ theme }) {
   );
 }
 
-function TriggerPopover({ theme }) {
+function TriggerPopover({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <Popover theme={theme} trigger={<Button theme={theme} variant="outline" size="sm">Popover</Button>}>
       <Stack gap={6} style={{ width: 220 }}>
@@ -4805,7 +4824,8 @@ function TriggerPopover({ theme }) {
   );
 }
 
-function TriggerDropdown({ theme }) {
+function TriggerDropdown({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <DropdownMenu theme={theme} trigger={<Button theme={theme} variant="outline" size="sm">Menu</Button>}
       items={[
@@ -4817,7 +4837,8 @@ function TriggerDropdown({ theme }) {
   );
 }
 
-function DemoNavigation({ theme }) {
+function DemoNavigation({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [tab, setTab] = useState("Overview");
   const [subtleTab, setSubtleTab] = useState("Inbox");
@@ -4965,7 +4986,8 @@ function DemoNavigation({ theme }) {
   );
 }
 
-function DemoTable({ theme }) {
+function DemoTable({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [view, setView] = useState(DEMOTBL_VIEWS[0]);
   const [page, setPage] = useState(1);
   const [dotPage, setDotPage] = useState(2);
@@ -5033,7 +5055,8 @@ function DemoTable({ theme }) {
   );
 }
 
-function DemoFormExtras({ theme }) {
+function DemoFormExtras({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [otp, setOtp] = useState("");
   return (
     <ShowcaseCard theme={theme} label="Form Extras">
@@ -5055,7 +5078,8 @@ function DemoFormExtras({ theme }) {
   );
 }
 
-function DemoAlerts({ theme }) {
+function DemoAlerts({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -5212,7 +5236,8 @@ const COMMAND_RECENT = [
 
 // Suggestion chip: pill button on the subtle surface with a hairline ring; hover
 // raises it. mousedown is swallowed so the input keeps focus until the click lands.
-function CommandSearchChip({ icon, label, onPick, theme }) {
+function CommandSearchChip({ icon, label, onPick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -5237,7 +5262,8 @@ function CommandSearchChip({ icon, label, onPick, theme }) {
 // Notification center panel: registered as an ambient UX pattern (it's a
 // composed surface, not an atomic component). Read state is real: tapping an
 // item marks it read, "Mark all read" clears every unread dot and the badge.
-function NotificationsDemo({ theme }) {
+function NotificationsDemo({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [readIds, setReadIds] = useState(() => NOTIFICATIONS_ITEMS.filter(n => n.read).map(n => n.id));
   const [hoverId, setHoverId] = useState(null);
@@ -5307,11 +5333,13 @@ function NotificationsDemo({ theme }) {
   );
 }
 
-function NotificationCenterPattern({ theme }) {
+function NotificationCenterPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return <NotificationsDemo theme={theme} />;
 }
 
-function DismissibleChipsDemo({ theme }) {
+function DismissibleChipsDemo({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const all = ["Acme · Enterprise", "Calendar sync", "Priority: high", "Assigned: Dana"];
   const [tags, setTags] = useState(all);
   return (
@@ -5332,7 +5360,8 @@ function DismissibleChipsDemo({ theme }) {
   );
 }
 
-function DemoInputsExtended({ theme }) {
+function DemoInputsExtended({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [chips, setChips] = useState(new Set(["Open"]));
   const [date, setDate] = useState(new Date());
@@ -5427,7 +5456,8 @@ function DemoInputsExtended({ theme }) {
 }
 
 // Dev surfaces: the framing components coding agents live inside.
-function DemoDevSurfaces({ theme }) {
+function DemoDevSurfaces({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <Stack gap={24}>
@@ -5617,7 +5647,8 @@ const CTXBAR_PANEL_H = 360;
 const CTXBAR_CONTENT_H = 200;
 const CTXBAR_BAR_H = 44;
 
-function CtxBarThread({ theme }) {
+function CtxBarThread({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -5641,7 +5672,8 @@ function CtxBarThread({ theme }) {
   );
 }
 
-function CtxBarDoc({ theme }) {
+function CtxBarDoc({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <Caption theme={theme}>{CTXBAR_DOC.crumb}</Caption>
@@ -5653,7 +5685,8 @@ function CtxBarDoc({ theme }) {
   );
 }
 
-function CtxBarCalendar({ theme }) {
+function CtxBarCalendar({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const hourPx = CTXBAR_DAY_HEIGHT / CTXBAR_DAY_HOURS;
   return (
@@ -5682,7 +5715,8 @@ function CtxBarCalendar({ theme }) {
   );
 }
 
-function ContextBarPattern({ theme }) {
+function ContextBarPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   // The bar inverts against the page: dark on light, light on dark. Its colours
   // come from the opposite palette so the pair stays consistent in both themes.
@@ -5921,7 +5955,8 @@ const SPACEDECK_LOCK_PX = 8;
 const SPACEDECK_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const SPACEDECK_MS = 460;
 
-function SpaceDeckCard({ agent, tone, spaceName, focused, settled, theme }) {
+function SpaceDeckCard({ agent, tone, spaceName, focused, settled, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const accent = pal[tone];
   const tint = CTXBAR_alpha(accent, theme === "dark" ? 0.16 : 0.1);
@@ -5977,7 +6012,8 @@ function SpaceDeckCard({ agent, tone, spaceName, focused, settled, theme }) {
 
 // One indicator for both axes: a small grid of dots, one per card, always
 // visible. A single lit dot glides to wherever you are.
-function SpaceDeckCross({ row, col, rows, cols, accent, theme }) {
+function SpaceDeckCross({ row, col, rows, cols, accent, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const DOT = 4, GAP = 6, STEP = DOT + GAP;
   const mapW = cols * DOT + (cols - 1) * GAP, mapH = rows * DOT + (rows - 1) * GAP;
@@ -6001,7 +6037,8 @@ function SpaceDeckCross({ row, col, rows, cols, accent, theme }) {
   );
 }
 
-function SpaceDeckPattern({ theme }) {
+function SpaceDeckPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [row, setRow] = useState(1);
   const [col, setCol] = useState(1);
@@ -6231,7 +6268,8 @@ const PATTERN_ROADMAP = [
   { id: "history",  icon: "≡", title: "Conversation history",  desc: "Past sessions with search, pin, and rename" },
 ];
 
-function ConnectedWalletPill({ theme }) {
+function ConnectedWalletPill({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -6248,7 +6286,8 @@ function ConnectedWalletPill({ theme }) {
   );
 }
 
-function AgentVisualAvatar({ visual, size = 72, theme }) {
+function AgentVisualAvatar({ visual, size = 72, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -6265,7 +6304,8 @@ function AgentVisualAvatar({ visual, size = 72, theme }) {
   );
 }
 
-function AgentPreviewCard({ state, strategyObj, riskObj, budgetNum, theme }) {
+function AgentPreviewCard({ state, strategyObj, riskObj, budgetNum, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const hasIdentity = !!(state.name.trim() || state.visual);
   const hasStrategy = !!state.strategy;
@@ -6364,7 +6404,8 @@ function AgentPreviewCard({ state, strategyObj, riskObj, budgetNum, theme }) {
   );
 }
 
-function AgentSetupPattern({ theme }) {
+function AgentSetupPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const initial = {
     step: 0,
@@ -6616,7 +6657,8 @@ function AgentSetupPattern({ theme }) {
 // streamed answers, approvals, tool activity, live tasks, grounding,
 // proposed edits, command search, insights, and agent chat.
 
-function AgentGlyph({ size = 24, theme }) {
+function AgentGlyph({ size = 24, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -6792,7 +6834,8 @@ const STREAM_SOURCES = [
   { name: "Notion runbooks", domain: "notion.so" },
 ];
 
-function InlineSourceChip({ domain, theme }) {
+function InlineSourceChip({ domain, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span style={{
@@ -6827,7 +6870,7 @@ function InlineSourceChip({ domain, theme }) {
  * @prop onDone {() => void} Fires when streaming completes (not fired when autoplay is false)
  */
 function StreamingAnswerPattern({
-  theme,
+  theme: themeProp,
   segments = STREAM_ANSWERS.default.segments,
   sources = STREAM_SOURCES,
   followups = STREAM_ANSWERS.default.followups,
@@ -6842,6 +6885,7 @@ function StreamingAnswerPattern({
   onFollowup,
   onDone,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   // Demo-only fallback: with no onFollowup, clicking a follow-up swaps to the built-in second answer and back.
   const [demoKey, setDemoKey] = useState(null); // null (props / default answer) | "followup"
@@ -6942,7 +6986,8 @@ function StreamingAnswerPattern({
   );
 }
 
-function FollowupRow({ label, onClick, theme }) {
+function FollowupRow({ label, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -6985,7 +7030,7 @@ const APPROVAL_SKIPPED_TEXT = "Skipped · nothing was changed";
  * @prop onSkip {() => void} Fires when Skip is clicked
  */
 function ApprovalCardPattern({
-  theme,
+  theme: themeProp,
   eyebrow = "Needs your call",
   badgeLabel = "Paused",
   question = "How should I reply to Acme's outage complaint?",
@@ -6998,6 +7043,7 @@ function ApprovalCardPattern({
   onApprove,
   onSkip,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [choice, setChoice] = useState(null);
   const [resolved, setResolved] = useState(null); // null | "approved" | "skipped"
@@ -7126,7 +7172,8 @@ const TOOL_FILE_CHIPS = [
   { file: "escalation.config.ts", add: 13, del: 0 },
 ];
 
-function ToolStreamPattern({ theme }) {
+function ToolStreamPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [idx, setIdx] = useState(0);
 
@@ -7230,7 +7277,8 @@ const AGENT_TASKS = [
     subs: [{ t: "Acme · service credit note", v: "draft" }, { t: "Fjord Health · status update", v: "draft" }] },
 ];
 
-function TaskStatusIcon({ status, theme }) {
+function TaskStatusIcon({ status, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   if (status === "done") return (
     <span style={{ width: 20, height: 20, borderRadius: 10, background: pal.successBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -7243,7 +7291,8 @@ function TaskStatusIcon({ status, theme }) {
   return <span style={{ width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Spinner size={14} color={pal.accent} /></span>;
 }
 
-function AgentTasksPattern({ theme }) {
+function AgentTasksPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [pct, setPct] = useState(34);
 
@@ -7301,7 +7350,8 @@ const RECO_ALTERNATIVES = [
   { title: "Book a pricing call with Sam", status: "offline", label: "Last resort" },
 ];
 
-function RecommendationPattern({ theme }) {
+function RecommendationPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [accepted, setAccepted] = useState(false);
   const [showAlts, setShowAlts] = useState(true);
@@ -7380,7 +7430,8 @@ const CONTEXT_CHUNKS = [
     body: "Weekly active seats: Acme 38 → 23, Lumen Labs 41 → 44, Fjord Health 12 → 12. Accounts down 30% or more get a check-in draft." },
 ];
 
-function ContextChunkCard({ chunk, theme }) {
+function ContextChunkCard({ chunk, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -7414,7 +7465,8 @@ function ContextChunkCard({ chunk, theme }) {
   );
 }
 
-function ContextSourcesPattern({ theme }) {
+function ContextSourcesPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <div style={{ width: 440, maxWidth: "100%", fontFamily: tokens.font.sans }}>
       <Stack gap={12}>
@@ -7436,7 +7488,8 @@ const DIFF_ROWS = [
   { pair: "Cobalt Dental", strategy: { v: "Starter" },                     alloc: { v: "Dana" }, added: true },
 ];
 
-function DiffCell({ cell, applied, theme }) {
+function DiffCell({ cell, applied, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   if (!cell.was || applied) {
     return <Text size="sm" theme={theme} mono>{cell.v}</Text>;
@@ -7450,7 +7503,8 @@ function DiffCell({ cell, applied, theme }) {
   );
 }
 
-function DiffTablePattern({ theme }) {
+function DiffTablePattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [applied, setApplied] = useState(false);
   const cellPad = "10px 14px";
@@ -7513,7 +7567,8 @@ const COMMAND_ITEMS = [
   { icon: "≋", label: "Summarize this week's tickets" },
 ];
 
-function CommandSearchPattern({ theme }) {
+function CommandSearchPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const inputRef = useRef(null);
   const [q, setQ] = useState("");
@@ -7601,7 +7656,8 @@ const INSIGHTS = [
   },
 ];
 
-function InsightCardsPattern({ theme }) {
+function InsightCardsPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [page, setPage] = useState(1);
   const insight = INSIGHTS[page - 1];
@@ -7653,7 +7709,8 @@ const CHAT_REPLIES = [
   { chip: "Checked renewal dates in HubSpot · 3s", text: "Three affected accounts renew within 30 days. A $180 credit each keeps you well inside your $2,500 cap." },
 ];
 
-function ChatReasoningChip({ label, theme }) {
+function ChatReasoningChip({ label, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span style={{
@@ -7667,7 +7724,8 @@ function ChatReasoningChip({ label, theme }) {
   );
 }
 
-function AgentChatPattern({ theme }) {
+function AgentChatPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [tab, setTab] = useState("Inbox");
   const [messages, setMessages] = useState(CHAT_SEED);
@@ -7760,7 +7818,8 @@ function AgentChatPattern({ theme }) {
   );
 }
 
-function PatternsRoadmap({ theme, items }) {
+function PatternsRoadmap({ theme: themeProp, items }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <Stack gap={8}>
@@ -7797,7 +7856,8 @@ const PROMPTIN_MODELS = [
 
 // Composer model pill: opens a menu above the pill (the composer sits at the
 // bottom of a screen, so the menu drops upward).
-function PromptinModelPill({ index, onSelect, theme }) {
+function PromptinModelPill({ index, onSelect, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
@@ -7845,7 +7905,8 @@ function PromptinModelPill({ index, onSelect, theme }) {
   );
 }
 
-function PromptinModelOption({ model, active, onPick, theme }) {
+function PromptinModelOption({ model, active, onPick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -7876,7 +7937,8 @@ const PROMPTIN_SUGGESTIONS = [
   "Summarize overnight tickets",
 ];
 
-function PromptinIconBtn({ children, onClick, label, theme }) {
+function PromptinIconBtn({ children, onClick, label, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -7893,7 +7955,8 @@ function PromptinIconBtn({ children, onClick, label, theme }) {
   );
 }
 
-function PromptInputPattern({ theme }) {
+function PromptInputPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [value, setValue] = useState("");
   const [modelIdx, setModelIdx] = useState(0);
@@ -8031,7 +8094,8 @@ function PromptInputPattern({ theme }) {
   );
 }
 
-function PromptinChip({ label, onClick, delay = 0, theme }) {
+function PromptinChip({ label, onClick, delay = 0, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8058,7 +8122,8 @@ const MSGTHREAD_REPLIES = [
   "A refund costs roughly $420 plus a Stripe reversal fee. Offer a $180 credit instead: same goodwill, no cash out the door.",
 ];
 
-function MsgthreadActionBtn({ children, onClick, active, label, theme }) {
+function MsgthreadActionBtn({ children, onClick, active, label, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8075,7 +8140,8 @@ function MsgthreadActionBtn({ children, onClick, active, label, theme }) {
   );
 }
 
-function MessageThreadPattern({ theme }) {
+function MessageThreadPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [branch, setBranch] = useState(0);
   const [hover, setHover] = useState(false);
@@ -8202,7 +8268,8 @@ const CODEBLK_LINES = [
   [{ t: "}", c: "p" }],
 ];
 
-function CodeBlockPattern({ theme }) {
+function CodeBlockPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [shown, setShown] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -8327,7 +8394,8 @@ const MODELCTX_USAGE = [
 
 const MODELCTX_CAP_GLYPHS = { vision: "◇ vision", reasoning: "✦ reasoning" };
 
-function ModelctxBadge({ children, theme }) {
+function ModelctxBadge({ children, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span style={{
@@ -8339,7 +8407,8 @@ function ModelctxBadge({ children, theme }) {
   );
 }
 
-function ModelctxRow({ model, active, onClick, theme }) {
+function ModelctxRow({ model, active, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8362,7 +8431,8 @@ function ModelctxRow({ model, active, onClick, theme }) {
   );
 }
 
-function ModelContextPattern({ theme }) {
+function ModelContextPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [modelId, setModelId] = useState("alpha-4");
   const [open, setOpen] = useState(false);
@@ -8511,7 +8581,8 @@ const CITE_SEGMENTS = [
 const CITE_W = 460;
 const CITE_POP_W = 250;
 
-function CiteChip({ n, active, onClick, theme }) {
+function CiteChip({ n, active, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8532,7 +8603,8 @@ function CiteChip({ n, active, onClick, theme }) {
   );
 }
 
-function CitePagerBtn({ direction, onClick, theme }) {
+function CitePagerBtn({ direction, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8549,7 +8621,8 @@ function CitePagerBtn({ direction, onClick, theme }) {
   );
 }
 
-function CitePopover({ srcIdx, left, top, onPrev, onNext, theme }) {
+function CitePopover({ srcIdx, left, top, onPrev, onNext, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const src = CITE_SOURCES[srcIdx];
   const toneColor = { accent: pal.accent, success: pal.success, warning: pal.warning }[src.tone];
@@ -8591,7 +8664,8 @@ function CitePopover({ srcIdx, left, top, onPrev, onNext, theme }) {
   );
 }
 
-function CitationsPattern({ theme }) {
+function CitationsPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const rootRef = useRef(null);
   const [openChip, setOpenChip] = useState(null);   // segment index of the chip that opened the popover
@@ -8687,7 +8761,8 @@ const CONF_MISSING = [
   "A second source confirming the usage drop",
 ];
 
-function ConfidencePattern({ theme }) {
+function ConfidencePattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [level, setLevel] = useState("High");
   const [verifying, setVerifying] = useState(false);
@@ -8798,7 +8873,8 @@ function FdbkThumbIcon({ size = 14, down, style }) {
   );
 }
 
-function FdbkVoteBtn({ down, active, flash, onClick, theme }) {
+function FdbkVoteBtn({ down, active, flash, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8817,7 +8893,8 @@ function FdbkVoteBtn({ down, active, flash, onClick, theme }) {
   );
 }
 
-function FdbkReasonChip({ label, selected, onClick, theme }) {
+function FdbkReasonChip({ label, selected, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -8834,7 +8911,8 @@ function FdbkReasonChip({ label, selected, onClick, theme }) {
   );
 }
 
-function FeedbackPattern({ theme }) {
+function FeedbackPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [vote, setVote] = useState(null);       // null | "up" | "down"
   const [upFlash, setUpFlash] = useState(false);
@@ -8944,7 +9022,8 @@ function PlanPrevCheckMark({ pal }) {
   );
 }
 
-function PlanPrevStepRow({ index, displayNum, label, checked, editing, removed, onToggleRemove, theme }) {
+function PlanPrevStepRow({ index, displayNum, label, checked, editing, removed, onToggleRemove, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const [xHover, setXHover] = useState(false);
@@ -9013,7 +9092,7 @@ function PlanPrevStepRow({ index, displayNum, label, checked, editing, removed, 
  * @prop onHandoff {() => void} Fires when the user chooses to do it themselves
  */
 function PlanPreviewPattern({
-  theme,
+  theme: themeProp,
   title = "Alpha wants to clear the support backlog",
   subtitle = "Nothing runs until you say so.",
   steps = PLANPREV_STEPS,
@@ -9030,6 +9109,7 @@ function PlanPreviewPattern({
   onEdit,
   onHandoff,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [items] = useState(() => steps.slice()); // prop-derived list, captured on mount
   const [phase, setPhase] = useState("review"); // review | edit | running | done | handoff
@@ -9166,7 +9246,8 @@ const AUTONOMY_LEVELS = [
     caps: ["Replies, refunds, and files issues solo", "Refund cap $500/day still applies", "Receipt posted after every action"] },
 ];
 
-function AutonomyLevelRow({ level, selected, onSelect, theme }) {
+function AutonomyLevelRow({ level, selected, onSelect, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -9213,7 +9294,8 @@ function AutonomyLevelRow({ level, selected, onSelect, theme }) {
   );
 }
 
-function AutonomyPattern({ theme }) {
+function AutonomyPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [levelId, setLevelId] = useState("confirm");
   const level = AUTONOMY_LEVELS.find(l => l.id === levelId);
@@ -9256,7 +9338,8 @@ const PERMSCOPE_DATA = [
   { id: "exports", label: "Customer records", sub: "Plans, seats, and billing status from Stripe" },
 ];
 
-function PermScopeRow({ label, sub, checked, onChange, theme }) {
+function PermScopeRow({ label, sub, checked, onChange, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -9269,7 +9352,8 @@ function PermScopeRow({ label, sub, checked, onChange, theme }) {
   );
 }
 
-function PermScopeChip({ label, onClick, theme }) {
+function PermScopeChip({ label, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -9286,7 +9370,8 @@ function PermScopeChip({ label, onClick, theme }) {
   );
 }
 
-function PermissionScopePattern({ theme }) {
+function PermissionScopePattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [on, setOn] = useState({ orders: true, transfers: false, market: true, history: true, exports: true });
   const [cap, setCap] = useState(500);
@@ -9393,7 +9478,8 @@ const QUEUE_TASKS = [
   { id: "q4", title: "Write the daily support summary",  meta: "report · no replies" },
 ];
 
-function QueueCtlButton({ glyph, disabled, onClick, label, theme }) {
+function QueueCtlButton({ glyph, disabled, onClick, label, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -9412,7 +9498,8 @@ function QueueCtlButton({ glyph, disabled, onClick, label, theme }) {
   );
 }
 
-function QueueTaskRow({ task, index, count, removing, onMoveUp, onMoveDown, onRemove, theme }) {
+function QueueTaskRow({ task, index, count, removing, onMoveUp, onMoveDown, onRemove, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -9461,7 +9548,8 @@ function QueueTaskRow({ task, index, count, removing, onMoveUp, onMoveDown, onRe
   );
 }
 
-function QueuePattern({ theme }) {
+function QueuePattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [current, setCurrent] = useState(QUEUE_TASKS[0]);
   const [queue, setQueue] = useState(QUEUE_TASKS.slice(1));
@@ -9652,7 +9740,7 @@ function AgentStatusDot({ color, pulse }) {
  * @prop onDone {() => void} Fires when the redirect cycle finishes
  */
 function AgentStatusPattern({
-  theme,
+  theme: themeProp,
   phases = AGENTSTATUS_MAIN_PHASES,
   redirectPhases = AGENTSTATUS_REDIRECT_PHASES,
   waitingLabel = "Waiting on you · 2 replies need a look",
@@ -9664,6 +9752,7 @@ function AgentStatusPattern({
   autoplay = true,
   onPause, onResume, onRedirect, onWaiting, onDone,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const mainList = agentstatusPhases(phases, AGENTSTATUS_MAIN_ORBS);
   const redirectList = agentstatusPhases(redirectPhases, AGENTSTATUS_REDIRECT_ORBS);
@@ -9838,7 +9927,7 @@ function HandoffCheckIcon({ color, bg }) {
  * @prop onResumed {() => void} Fires when the resumed run resolves (after resumeMs)
  */
 function HandoffPattern({
-  theme,
+  theme: themeProp,
   workingLabel = "Reviewing Acme's refund request…",
   workingMs = 2000,
   headline = "Alpha is handing this to you",
@@ -9855,6 +9944,7 @@ function HandoffPattern({
   onResume,
   onResumed,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [stage, setStage] = useState(autoplay ? "working" : "handoff"); // working | handoff | taken | raising | raised
 
@@ -9965,7 +10055,8 @@ const RECEIPT_META_REVERSED = [
   { label: "Net",       value: "−$180 · Acme's balance fully restored" },
 ];
 
-function ReceiptMetaRow({ label, value, theme }) {
+function ReceiptMetaRow({ label, value, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
@@ -9982,7 +10073,8 @@ function ReceiptMetaRow({ label, value, theme }) {
   );
 }
 
-function ReceiptBeforeAfter({ before, after, delta, deltaColor, unit, decimals = 0, label = "Acme credit", theme }) {
+function ReceiptBeforeAfter({ before, after, delta, deltaColor, unit, decimals = 0, label = "Acme credit", theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -10029,7 +10121,7 @@ function ReceiptBeforeAfter({ before, after, delta, deltaColor, unit, decimals =
  * @prop onAudit {() => void} Fires when the user clicks the audit link
  */
 function ActionReceiptPattern({
-  theme,
+  theme: themeProp,
   title = "Credit issued",
   reversedTitle = "Reversed",
   timestamp = "14:32:07 UTC",
@@ -10051,6 +10143,7 @@ function ActionReceiptPattern({
   onExpire,
   onAudit,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [phase, setPhase] = useState(autoplay ? "active" : "expired"); // active | expired | reversed
   const [secondsLeft, setSecondsLeft] = useState(autoplay ? undoSeconds : 0);
@@ -10214,7 +10307,8 @@ const CKPT_ITEMS = [
   { id: "ckpt-3", name: "Current",            time: "14:32", delta: "8 open" },
 ];
 
-function CkptRestoreButton({ visible, onClick, theme }) {
+function CkptRestoreButton({ visible, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -10233,7 +10327,8 @@ function CkptRestoreButton({ visible, onClick, theme }) {
   );
 }
 
-function CheckpointPattern({ theme }) {
+function CheckpointPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [currentIdx, setCurrentIdx] = useState(CKPT_ITEMS.length - 1);
   const [confirmIdx, setConfirmIdx] = useState(null);
@@ -10373,7 +10468,8 @@ const AUDITLOG_BADGE = {
   undone: { variant: "default", label: "Undone" },
 };
 
-function AuditFilterChip({ label, count, active, onClick, theme }) {
+function AuditFilterChip({ label, count, active, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -10393,7 +10489,8 @@ function AuditFilterChip({ label, count, active, onClick, theme }) {
   );
 }
 
-function AuditLogRow({ row, expanded, onToggle, index, theme }) {
+function AuditLogRow({ row, expanded, onToggle, index, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const [linkHover, setLinkHover] = useState(false);
@@ -10442,7 +10539,8 @@ function AuditLogRow({ row, expanded, onToggle, index, theme }) {
   );
 }
 
-function AuditLogPattern({ theme }) {
+function AuditLogPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
 
@@ -10483,7 +10581,8 @@ const REPAIR_FIXES = [
 
 const REPAIR_DIFF = { label: "billing@stripe.com", before: "Newsletter", after: "Never archive" };
 
-function RepairCheckRow({ label, delay, theme }) {
+function RepairCheckRow({ label, delay, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, animation: `halaska-step-in 0.4s ${motion.emphasized} ${delay}s both` }}>
@@ -10518,7 +10617,7 @@ function RepairCheckRow({ label, delay, theme }) {
  * @prop onFlag {() => void} Fires when the user asks for a human
  */
 function ErrorRepairPattern({
-  theme,
+  theme: themeProp,
   headline = "Alpha got this one wrong",
   acknowledgment = "Alpha archived the Stripe payout notice as a newsletter. It matched the sender rule and never reached your inbox.",
   fixesTitle = "What Alpha did about it",
@@ -10532,6 +10631,7 @@ function ErrorRepairPattern({
   onReview,
   onFlag,
 }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [beat, setBeat] = useState(autoplay ? 1 : 3); // 1 acknowledge · 2 correction · 3 recourse
   const [diffOpen, setDiffOpen] = useState(false);
@@ -10662,7 +10762,8 @@ const ARTIFACT_VERSIONS = [
   },
 ];
 
-function ArtifactIconAction({ icon, onClick, label, active, theme }) {
+function ArtifactIconAction({ icon, onClick, label, active, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -10677,7 +10778,8 @@ function ArtifactIconAction({ icon, onClick, label, active, theme }) {
   );
 }
 
-function ArtifactStepBtn({ dir, disabled, onClick, theme }) {
+function ArtifactStepBtn({ dir, disabled, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -10694,7 +10796,8 @@ function ArtifactStepBtn({ dir, disabled, onClick, theme }) {
   );
 }
 
-function ArtifactPattern({ theme }) {
+function ArtifactPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [vIdx, setVIdx] = useState(ARTIFACT_VERSIONS.length - 1);
   const [tab, setTab] = useState("preview");
@@ -10847,7 +10950,8 @@ const DIFFVIEW_HUNKS = [
   },
 ];
 
-function DiffViewHunkAction({ kind, onClick, theme }) {
+function DiffViewHunkAction({ kind, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const color = kind === "accept" ? pal.success : pal.danger;
@@ -10865,7 +10969,8 @@ function DiffViewHunkAction({ kind, onClick, theme }) {
   );
 }
 
-function DiffViewPattern({ theme }) {
+function DiffViewPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [resolved, setResolved] = useState({}); // id → "accepted" | "rejected"
   const [applied, setApplied] = useState(false);
@@ -11029,7 +11134,8 @@ const STRUCT_JSON_LINES = [
   [{ t: "p", v: "}" }],
 ];
 
-function StructuredDataPattern({ theme }) {
+function StructuredDataPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [view, setView] = useState("card");
   const tokenColor = { k: pal.accentText, s: pal.success, n: pal.text, p: pal.textTertiary };
@@ -11135,7 +11241,8 @@ const COMPARE_MODELS = [
   },
 ];
 
-function CompareVoteBtn({ children, onClick, theme }) {
+function CompareVoteBtn({ children, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -11151,7 +11258,8 @@ function CompareVoteBtn({ children, onClick, theme }) {
   );
 }
 
-function ComparisonPattern({ theme }) {
+function ComparisonPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [tick, setTick] = useState(0);
   const [voteVisible, setVoteVisible] = useState(false);
@@ -11286,7 +11394,8 @@ const TASKBOARD_AFTER  = { t1: "working", t2: "queued", t3: "needs",  t4: "needs
 const TASKBOARD_AFTER_META  = { t3: "2 replies await approval", t1: "running · reading merged PRs" };
 const TASKBOARD_MOVED_IDS   = ["t1", "t3"];
 
-function TaskboardCard({ task, col, meta, collapsing, entering, theme }) {
+function TaskboardCard({ task, col, meta, collapsing, entering, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const agent = task.owner === "agent";
   const working = col === "working";
@@ -11327,7 +11436,8 @@ function TaskboardCard({ task, col, meta, collapsing, entering, theme }) {
   );
 }
 
-function TaskboardPattern({ theme }) {
+function TaskboardPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [phase, setPhase] = useState(0); // 0 initial · 1 old cards collapse · 2 moved + settled
 
@@ -11384,7 +11494,8 @@ const ASSIST_LINES = [
   { typed: "const escalateTo = ",    ghost: "ticket.plan === 'enterprise' ? 'dana' : 'queue';", alt: "isEnterprise ? 'dana' : 'queue';" },
 ];
 
-function InlineAssistPattern({ theme }) {
+function InlineAssistPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [committed, setCommitted] = useState([]); // { typed, code, flash }
   const [cur, setCur] = useState(0);              // index into ASSIST_LINES, null when settled
@@ -11511,7 +11622,8 @@ function InlineAssistPattern({ theme }) {
 const NUDGE_BECAUSE = "Noticed: Acme's usage dropped 40% this week";
 const NUDGE_ASK = "Want me to draft a check-in to their admin before the renewal call?";
 
-function NudgePattern({ theme }) {
+function NudgePattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [stage, setStage] = useState("in"); // in | doing | done | snoozed | muted
   const [faded, setFaded] = useState(false);
@@ -11607,7 +11719,8 @@ const DIGEST_ROWS = [
   },
 ];
 
-function DigestRow({ row, open, onToggle, approved, onApprove, delay, theme }) {
+function DigestRow({ row, open, onToggle, approved, onApprove, delay, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const warning = row.tone === "warning" && !approved;
@@ -11659,7 +11772,8 @@ function DigestRow({ row, open, onToggle, approved, onApprove, delay, theme }) {
   );
 }
 
-function DigestPattern({ theme }) {
+function DigestPattern({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [openIds, setOpenIds] = useState({});
   const [approved, setApproved] = useState(false);
@@ -11751,7 +11865,8 @@ const CHATX_APPROVAL_OPTIONS = [
 ];
 
 // Compact sidebar row: title + relative time, plain button in the kit idiom.
-function ChatXThreadRow({ title, time, active, onClick, theme }) {
+function ChatXThreadRow({ title, time, active, onClick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -11778,7 +11893,8 @@ function ChatXThreadRow({ title, time, active, onClick, theme }) {
 }
 
 // Top-bar model pill: opens a small menu to pick the model.
-function ChatXModelPill({ index, onSelect, theme }) {
+function ChatXModelPill({ index, onSelect, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
@@ -11826,7 +11942,8 @@ function ChatXModelPill({ index, onSelect, theme }) {
   );
 }
 
-function ChatXModelOption({ model, active, onPick, theme }) {
+function ChatXModelOption({ model, active, onPick, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const [hover, setHover] = useState(false);
   return (
@@ -11853,7 +11970,8 @@ function ChatXModelOption({ model, active, onPick, theme }) {
 
 // `layout="mobile"` is the phone version: the thread list becomes a drawer
 // behind a menu button and the top bar splits into two rows.
-function ChatParadigmExample({ theme, layout = "desktop" }) {
+function ChatParadigmExample({ theme: themeProp, layout = "desktop" }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const mobile = layout === "mobile";
   const [drawer, setDrawer] = useState(false);
   const pal = usePal(theme);
@@ -12109,7 +12227,8 @@ function CANVASX_tint(pal, tint) {
 }
 
 // Floating panel: elevated surface with a hairline ring
-function CanvasXPanel({ theme, children, style: sp }) {
+function CanvasXPanel({ theme: themeProp, children, style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -12123,7 +12242,8 @@ function CanvasXPanel({ theme, children, style: sp }) {
 }
 
 // Floating chrome: the action-bar glass treatment, cut to size
-function CanvasXGlass({ theme, children, style: sp }) {
+function CanvasXGlass({ theme: themeProp, children, style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -12139,7 +12259,8 @@ function CanvasXGlass({ theme, children, style: sp }) {
 }
 
 // Rounded icon tile used by the palette and node headers
-function CanvasXTile({ glyph, tint, size = 32, theme }) {
+function CanvasXTile({ glyph, tint, size = 32, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span style={{
@@ -12151,7 +12272,8 @@ function CanvasXTile({ glyph, tint, size = 32, theme }) {
   );
 }
 
-function CanvasXPort({ theme, offset = 0, style: sp }) {
+function CanvasXPort({ theme: themeProp, offset = 0, style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span style={{
@@ -12163,7 +12285,8 @@ function CanvasXPort({ theme, offset = 0, style: sp }) {
   );
 }
 
-function CanvasXTransitionRow({ label, checked, onPick, rowRef, theme }) {
+function CanvasXTransitionRow({ label, checked, onPick, rowRef, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <div ref={rowRef} style={{ position: "relative", display: "flex", alignItems: "center", height: 30 }}>
       <Radio checked={checked} onChange={onPick} label={label} theme={theme} />
@@ -12173,7 +12296,8 @@ function CanvasXTransitionRow({ label, checked, onPick, rowRef, theme }) {
 }
 
 // A node card: header tile + title + run/collapse, then the body
-function CanvasXNode({ node, selected, onSelect, cardRef, children, flow, theme }) {
+function CanvasXNode({ node, selected, onSelect, cardRef, children, flow, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   // `flow` lays the card out in normal document flow (the mobile column).
   const place = flow ? { position: "relative", width: "100%" } : { position: "absolute", left: node.x, top: node.y, width: node.w };
@@ -12203,7 +12327,8 @@ function CanvasXNode({ node, selected, onSelect, cardRef, children, flow, theme 
   );
 }
 
-function CanvasXBody({ text, theme }) {
+function CanvasXBody({ text, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{
@@ -12215,7 +12340,8 @@ function CanvasXBody({ text, theme }) {
   );
 }
 
-function CanvasXTransition({ rows, picked, onPick, rowRefs, theme }) {
+function CanvasXTransition({ rows, picked, onPick, rowRefs, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 24 }}>
@@ -12233,7 +12359,8 @@ function CanvasXTransition({ rows, picked, onPick, rowRefs, theme }) {
 }
 
 // A labelled branch in the mobile flow: the condition, then the node it leads to.
-function CanvasXBranch({ label, last, children, theme }) {
+function CanvasXBranch({ label, last, children, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const line = `${pal.accent}99`;
   return (
@@ -12254,7 +12381,8 @@ function CanvasXBranch({ label, last, children, theme }) {
 
 // `layout="mobile"` is the phone version: the flow runs top to bottom with
 // labelled branches, and the settings panel becomes a bottom sheet.
-function CanvasParadigmExample({ theme, layout = "desktop" }) {
+function CanvasParadigmExample({ theme: themeProp, layout = "desktop" }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const mobile = layout === "mobile";
   const [sheet, setSheet] = useState(false);
   const pal = usePal(theme);
@@ -12599,7 +12727,8 @@ const PARADIGM_EXAMPLE_COMPONENTS = { ChatParadigmExample, CanvasParadigmExample
 
 // Live thumbnail: the full screen rendered at stage size and scaled to fit
 // the column. Non-interactive; tapping opens it full-screen.
-function ParadigmPreview({ paradigm, theme, onOpen }) {
+function ParadigmPreview({ paradigm, theme: themeProp, onOpen }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   const ref = useRef(null);
@@ -12642,7 +12771,8 @@ function ParadigmPreview({ paradigm, theme, onOpen }) {
 }
 
 // Windowed layer for an example screen: just the screen and a close button. Esc also closes.
-function ParadigmFullscreen({ paradigm, theme, onClose }) {
+function ParadigmFullscreen({ paradigm, theme: themeProp, onClose }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile, width } = useViewport();
   // Phones: the whole 1200×760 screen scaled to the window width (zoomed-out,
@@ -12745,7 +12875,8 @@ const PATTERN_COMPONENTS = {
 
 // The pattern mark: a small stroked circle. One per pattern in group headers,
 // one in front of each pattern title.
-function PatternDot({ theme, style: sp }) {
+function PatternDot({ theme: themeProp, style: sp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span aria-hidden="true" style={{
@@ -12755,7 +12886,8 @@ function PatternDot({ theme, style: sp }) {
   );
 }
 
-function PatternHeader({ n, title, desc, theme }) {
+function PatternHeader({ n, title, desc, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 14, paddingLeft: 8, fontFamily: tokens.font.sans }}>
@@ -12768,7 +12900,8 @@ function PatternHeader({ n, title, desc, theme }) {
   );
 }
 
-function PatternGroupHeader({ index, title, blurb, count, theme }) {
+function PatternGroupHeader({ index, title, blurb, count, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   return (
@@ -12786,7 +12919,8 @@ function PatternGroupHeader({ index, title, blurb, count, theme }) {
   );
 }
 
-function DemoPatterns({ theme }) {
+function DemoPatterns({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   const [replayKeys, setReplayKeys] = useState({});
@@ -12918,7 +13052,8 @@ const RAIL_TICKS = RAIL_ROWS.filter(r => r.type === "tick");
 
 // Studio hook: a calm card with a two-field form. Appears after the
 // paradigms and again at the very end of the page (with the credit line).
-function StudioHookCard({ theme }) {
+function StudioHookCard({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const { isMobile } = useViewport();
   return (
@@ -13052,7 +13187,8 @@ function CompareSlider({ before, after, theme: tp, initial = 0.5, labels = ["Bef
 }
 
 // A 1200×760 example screen scaled to the column, non-interactive.
-function LiveStage({ scale, theme, children }) {
+function LiveStage({ scale, theme: themeProp, children }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <div style={{ position: "relative", width: "100%", height: Math.round(PARADIGM_STAGE.h * scale), overflow: "hidden", background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
@@ -13064,7 +13200,8 @@ function LiveStage({ scale, theme, children }) {
 }
 
 // Before and after: the Chat screen as an agent left it, then with the kit.
-function BeforeAfterSection({ theme }) {
+function BeforeAfterSection({ theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   const ref = useRef(null);
   const [scale, setScale] = useState(0.5);
@@ -13180,7 +13317,8 @@ function ChatBSectionLabel({ children, style }) {
 
 // `layout="mobile"` is the same first pass on a phone: the sidebar is dropped
 // behind a Menu button and the rows wrap where they run out of room.
-function ChatParadigmBefore({ theme, layout = "desktop" }) {
+function ChatParadigmBefore({ theme: themeProp, layout = "desktop" }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const mobile = layout === "mobile";
   const pal = usePal(theme);
   const [activeThread, setActiveThread] = useState(CHATX_THREADS[0].id);
@@ -13442,7 +13580,8 @@ function RepoPill({ pageTheme, surface }) {
 }
 
 // Lucide-style wand at 1px stroke, in a soft accent tile.
-function StudioWandIcon({ size = 22, theme }) {
+function StudioWandIcon({ size = 22, theme: themeProp}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
   const pal = usePal(theme);
   return (
     <span aria-hidden="true" style={{

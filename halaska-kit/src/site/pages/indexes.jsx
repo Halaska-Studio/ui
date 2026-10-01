@@ -1,5 +1,5 @@
 // The three index pages: /screens, /patterns, /components.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePal, tokens, motion, interactiveBase, Text } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { Link, useLocation } from "../router";
@@ -34,6 +34,37 @@ function IndexBlock({ id, title, tags = [], line, detail, children }) {
   );
 }
 
+// Index previews share one height on desktop so the page scrolls evenly.
+const useIndexHeight = (base) => {
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.innerWidth >= 900);
+  useEffect(() => {
+    const on = () => setWide(window.innerWidth >= 900);
+    window.addEventListener("resize", on);
+    return () => window.removeEventListener("resize", on);
+  }, []);
+  return wide ? Math.max(600, base) : base;
+};
+
+function PatternBlock({ p }) {
+  const minHeight = useIndexHeight(Math.max(280, (p.height || 480) - 72));
+  return (
+    <IndexBlock id={p.slug} title={p.title} line={p.docs.useWhen || p.desc} detail={`/patterns/${p.slug}`}>
+      <PreviewFrame toolbar={false} housed={p.housed} align="top" minHeight={minHeight}>
+        {p.Component && <p.Component />}
+      </PreviewFrame>
+    </IndexBlock>
+  );
+}
+
+function ComponentBlock({ c }) {
+  const minHeight = useIndexHeight(260);
+  return (
+    <IndexBlock id={c.slug} title={c.name} tags={c.tags || []} line={c.description} detail={`/components/${c.slug}`}>
+      <ComponentPreview slug={c.slug} minHeight={minHeight} />
+    </IndexBlock>
+  );
+}
+
 function JumpChips({ items }) {
   const { theme } = useSite(); const pal = usePal(theme);
   return (
@@ -57,13 +88,7 @@ export function PatternsIndex() {
       {GROUPS.map((g) => (
         <Section key={g.id} id={g.id} title={g.title} lead={GROUP_INTROS[g.id] || g.blurb}>
           <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-            {g.patterns.map((p) => (
-              <IndexBlock key={p.id} id={p.slug} title={p.title} line={p.docs.useWhen || p.desc} detail={`/patterns/${p.slug}`}>
-                <PreviewFrame toolbar={false} housed={p.housed} align="top" minHeight={Math.max(280, (p.height || 480) - 72)}>
-                  {p.Component && <p.Component />}
-                </PreviewFrame>
-              </IndexBlock>
-            ))}
+            {g.patterns.map((p) => <PatternBlock key={p.id} p={p} />)}
           </div>
         </Section>
       ))}
@@ -111,11 +136,7 @@ export function ComponentsIndex() {
       {groups.map(([g, list]) => (
         <Section key={g} id={gid(g)} title={g} lead={`${list.length} components`}>
           <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-            {list.map((c) => (
-              <IndexBlock key={c.slug} id={c.slug} title={c.name} tags={c.tags || []} line={c.description} detail={`/components/${c.slug}`}>
-                <ComponentPreview slug={c.slug} />
-              </IndexBlock>
-            ))}
+            {list.map((c) => <ComponentBlock key={c.slug} c={c} />)}
           </div>
         </Section>
       ))}
