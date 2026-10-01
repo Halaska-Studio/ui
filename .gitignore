@@ -28,3 +28,6 @@ docs/internal/
 
 # project notes for the studio's own coding agents (not published)
 CLAUDE.md
+
+# licensed web font: deployed from the local folder, never published in the repo
+halaska-kit/public/fonts/FKRaster*
