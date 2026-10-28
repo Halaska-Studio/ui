@@ -1,6 +1,12 @@
 // Dated list of what shipped. Newest first. Pure data.
-export const VERSION = "1.0.0";
+export const VERSION = "1.1.0";
 export const CHANGELOG = [
+  { date: "2026-10-28", title: "Agent surfaces and generative UI", items: [
+    "Thirteen new components, all prop-driven: Task List, Question Card, Reasoning Steps, Trace Waterfall, Chat Input, Message, Conversation, Chat History, Result Cards, Document Agent, Media Generation, Attachment and Marker.",
+    "The components index is grouped by how an AI product is built: Agents, Generative UI, Content, then the base layer.",
+    "New and Updated badges in the sidebar.",
+    "The index previews adapt to narrow widths.",
+  ] },
   { date: "2026-09-30", title: "A landing page and a browser", items: [
     "The kit is now called Halaska UI.",
     "The site is now a landing page plus a docs-style browser, with a page for every screen, pattern and component.",

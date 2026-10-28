@@ -55,7 +55,7 @@ const NON_COMPONENT = new Set(["tokens", "motion", "interactiveBase", "usePal", 
 let out = `# Halaska UI: API reference for coding agents
 # https://ui.halaska.com · file: halaska-kit.jsx · by Halaska
 
-Halaska UI is a single-file React UI kit for AI products: 40 UX patterns + 77 styled
+Halaska UI is a single-file React UI kit for AI products: 40 UX patterns + 90 styled
 components, inline styles, no CSS/Tailwind setup. Deps: react and react-dom only (no chart library).
 Fonts (Geist) and keyframes self-inject on import. File begins with "use client" (Next.js-safe).
 

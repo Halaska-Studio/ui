@@ -33,6 +33,7 @@
   "pat-message": {
    "components": [
     "agent-glyph",
+    "message",
     "stack",
     "typography"
    ],
@@ -70,6 +71,7 @@
   },
   "pat-model-context": {
    "components": [
+    "conversation",
     "separator",
     "stack",
     "typography"
@@ -603,6 +605,12 @@
     "chat"
    ]
   },
+  "message": {
+   "patterns": [
+    "pat-message"
+   ],
+   "screens": []
+  },
   "label": {
    "patterns": [
     "pat-streaming",
@@ -637,6 +645,14 @@
    "patterns": [
     "pat-chat",
     "pat-artifact"
+   ],
+   "screens": [
+    "canvas"
+   ]
+  },
+  "conversation": {
+   "patterns": [
+    "pat-model-context"
    ],
    "screens": [
     "canvas"
@@ -884,6 +900,7 @@
     "accordion",
     "badge",
     "button",
+    "conversation",
     "dot-grid",
     "orb",
     "radio-group",

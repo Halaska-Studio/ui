@@ -10,6 +10,7 @@ import { Button, Kbd, usePal, tokens, motion, interactiveBase } from "../kit";
 import { useSite } from "../state";
 import { Link, useLocation } from "../router";
 import { GROUPS, COMPONENTS, SCREENS } from "../registry";
+import { freshness } from "../data/components/index.js";
 import { TagPill, tagTone } from "../ui/bits";
 
 export const REPO_URL = "https://github.com/Halaska-Studio/ui";
@@ -108,7 +109,7 @@ export function SideNav({ onNavigate, onCollapse }) {
           <NavLink pal={pal} to="/components" active={is("/components")}>All components</NavLink>
           {COMPONENTS.map((c) => (
             <NavLink key={c.slug} pal={pal} to={`/components#${c.slug}`} active={isItem("/components", c.slug)}
-              right={(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}>{c.name}</NavLink>
+              right={[...(c.tags || []), freshness(c)].filter(Boolean).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}>{c.name}</NavLink>
           ))}
         </Accordion>
         <Accordion id="start" title="Get started" open={!!open.start} onToggle={toggle("start")} pal={pal}>

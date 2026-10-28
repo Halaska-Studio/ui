@@ -4,7 +4,7 @@ import { usePal, tokens, motion, interactiveBase, Text } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { Link, useLocation } from "../router";
 import { GROUPS, PATTERNS, COMPONENTS, SCREENS, COUNTS } from "../registry";
-import { COMPONENT_GROUPS } from "../data/components/index.js";
+import { COMPONENT_GROUPS, freshness } from "../data/components/index.js";
 import { GROUP_INTROS } from "../data/patterns/index.js";
 import { PARITY, CONVERSATION_MAP, PARITY_SUMMARY } from "../data/parity.js";
 import { PreviewFrame, ComponentPreview, useScrollSpy } from "../ui/PreviewFrame";
@@ -59,7 +59,7 @@ function PatternBlock({ p }) {
 function ComponentBlock({ c }) {
   const minHeight = useIndexHeight(260);
   return (
-    <IndexBlock id={c.slug} title={c.name} tags={c.tags || []} line={c.description} detail={`/components/${c.slug}`}>
+    <IndexBlock id={c.slug} title={c.name} tags={[...(c.tags || []), freshness(c)].filter(Boolean)} line={c.description} detail={`/components/${c.slug}`}>
       <ComponentPreview slug={c.slug} minHeight={minHeight} />
     </IndexBlock>
   );

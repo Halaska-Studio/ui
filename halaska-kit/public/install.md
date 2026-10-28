@@ -4,7 +4,7 @@ You are a coding agent setting up Halaska UI (halaska-kit.jsx) in a project. Fol
 
 ## What it is
 
-A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 40 UX patterns and 77 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
+A single-file React UI kit for AI products by Halaska (https://halaska.com). One file gives you 40 UX patterns and 90 styled components with inline styles: no Tailwind, no CSS setup, no config. Dependencies: react and react-dom only. Fonts (Geist) and keyframes self-inject on import. The file starts with "use client", so it is safe in the Next.js app router.
 
 ## Setup
 
@@ -39,6 +39,8 @@ e. When every screen is done, give the user a short summary of what changed per 
 - UX patterns, output: ArtifactPattern, DiffViewPattern, DiffTablePattern, StructuredDataPattern, InsightCardsPattern, ComparisonPattern
 - UX patterns, ambient: TaskboardPattern, InlineAssistPattern, NudgePattern, DigestPattern, NotificationCenterPattern, CommandSearchPattern, AgentSetupPattern
 - UX patterns, agentic navigation: ContextBarPattern (a bar that resizes to the on-screen context, with tinted agent suggestions and one solid user action), SpaceDeckPattern (one fixed focus frame over a grid of agent cards; sideways between agents, up and down between spaces)
+- Agent surfaces (prop-driven components): TaskList, QuestionCard, ReasoningSteps, TraceWaterfall, ChatInput, Message, Conversation, ChatHistory
+- Generative UI (the agent answers with a widget): ResultCards, DocumentAgent, MediaGeneration; content pieces Attachment, Marker
 - AI elements: Orb (variants pulse, orbit, sweep, globe, spark; pill option), StreamingText, ThinkingIndicator, ThinkingSteps, ConfidenceBar, AISuggestionBadge, BeforeAfterToggle, CompareSlider, ZoomControl, AgentGlyph
 - Components: Text, Heading, Label, Caption, Code, Button, IconButton, ButtonGroup, LinkButton, SplitButton, TextInput, TextArea, Select, Checkbox, Radio, RadioGroup, SwitchToggle, Slider, SpringSlider, SpringToggle, SegmentedControl, InputOTP, InputGroup, Combobox, Calendar, DatePicker, Chip, Toggle, ToggleGroup, SearchInput, Choicebox, CopyInput, Rating, Card, CardHeader, Divider, Stack, Badge, Tag, StatusBadge, StatusDot, Avatar, AvatarGroup, ListItem, Stat, Table, DataTable, ScrollArea, Pagination, MiddleTruncate, Kbd, Progress, ProgressCircle, Skeleton, Spinner, Toast, AlertBanner, EmptyState, Stepper, Breadcrumb, Tabs, SubtleTabs, Accordion, Collapsible, ContextMenu, Menubar, CommandPalette, CommandMenu, Dialog, AlertDialog, FormDialog, CardDialog, Sheet, Popover, DropdownMenu, Tooltip, HoverCard, Snippet, FileTree, BrowserFrame, PhoneFrame, Sparkline
 

@@ -3520,5 +3520,817 @@
    "default": "\"desktop\"",
    "description": ""
   }
+ ],
+ "Attachment": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "name",
+   "type": "string",
+   "default": "\"refund-policy.pdf\"",
+   "description": "File name, truncated in the middle of the row when long (default: \"refund-policy.pdf\")"
+  },
+  {
+   "name": "kind",
+   "type": "\"image\" | \"pdf\" | \"doc\" | \"sheet\" | \"code\" | \"audio\" | \"file\"",
+   "default": "\"pdf\"",
+   "description": "Picks the two or three letter glyph and its tint (default: \"pdf\")"
+  },
+  {
+   "name": "size",
+   "type": "string",
+   "default": "\"1.2 MB\"",
+   "description": "Human size shown beside the name, for example \"1.2 MB\" (default: \"1.2 MB\")"
+  },
+  {
+   "name": "status",
+   "type": "\"uploading\" | \"ready\" | \"failed\"",
+   "default": "\"ready\"",
+   "description": "Ready shows the glyph, uploading shows progress, failed tints the tile and says so (default: \"ready\")"
+  },
+  {
+   "name": "progress",
+   "type": "number",
+   "default": "0",
+   "description": "0 to 100 while uploading (default: 0)"
+  },
+  {
+   "name": "thumbnail",
+   "type": "string",
+   "description": "Image url, used in the tile for kind \"image\" only (default: undefined)"
+  },
+  {
+   "name": "variant",
+   "type": "\"chip\" | \"card\"",
+   "default": "\"chip\"",
+   "description": "Chip is one line for a composer; card adds a second line and a progress bar (default: \"chip\")"
+  },
+  {
+   "name": "onRemove",
+   "type": "() => void",
+   "description": "Shows a labelled remove button and fires when it is pressed"
+  },
+  {
+   "name": "onOpen",
+   "type": "() => void",
+   "description": "Makes the name a button that fires when pressed"
+  }
+ ],
+ "ChatHistory": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "threads",
+   "type": "{ id: string, title: string, preview?: string, time: string | Date, pinned?: boolean, unread?: boolean }[]",
+   "default": "CHATHIST_THREADS",
+   "description": "Threads to list; `time` is an ISO string or a Date (default: CHATHIST_THREADS)"
+  },
+  {
+   "name": "activeId",
+   "type": "string",
+   "description": "Controlled selection; leave undefined and the list keeps its own"
+  },
+  {
+   "name": "onSelect",
+   "type": "(id: string) => void",
+   "description": "Fires when a row is picked"
+  },
+  {
+   "name": "onNew",
+   "type": "() => void",
+   "description": "Shows the new-thread button in the header and fires when it is pressed"
+  },
+  {
+   "name": "onRename",
+   "type": "(id: string, title: string) => void",
+   "description": "Enables Rename in the row menu; the new name is typed inline"
+  },
+  {
+   "name": "onDelete",
+   "type": "(id: string) => void",
+   "description": "Enables Delete in the row menu"
+  },
+  {
+   "name": "onPin",
+   "type": "(id: string) => void",
+   "description": "Enables Pin / Unpin in the row menu"
+  },
+  {
+   "name": "search",
+   "type": "boolean",
+   "default": "true",
+   "description": "Shows a search field that filters titles and previews (default: true)"
+  },
+  {
+   "name": "groupBy",
+   "type": "\"day\" | \"none\"",
+   "default": "\"day\"",
+   "description": "Group rows under Pinned, Today, Yesterday and Earlier headings, or list them flat (default: \"day\")"
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Chats\"",
+   "description": "Header label (default: \"Chats\")"
+  },
+  {
+   "name": "width",
+   "type": "number",
+   "default": "280",
+   "description": "Width of the list in px (default: 280)"
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "420",
+   "description": "Height of the list in px; content scrolls inside it (default: 420)"
+  }
+ ],
+ "ChatInput": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "value",
+   "type": "string",
+   "description": "Controlled text; leave undefined and the field keeps its own state"
+  },
+  {
+   "name": "onChange",
+   "type": "(text: string) => void",
+   "description": "Fires on every edit, and with \"\" after a send"
+  },
+  {
+   "name": "onSubmit",
+   "type": "(text: string) => void",
+   "description": "Fires with the trimmed text on Enter or the send button"
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "\"Ask Alpha about your inbox…\"",
+   "description": "Placeholder and accessible name of the field (default: \"Ask Alpha about your inbox…\")"
+  },
+  {
+   "name": "suggestions",
+   "type": "string[]",
+   "default": "CHATIN_SUGGESTIONS",
+   "description": "Prompt chips above the field; [] hides the row (default: CHATIN_SUGGESTIONS)"
+  },
+  {
+   "name": "onSuggestion",
+   "type": "(text: string) => void",
+   "description": "Fires when a chip is picked; without it the chip fills the field"
+  },
+  {
+   "name": "attachments",
+   "type": "{ id: string, name: string, kind?: string }[]",
+   "default": "[]",
+   "description": "Files shown as removable chips (default: [])"
+  },
+  {
+   "name": "onAttach",
+   "type": "() => void",
+   "description": "Shows the attach button and fires when it is pressed"
+  },
+  {
+   "name": "onRemoveAttachment",
+   "type": "(id: string) => void",
+   "description": "Fires from an attachment chip's remove control"
+  },
+  {
+   "name": "models",
+   "type": "{ id: string, label: string }[]",
+   "default": "CHATIN_MODELS",
+   "description": "Choices in the model pill; [] hides the pill (default: CHATIN_MODELS)"
+  },
+  {
+   "name": "model",
+   "type": "string",
+   "description": "Controlled model id; leave undefined and the pill keeps its own state"
+  },
+  {
+   "name": "onModelChange",
+   "type": "(id: string) => void",
+   "description": "Fires when a model is picked"
+  },
+  {
+   "name": "streaming",
+   "type": "boolean",
+   "default": "false",
+   "description": "Turns the send button into Stop (default: false)"
+  },
+  {
+   "name": "onStop",
+   "type": "() => void",
+   "description": "Fires when Stop is pressed"
+  },
+  {
+   "name": "onVoice",
+   "type": "() => void",
+   "description": "Shows the mic button and fires when it is pressed"
+  },
+  {
+   "name": "disabled",
+   "type": "boolean",
+   "default": "false",
+   "description": "Disables the field and every control (default: false)"
+  },
+  {
+   "name": "maxRows",
+   "type": "number",
+   "default": "6",
+   "description": "Rows the field grows to before it scrolls (default: 6)"
+  }
+ ],
+ "Conversation": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "messages",
+   "type": "{ id: string, role: \"user\" | \"agent\" | \"system\", text?: string, time?: string, status?: string, sources?: object[], actions?: object[], streaming?: boolean, name?: string }[]",
+   "default": "CONV_MESSAGES",
+   "description": "Turns in order; every field is passed on to Message (default: CONV_MESSAGES)"
+  },
+  {
+   "name": "renderMessage",
+   "type": "(message: object, index: number) => node",
+   "description": "Replaces the default Message for a turn"
+  },
+  {
+   "name": "children",
+   "type": "node",
+   "description": "Turns rendered instead of `messages`, for fully custom content"
+  },
+  {
+   "name": "autoScroll",
+   "type": "boolean",
+   "default": "true",
+   "description": "Follow new content while the reader is at the bottom; scrolling up pauses it and shows a jump pill (default: true)"
+  },
+  {
+   "name": "jumpLabel",
+   "type": "string",
+   "default": "\"Jump to latest\"",
+   "description": "Text of the jump pill (default: \"Jump to latest\")"
+  },
+  {
+   "name": "typing",
+   "type": "boolean",
+   "default": "false",
+   "description": "Shows the agent's thinking indicator after the last turn (default: false)"
+  },
+  {
+   "name": "typingLabel",
+   "type": "string",
+   "default": "\"Thinking\"",
+   "description": "Label beside the thinking dots (default: \"Thinking\")"
+  },
+  {
+   "name": "height",
+   "type": "number",
+   "default": "420",
+   "description": "Height of the log in px (default: 420)"
+  },
+  {
+   "name": "frame",
+   "type": "boolean",
+   "default": "true",
+   "description": "Draw a hairline border and rounded corners around the log (default: true)"
+  },
+  {
+   "name": "emptyState",
+   "type": "node",
+   "description": "Shown when there are no turns; the default invites the first question"
+  },
+  {
+   "name": "compact",
+   "type": "boolean",
+   "default": "false",
+   "description": "Passed on to every Message (default: false)"
+  }
+ ],
+ "DocumentAgent": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Refund policy · runbook\"",
+   "description": "Document name shown in the header (default: \"Refund policy · runbook\")"
+  },
+  {
+   "name": "agentName",
+   "type": "string",
+   "default": "\"Alpha\"",
+   "description": "Name of the agent proposing the edits (default: \"Alpha\")"
+  },
+  {
+   "name": "blocks",
+   "type": "{ id: string, type: \"h1\" | \"h2\" | \"p\" | \"li\", text: string }[]",
+   "default": "DOCAGENT_BLOCKS",
+   "description": "The document as blocks (default: DOCAGENT_BLOCKS)"
+  },
+  {
+   "name": "edits",
+   "type": "{ id: string, blockId: string, kind: \"replace\" | \"insert\" | \"delete\", text?: string, reason?: string }[]",
+   "default": "DOCAGENT_EDITS",
+   "description": "Suggested edits; insert places a new block after blockId (default: DOCAGENT_EDITS)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Edits arrive one by one every `stepMs`; false shows them all at once with no timers (default: true)"
+  },
+  {
+   "name": "stepMs",
+   "type": "number",
+   "default": "1400",
+   "description": "Milliseconds between arriving edits (default: 1400)"
+  },
+  {
+   "name": "acceptAllLabel",
+   "type": "string",
+   "default": "\"Accept all\"",
+   "description": "Header action label (default: \"Accept all\")"
+  },
+  {
+   "name": "onAccept",
+   "type": "(edit) => void",
+   "description": "Fires when one edit is accepted"
+  },
+  {
+   "name": "onReject",
+   "type": "(edit) => void",
+   "description": "Fires when one edit is rejected"
+  },
+  {
+   "name": "onAcceptAll",
+   "type": "() => void",
+   "description": "Fires when every pending edit is accepted from the header"
+  }
+ ],
+ "Marker": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "n",
+   "type": "number | string",
+   "default": "1",
+   "description": "The marker's number or label (default: 1)"
+  },
+  {
+   "name": "source",
+   "type": "{ name: string, title?: string, url?: string, snippet?: string }",
+   "default": "MARKER_SOURCE",
+   "description": "What the marker points at; shown in the card on hover or focus (default: MARKER_SOURCE)"
+  },
+  {
+   "name": "variant",
+   "type": "\"number\" | \"dot\" | \"name\"",
+   "default": "\"number\"",
+   "description": "Number shows `n` in mono, dot shows a small accent dot, name shows the source name (default: \"number\")"
+  },
+  {
+   "name": "onOpen",
+   "type": "(source) => void",
+   "description": "Fires on click or Enter; the card stays a hover and focus preview"
+  }
+ ],
+ "MediaGeneration": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "prompt",
+   "type": "string",
+   "default": "MEDIAGEN_PROMPT",
+   "description": "The prompt that produced the media, shown above the frame (default: MEDIAGEN_PROMPT)"
+  },
+  {
+   "name": "status",
+   "type": "\"queued\" | \"generating\" | \"done\" | \"failed\"",
+   "default": "\"generating\"",
+   "description": "Current state when autoplay is off (default: \"generating\")"
+  },
+  {
+   "name": "progress",
+   "type": "number",
+   "default": "42",
+   "description": "0 to 100 while generating, when autoplay is off (default: 42)"
+  },
+  {
+   "name": "etaSeconds",
+   "type": "number",
+   "default": "9",
+   "description": "Seconds left, shown beside the progress bar (default: 9)"
+  },
+  {
+   "name": "src",
+   "type": "string",
+   "description": "Image url once done; without one a neutral tile placeholder renders (default: undefined)"
+  },
+  {
+   "name": "aspect",
+   "type": "\"1:1\" | \"4:3\" | \"16:9\" | \"9:16\"",
+   "default": "\"16:9\"",
+   "description": "Frame proportion, kept in every state (default: \"16:9\")"
+  },
+  {
+   "name": "variations",
+   "type": "number",
+   "default": "1",
+   "description": "Number of frames shown when done (default: 1)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Walks queued, generating and done on its own over `generateMs`; false renders `status` with no timers (default: true)"
+  },
+  {
+   "name": "generateMs",
+   "type": "number",
+   "default": "4200",
+   "description": "Length of the generating phase in autoplay (default: 4200)"
+  },
+  {
+   "name": "error",
+   "type": "string",
+   "default": "\"The image service timed out. Nothing was charged.\"",
+   "description": "Message shown in the failed state (default: \"The image service timed out. Nothing was charged.\")"
+  },
+  {
+   "name": "onRegenerate",
+   "type": "() => void",
+   "description": "Fires from Regenerate and from Retry"
+  },
+  {
+   "name": "onDownload",
+   "type": "() => void",
+   "description": "Fires from Download"
+  },
+  {
+   "name": "onVariation",
+   "type": "(index: number) => void",
+   "description": "Fires when a variation frame is chosen"
+  }
+ ],
+ "Message": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "role",
+   "type": "\"user\" | \"agent\" | \"system\"",
+   "default": "\"agent\"",
+   "description": "Who is speaking; sets alignment, bubble and default avatar (default: \"agent\")"
+  },
+  {
+   "name": "text",
+   "type": "string",
+   "default": "MSG_DEMO_TEXT",
+   "description": "The message as plain text (default: MSG_DEMO_TEXT); `children` replaces it with any content"
+  },
+  {
+   "name": "children",
+   "type": "node",
+   "description": "Rich content for the turn; wins over `text`"
+  },
+  {
+   "name": "name",
+   "type": "string",
+   "description": "Speaker name; shown above an agent turn, used for the user's default avatar"
+  },
+  {
+   "name": "time",
+   "type": "string",
+   "description": "Timestamp label shown with the turn, for example \"2:47 PM\""
+  },
+  {
+   "name": "avatar",
+   "type": "node",
+   "description": "Replaces the default avatar; `null` hides it. Default is AgentGlyph for the agent and Avatar with the name for the user"
+  },
+  {
+   "name": "status",
+   "type": "\"sending\" | \"sent\" | \"failed\"",
+   "description": "Delivery state of a user turn; failed keeps the actions visible so Retry is reachable"
+  },
+  {
+   "name": "actions",
+   "type": "{ label: string, icon?: node | \"copy\" | \"retry\" | \"up\" | \"down\" | \"check\" | \"edit\", onClick: () => void, active?: boolean }[]",
+   "default": "[]",
+   "description": "Quiet actions shown on hover and focus"
+  },
+  {
+   "name": "streaming",
+   "type": "boolean",
+   "default": "false",
+   "description": "Shows a caret at the end of the text while it arrives (default: false)"
+  },
+  {
+   "name": "sources",
+   "type": "{ name: string, href?: string }[]",
+   "default": "[]",
+   "description": "Source chips under an agent turn"
+  },
+  {
+   "name": "compact",
+   "type": "boolean",
+   "default": "false",
+   "description": "Tighter spacing, smaller avatar and type (default: false)"
+  }
+ ],
+ "QuestionCard": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Before Alpha continues\"",
+   "description": "Header line beside the agent mark (default: \"Before Alpha continues\")"
+  },
+  {
+   "name": "questions",
+   "type": "{ id: string, question: string, context?: string, options: { id: string, label: string, sub?: string }[], allowOther?: boolean }[]",
+   "default": "QCARD_QUESTIONS",
+   "description": "Questions in order (default: QCARD_QUESTIONS)"
+  },
+  {
+   "name": "skipLabel",
+   "type": "string",
+   "default": "\"Skip, use defaults\"",
+   "description": "Ghost action that hands the decision back to the agent (default: \"Skip, use defaults\")"
+  },
+  {
+   "name": "nextLabel",
+   "type": "string",
+   "default": "\"Next\"",
+   "description": "Primary action between questions (default: \"Next\")"
+  },
+  {
+   "name": "doneLabel",
+   "type": "string",
+   "default": "\"Continue\"",
+   "description": "Primary action on the last question (default: \"Continue\")"
+  },
+  {
+   "name": "otherLabel",
+   "type": "string",
+   "default": "\"Other\"",
+   "description": "Label of the free-text option when a question allows it (default: \"Other\")"
+  },
+  {
+   "name": "otherPlaceholder",
+   "type": "string",
+   "default": "\"Tell Alpha what you would prefer\"",
+   "description": "Placeholder of the free-text field (default: \"Tell Alpha what you would prefer\")"
+  },
+  {
+   "name": "skippedText",
+   "type": "string",
+   "default": "\"Skipped. Alpha will go with its defaults.\"",
+   "description": "Line shown after skipping (default: \"Skipped. Alpha will go with its defaults.\")"
+  },
+  {
+   "name": "onAnswer",
+   "type": "(questionId: string, optionId: string) => void",
+   "description": "Fires when an option is picked; \"other\" for the free-text option"
+  },
+  {
+   "name": "onComplete",
+   "type": "(answers: Record<string, { optionId: string, label: string }>) => void",
+   "description": "Fires once with every answer when the last question is confirmed"
+  },
+  {
+   "name": "onSkip",
+   "type": "() => void",
+   "description": "Fires when the user skips the remaining questions"
+  }
+ ],
+ "ReasoningSteps": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "steps",
+   "type": "{ id: string, kind: \"thought\" | \"search\" | \"read\" | \"tool\" | \"write\", label: string, detail?: string, durationMs?: number }[]",
+   "default": "REASON_STEPS",
+   "description": "Steps in order; each shows for its durationMs, or stepMs when absent (default: REASON_STEPS)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Stream the steps in on mount; false renders the finished trace with no timers (default: true)"
+  },
+  {
+   "name": "stepMs",
+   "type": "number",
+   "default": "900",
+   "description": "Fallback duration for a step without durationMs (default: 900)"
+  },
+  {
+   "name": "runningLabel",
+   "type": "string",
+   "default": "\"Thinking\"",
+   "description": "Header text while running (default: \"Thinking\")"
+  },
+  {
+   "name": "summaryLabel",
+   "type": "string | (seconds: number) => string",
+   "description": "Header text once done; a function receives the total seconds (default: `Thought for ${seconds} seconds`)"
+  },
+  {
+   "name": "collapsed",
+   "type": "boolean",
+   "default": "true",
+   "description": "Fold to the summary line once done; false leaves the steps open (default: true)"
+  },
+  {
+   "name": "collapseDelayMs",
+   "type": "number",
+   "default": "700",
+   "description": "Pause between the last step and the fold (default: 700)"
+  },
+  {
+   "name": "onDone",
+   "type": "(seconds: number) => void",
+   "description": "Fires when the last step finishes (autoplay only)"
+  },
+  {
+   "name": "onToggle",
+   "type": "(open: boolean) => void",
+   "description": "Fires when the trace opens or folds, by click or by the automatic fold"
+  }
+ ],
+ "ResultCards": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "items",
+   "type": "{ id: string, title: string, subtitle?: string, meta?: string, badge?: string, image?: string | ReactNode, href?: string, actionLabel?: string, onAction?: (item) => void }[]",
+   "default": "RESULT_ITEMS",
+   "description": "Cards to show; without an image a neutral placeholder tile renders (default: RESULT_ITEMS)"
+  },
+  {
+   "name": "layout",
+   "type": "\"row\" | \"grid\"",
+   "default": "\"row\"",
+   "description": "row scrolls horizontally with snap points, grid wraps into `columns` (default: \"row\")"
+  },
+  {
+   "name": "columns",
+   "type": "number",
+   "default": "2",
+   "description": "Columns in grid layout on wide containers; narrow containers collapse to one (default: 2)"
+  },
+  {
+   "name": "intro",
+   "type": "string",
+   "default": "\"Four support tools fit Northwind's stack. Helpdesk Pro is the closest match.\"",
+   "description": "One line above the cards, written as the agent's sentence (default: \"Four support tools fit Northwind's stack. Helpdesk Pro is the closest match.\")"
+  },
+  {
+   "name": "actionLabel",
+   "type": "string",
+   "default": "\"Choose\"",
+   "description": "Label of each card's outline action unless the item sets its own (default: \"Choose\")"
+  },
+  {
+   "name": "selectedLabel",
+   "type": "string",
+   "default": "\"Chosen\"",
+   "description": "Action label on the selected card (default: \"Chosen\")"
+  },
+  {
+   "name": "onSelect",
+   "type": "(item) => void",
+   "description": "Fires when a card's title or action is activated; the card is also marked as selected"
+  }
+ ],
+ "TaskList": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Clearing the support backlog\"",
+   "description": "Header text (default: \"Clearing the support backlog\")"
+  },
+  {
+   "name": "tasks",
+   "type": "{ id: string, label: string, status: \"todo\" | \"running\" | \"done\" | \"failed\" | \"blocked\", detail?: string }[]",
+   "default": "TASKLIST_TASKS",
+   "description": "The job's tasks in order; copied into state on mount (default: TASKLIST_TASKS)"
+  },
+  {
+   "name": "autoplay",
+   "type": "boolean",
+   "default": "true",
+   "description": "Advance statuses on a timer: the running task finishes and the next to-do starts, until none are left (default: true)"
+  },
+  {
+   "name": "stepMs",
+   "type": "number",
+   "default": "1400",
+   "description": "Milliseconds between autoplay steps (default: 1400)"
+  },
+  {
+   "name": "collapsible",
+   "type": "boolean",
+   "default": "false",
+   "description": "The header toggles the list; the count and bar stay visible (default: false)"
+  },
+  {
+   "name": "defaultOpen",
+   "type": "boolean",
+   "default": "true",
+   "description": "Initial list state when collapsible (default: true)"
+  },
+  {
+   "name": "retryLabel",
+   "type": "string",
+   "default": "\"Retry\"",
+   "description": "Label of the button on a failed task (default: \"Retry\")"
+  },
+  {
+   "name": "onChange",
+   "type": "(tasks: Task[]) => void",
+   "description": "Fires with the whole list whenever a status changes, by autoplay or retry"
+  },
+  {
+   "name": "onRetry",
+   "type": "(task: Task) => void",
+   "description": "Fires when a failed task's retry is pressed; the task is set to running"
+  },
+  {
+   "name": "onToggle",
+   "type": "(open: boolean) => void",
+   "description": "Fires when a collapsible list opens or closes"
+  }
+ ],
+ "TraceWaterfall": [
+  {
+   "name": "theme",
+   "type": "\"light\" | \"dark\"",
+   "description": "Palette override. Defaults to the nearest ThemeProvider."
+  },
+  {
+   "name": "spans",
+   "type": "{ id: string, name: string, kind: \"model\" | \"tool\" | \"wait\" | \"handoff\" | \"failed\", startMs: number, endMs: number, parentId?: string, tokens?: number, costUsd?: number, model?: string }[]",
+   "default": "TRACE_SPANS",
+   "description": "Spans of the run; children nest under parentId (default: TRACE_SPANS)"
+  },
+  {
+   "name": "totals",
+   "type": "{ durationMs?: number, costUsd?: number, tokens?: number, llmCalls?: number, toolCalls?: number, errors?: number }",
+   "description": "Overrides for the stat row; anything left out is computed from the spans"
+  },
+  {
+   "name": "title",
+   "type": "string",
+   "default": "\"Refund sweep · run 4f2a\"",
+   "description": "Header text (default: \"Refund sweep · run 4f2a\")"
+  },
+  {
+   "name": "onSelect",
+   "type": "(span: Span) => void",
+   "description": "Fires when a row is clicked or activated with the keyboard"
+  }
  ]
 }

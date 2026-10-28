@@ -14168,6 +14168,2649 @@ export default function HalaskaKit() {
 // ─── shadcn/ui NAMES ──────────────────────────────────────────
 // Aliases so people and coding agents find the names they expect. The
 // original names stay exported; nothing is renamed.
+// ─── Attachment (added 2026-10-28) ───
+// ─── Attachment: a file chip or card for things attached to a message or a composer ───
+
+const ATTACH_KINDS = {
+  image: { glyph: "IMG", tone: "accent" },
+  pdf: { glyph: "PDF", tone: "danger" },
+  doc: { glyph: "DOC", tone: "accent" },
+  sheet: { glyph: "CSV", tone: "success" },
+  code: { glyph: "JS", tone: "neutral" },
+  audio: { glyph: "WAV", tone: "warning" },
+  file: { glyph: "FILE", tone: "neutral" },
+};
+
+function AttachmentPart({ kind, thumbnail, name, status, progress, size, theme }) {
+  const pal = usePal(theme);
+  const k = ATTACH_KINDS[kind] || ATTACH_KINDS.file;
+  const tones = {
+    accent: { bg: pal.accentBg, fg: pal.accentText },
+    danger: { bg: pal.dangerBg, fg: pal.danger },
+    success: { bg: pal.successBg, fg: pal.success },
+    warning: { bg: pal.warningBg, fg: pal.warning },
+    neutral: { bg: pal.bgMuted, fg: pal.textSecondary },
+  };
+  const t = status === "failed" ? tones.danger : tones[k.tone];
+  const showThumb = kind === "image" && thumbnail && status !== "failed";
+  return (
+    <div aria-hidden={!showThumb} style={{
+      width: size, height: size, borderRadius: size >= 36 ? tokens.radius.sm : tokens.radius.xs, flexShrink: 0, overflow: "hidden",
+      background: showThumb ? pal.bgMuted : t.bg, color: t.fg,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontFamily: tokens.font.mono, fontSize: size >= 36 ? 10 : 8, fontWeight: tokens.weight.semibold, letterSpacing: "0.02em",
+      transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      {status === "uploading" ? (
+        <ProgressCircle value={progress} size={size >= 36 ? 22 : 16} stroke={2} theme={theme} />
+      ) : showThumb ? (
+        <img src={thumbnail} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : k.glyph}
+    </div>
+  );
+}
+
+/**
+ * Attachment: a file chip or card for things attached to a message or a composer.
+ * @prop name {string} File name, truncated in the middle of the row when long (default: "refund-policy.pdf")
+ * @prop kind {"image" | "pdf" | "doc" | "sheet" | "code" | "audio" | "file"} Picks the two or three letter glyph and its tint (default: "pdf")
+ * @prop size {string} Human size shown beside the name, for example "1.2 MB" (default: "1.2 MB")
+ * @prop status {"uploading" | "ready" | "failed"} Ready shows the glyph, uploading shows progress, failed tints the tile and says so (default: "ready")
+ * @prop progress {number} 0 to 100 while uploading (default: 0)
+ * @prop thumbnail {string} Image url, used in the tile for kind "image" only (default: undefined)
+ * @prop variant {"chip" | "card"} Chip is one line for a composer; card adds a second line and a progress bar (default: "chip")
+ * @prop onRemove {() => void} Shows a labelled remove button and fires when it is pressed
+ * @prop onOpen {() => void} Makes the name a button that fires when pressed
+ */
+function Attachment({
+  theme: themeProp,
+  name = "refund-policy.pdf",
+  kind = "pdf",
+  size = "1.2 MB",
+  status = "ready",
+  progress = 0,
+  thumbnail,
+  variant = "chip",
+  onRemove,
+  onOpen,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const card = variant === "card";
+  const pct = Math.max(0, Math.min(100, progress));
+  const second = status === "uploading" ? `Uploading · ${Math.round(pct)}%`
+    : status === "failed" ? "Upload failed"
+      : size;
+
+  const Name = onOpen ? "button" : "span";
+  const nameProps = onOpen ? { type: "button", onClick: onOpen } : {};
+  const nameStyle = {
+    ...(onOpen ? { ...interactiveBase, background: "transparent", padding: 0, textAlign: "left" } : {}),
+    ...(card ? tokens.type.base : tokens.type.sm), fontWeight: tokens.weight.medium, fontFamily: tokens.font.sans,
+    color: status === "failed" ? pal.danger : pal.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+    display: "block", minWidth: 0, maxWidth: "100%",
+    transition: `color ${motion.smooth} ${motion.easeInOut}`,
+  };
+
+  const remove = onRemove && (
+    <IconButton theme={theme} size={card ? 28 : 22} label={`Remove ${name}`} onClick={onRemove}
+      icon={<span aria-hidden="true" style={{ fontSize: card ? 14 : 12, lineHeight: 1 }}>×</span>}
+      style={{ borderRadius: tokens.radius.sm, flexShrink: 0, color: hover ? pal.text : pal.textTertiary }} />
+  );
+
+  if (!card) {
+    return (
+      <div role="group" aria-label={`${name}, ${second}`}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 8, maxWidth: "100%", boxSizing: "border-box",
+          height: 34, padding: `0 ${onRemove ? 6 : 10}px 0 6px`, borderRadius: tokens.radius.md,
+          background: pal.bgElevated, border: `1px solid ${status === "failed" ? pal.danger + "66" : pal.border}`,
+          fontFamily: tokens.font.sans, transition: `all ${motion.smooth} ${motion.easeInOut}`,
+        }}>
+        <AttachmentPart kind={kind} thumbnail={thumbnail} name={name} status={status} progress={pct} size={22} theme={theme} />
+        <Name {...nameProps} style={{ ...nameStyle, maxWidth: 160 }}>{name}</Name>
+        <span style={{ ...tokens.type.xs, fontFamily: tokens.font.mono, color: status === "failed" ? pal.danger : pal.textTertiary, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{second}</span>
+        {remove}
+      </div>
+    );
+  }
+
+  return (
+    <div role="group" aria-label={`${name}, ${second}`}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        width: 280, maxWidth: "100%", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12,
+        padding: 10, borderRadius: tokens.radius.md,
+        background: pal.bgElevated, border: `1px solid ${status === "failed" ? pal.danger + "66" : pal.border}`,
+        boxShadow: `0 1px 4px ${pal.shadow}`, fontFamily: tokens.font.sans,
+        transition: `all ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+      <AttachmentPart kind={kind} thumbnail={thumbnail} name={name} status={status} progress={pct} size={40} theme={theme} />
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+        <Name {...nameProps} style={nameStyle}>{name}</Name>
+        <span style={{ ...tokens.type.xs, fontFamily: tokens.font.sans, color: status === "failed" ? pal.danger : pal.textTertiary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
+          {status === "uploading" ? second : `${(ATTACH_KINDS[kind] || ATTACH_KINDS.file).glyph} · ${second}`}
+        </span>
+        <div style={{ height: 3, marginTop: 2, opacity: status === "uploading" ? 1 : 0, transition: `opacity ${motion.normal} ${motion.easeInOut}` }}>
+          {status === "uploading" && <Progress value={pct} height={3} theme={theme} />}
+        </div>
+      </div>
+      {remove}
+    </div>
+  );
+}
+
+// ─── ChatHistory (added 2026-10-28) ───
+// ─── AGENTS · ChatHistory: the sidebar list of past threads ──
+// Rows are buttons; a quiet overflow menu (rename, pin, delete) appears on
+// hover and focus; rename happens inline; pinned threads sit first.
+
+const CHATHIST_HOUR = 3600 * 1000;
+const CHATHIST_THREADS = [
+  { id: "t1", title: "Acme outage credit", preview: "Credit queued in Stripe, waiting for approval", time: new Date(Date.now() - 1.2 * CHATHIST_HOUR).toISOString(), pinned: true },
+  { id: "t2", title: "Overnight ticket summary", preview: "14 new, 3 need a human", time: new Date(Date.now() - 3 * CHATHIST_HOUR).toISOString(), unread: true },
+  { id: "t3", title: "Lumen Labs renewal prep", preview: "Pulled usage and the open Linear issues", time: new Date(Date.now() - 7 * CHATHIST_HOUR).toISOString() },
+  { id: "t4", title: "Fjord Health SSO question", preview: "Runbook found in Notion, reply drafted", time: new Date(Date.now() - 27 * CHATHIST_HOUR).toISOString() },
+  { id: "t5", title: "Brightline refund cap", preview: "Cap is $250 per incident", time: new Date(Date.now() - 31 * CHATHIST_HOUR).toISOString() },
+  { id: "t6", title: "Cobalt Dental onboarding", preview: "Three seats added, invite sent to Priya", time: new Date(Date.now() - 4 * 24 * CHATHIST_HOUR).toISOString() },
+  { id: "t7", title: "Idle tickets over 30 days", preview: "22 closed, 2 kept open", time: new Date(Date.now() - 9 * 24 * CHATHIST_HOUR).toISOString() },
+];
+
+const CHATHIST_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const ChatHistoryDate = (t) => (t instanceof Date ? t : new Date(t));
+const ChatHistoryDayStart = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+// "Today" | "Yesterday" | "Earlier" from a time value.
+function ChatHistoryGroupOf(t, now = new Date()) {
+  const d = ChatHistoryDate(t);
+  if (isNaN(d)) return "Earlier";
+  const diff = ChatHistoryDayStart(now) - ChatHistoryDayStart(d);
+  if (diff <= 0) return "Today";
+  if (diff <= 24 * CHATHIST_HOUR) return "Yesterday";
+  return "Earlier";
+}
+
+// Short label for the row: clock time today, weekday this week, else a date.
+function ChatHistoryTimeLabel(t, now = new Date()) {
+  const d = ChatHistoryDate(t);
+  if (isNaN(d)) return "";
+  const days = Math.round((ChatHistoryDayStart(now) - ChatHistoryDayStart(d)) / (24 * CHATHIST_HOUR));
+  if (days <= 0) {
+    const h = d.getHours(), m = d.getMinutes();
+    return `${h % 12 || 12}:${m < 10 ? "0" : ""}${m} ${h < 12 ? "AM" : "PM"}`;
+  }
+  if (days === 1) return "Yesterday";
+  if (days < 7) return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+  return `${CHATHIST_MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+
+function ChatHistoryGlyph({ name, size = 12 }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor",
+    strokeWidth: 1.25, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true,
+    style: { display: "block", flexShrink: 0 },
+  };
+  if (name === "pin") return <svg {...common}><path d="M6 2.5h4l-.5 4 2.5 2.5v1H4v-1l2.5-2.5z" /><line x1="8" y1="10" x2="8" y2="14" /></svg>;
+  if (name === "plus") return <svg {...common}><line x1="8" y1="3.5" x2="8" y2="12.5" /><line x1="3.5" y1="8" x2="12.5" y2="8" /></svg>;
+  if (name === "more") return <svg {...common} fill="currentColor" stroke="none"><circle cx="3.5" cy="8" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="12.5" cy="8" r="1.2" /></svg>;
+  return null;
+}
+
+function ChatHistoryMenu({ items, onClose, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hoverIdx, setHoverIdx] = useState(-1);
+  const ref = useRef(null);
+  useEffect(() => {
+    focusFirstItem(ref.current);
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(false); };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+  return (
+    <div ref={ref} role="menu"
+      onKeyDown={(e) => { if (e.key === "Tab") { onClose(false); return; } arrowNav(e, { horizontal: false, onEscape: () => onClose(true) }); }}
+      style={{
+        position: "absolute", top: "calc(100% - 6px)", right: 8, zIndex: 30, minWidth: 150, padding: 4,
+        borderRadius: tokens.radius.md,
+        background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+        backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+        border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 8px 24px ${pal.shadowLg}`,
+        animation: `halaska-scale-in 0.15s ${motion.easeOut} both`, transformOrigin: "top right",
+      }}>
+      {items.map((item, i) => (
+        <button key={item.label} type="button" role="menuitem"
+          onClick={() => { onClose(true); item.onClick(); }}
+          onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(-1)}
+          style={{
+            ...interactiveBase, width: "100%", textAlign: "left", ...tokens.type.sm,
+            padding: "7px 10px", borderRadius: tokens.radius.sm,
+            color: item.danger ? pal.danger : pal.text,
+            background: hoverIdx === i ? pal.bgSubtle : "transparent",
+          }}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ChatHistoryRow({ thread, active, renaming, onSelect, onRename, onPin, onDelete, onStartRename, onEndRename, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [draft, setDraft] = useState(thread.title);
+  const moreRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => { if (renaming) { setDraft(thread.title); inputRef.current?.select(); } }, [renaming, thread.title]);
+
+  const items = [];
+  if (onRename) items.push({ label: "Rename", onClick: onStartRename });
+  if (onPin) items.push({ label: thread.pinned ? "Unpin" : "Pin", onClick: () => onPin(thread.id) });
+  if (onDelete) items.push({ label: "Delete", danger: true, onClick: () => onDelete(thread.id) });
+  const showMore = items.length > 0 && !renaming && (hover || focusWithin || menu);
+
+  const commit = () => {
+    const next = draft.trim();
+    if (next && next !== thread.title) onRename(thread.id, next);
+    onEndRename();
+  };
+
+  return (
+    <div role="listitem" style={{ position: "relative" }}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      onFocus={() => setFocusWithin(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocusWithin(false); }}>
+      {renaming ? (
+        <div style={{ display: "flex", alignItems: "center", padding: "6px 10px", minHeight: 48, boxSizing: "border-box" }}>
+          <input ref={inputRef} value={draft} autoFocus aria-label="Thread name"
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); commit(); }
+              if (e.key === "Escape") { e.preventDefault(); setDraft(thread.title); onEndRename(); }
+            }}
+            style={{
+              ...tokens.type.sm, fontFamily: tokens.font.sans, fontWeight: tokens.weight.medium, color: pal.text,
+              width: "100%", boxSizing: "border-box", height: 32, padding: "0 10px",
+              background: pal.bgInput, border: `1.5px solid ${pal.borderFocus}`, borderRadius: tokens.radius.sm, outline: "none",
+            }} />
+        </div>
+      ) : (
+        <button type="button" onClick={() => onSelect(thread.id)} aria-current={active ? "true" : undefined}
+          style={{
+            ...interactiveBase, display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left",
+            padding: "8px 10px", minHeight: 48, boxSizing: "border-box", borderRadius: tokens.radius.sm,
+            background: active ? pal.bgMuted : hover ? pal.bgSubtle : "transparent",
+            paddingRight: showMore ? 40 : 10,
+          }}>
+          <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+              {thread.unread && <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 3, background: pal.accent, flexShrink: 0 }} />}
+              <span style={{
+                ...tokens.type.sm, fontWeight: thread.unread ? tokens.weight.semibold : tokens.weight.medium, color: pal.text,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0,
+                transition: `color ${motion.smooth} ${motion.easeInOut}`,
+              }}>{thread.title}</span>
+              {thread.pinned && <span style={{ color: pal.textTertiary, display: "inline-flex", flexShrink: 0 }} aria-label="Pinned" role="img"><ChatHistoryGlyph name="pin" size={11} /></span>}
+            </span>
+            {thread.preview && (
+              <span style={{ ...tokens.type.xs, color: pal.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{thread.preview}</span>
+            )}
+          </span>
+          {thread.time != null && (
+            <span style={{
+              ...tokens.type.xs, color: pal.textTertiary, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0,
+              opacity: showMore ? 0 : 1, transition: `opacity ${motion.fast} ${motion.easeInOut}, color ${motion.smooth} ${motion.easeInOut}`,
+            }}>{ChatHistoryTimeLabel(thread.time)}</span>
+          )}
+          {thread.unread && <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Unread</span>}
+        </button>
+      )}
+
+      {items.length > 0 && !renaming && (
+        <button ref={moreRef} type="button" aria-label={`More for ${thread.title}`} aria-haspopup="menu" aria-expanded={menu}
+          onClick={() => setMenu(o => !o)}
+          onKeyDown={(e) => { if (e.key === "ArrowDown" && !menu) { e.preventDefault(); setMenu(true); } }}
+          style={{
+            ...interactiveBase, position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+            width: 26, height: 26, padding: 0, borderRadius: tokens.radius.sm,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: menu ? pal.bgMuted : "transparent", color: pal.textSecondary,
+            opacity: showMore ? 1 : 0, pointerEvents: showMore ? "auto" : "none",
+            transition: `opacity ${motion.fast} ${motion.easeInOut}, background ${motion.normal} ${motion.easeInOut}`,
+          }}>
+          <ChatHistoryGlyph name="more" size={13} />
+        </button>
+      )}
+      {menu && (
+        <ChatHistoryMenu items={items} theme={theme}
+          onClose={(refocus) => { setMenu(false); if (refocus) moreRef.current?.focus(); }} />
+      )}
+    </div>
+  );
+}
+
+function ChatHistoryHeading({ children, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  return (
+    <div role="presentation" style={{ ...tokens.type.xs, fontWeight: tokens.weight.medium, color: pal.textTertiary, letterSpacing: "0.02em", padding: "12px 10px 4px", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{children}</div>
+  );
+}
+
+/**
+ * ChatHistory: the sidebar list of past threads.
+ * @prop threads {{ id: string, title: string, preview?: string, time: string | Date, pinned?: boolean, unread?: boolean }[]} Threads to list; `time` is an ISO string or a Date (default: CHATHIST_THREADS)
+ * @prop activeId {string} Controlled selection; leave undefined and the list keeps its own
+ * @prop onSelect {(id: string) => void} Fires when a row is picked
+ * @prop onNew {() => void} Shows the new-thread button in the header and fires when it is pressed
+ * @prop onRename {(id: string, title: string) => void} Enables Rename in the row menu; the new name is typed inline
+ * @prop onDelete {(id: string) => void} Enables Delete in the row menu
+ * @prop onPin {(id: string) => void} Enables Pin / Unpin in the row menu
+ * @prop search {boolean} Shows a search field that filters titles and previews (default: true)
+ * @prop groupBy {"day" | "none"} Group rows under Pinned, Today, Yesterday and Earlier headings, or list them flat (default: "day")
+ * @prop title {string} Header label (default: "Chats")
+ * @prop width {number} Width of the list in px (default: 280)
+ * @prop height {number} Height of the list in px; content scrolls inside it (default: 420)
+ */
+function ChatHistory({
+  theme: themeProp,
+  threads = CHATHIST_THREADS,
+  activeId,
+  onSelect,
+  onNew,
+  onRename,
+  onDelete,
+  onPin,
+  search = true,
+  groupBy = "day",
+  title = "Chats",
+  width = 280,
+  height = 420,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [innerActive, setInnerActive] = useState(() => threads[0]?.id);
+  const [query, setQuery] = useState("");
+  const [renamingId, setRenamingId] = useState(null);
+  const [newHover, setNewHover] = useState(false);
+  const active = activeId !== undefined ? activeId : innerActive;
+
+  const select = (id) => {
+    if (activeId === undefined) setInnerActive(id);
+    onSelect?.(id);
+  };
+
+  const q = query.trim().toLowerCase();
+  const visible = threads
+    .filter(t => !q || (t.title || "").toLowerCase().includes(q) || (t.preview || "").toLowerCase().includes(q))
+    .slice()
+    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (ChatHistoryDate(b.time) - ChatHistoryDate(a.time)));
+
+  let sections;
+  if (groupBy === "day") {
+    const buckets = { Pinned: [], Today: [], Yesterday: [], Earlier: [] };
+    visible.forEach(t => buckets[t.pinned ? "Pinned" : ChatHistoryGroupOf(t.time)].push(t));
+    sections = Object.entries(buckets).filter(([, list]) => list.length > 0);
+  } else {
+    sections = [[null, visible]];
+  }
+
+  const row = (t) => (
+    <ChatHistoryRow key={t.id} thread={t} active={t.id === active} renaming={renamingId === t.id} theme={theme}
+      onSelect={select} onRename={onRename} onPin={onPin} onDelete={onDelete}
+      onStartRename={() => setRenamingId(t.id)} onEndRename={() => setRenamingId(null)} />
+  );
+
+  return (
+    <div style={{
+      width, maxWidth: "100%", height, boxSizing: "border-box", fontFamily: tokens.font.sans,
+      display: "flex", flexDirection: "column",
+      background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
+      transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 12px 8px 16px" }}>
+        <Text size="sm" weight="semibold" theme={theme} style={{ flex: 1, minWidth: 0 }} truncate>{title}</Text>
+        {onNew && (
+          <button type="button" onClick={onNew} aria-label="New chat"
+            onMouseEnter={() => setNewHover(true)} onMouseLeave={() => setNewHover(false)}
+            style={{
+              ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: tokens.radius.sm,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: newHover ? pal.bgMuted : pal.bgSubtle, color: newHover ? pal.text : pal.textSecondary,
+            }}>
+            <ChatHistoryGlyph name="plus" size={14} />
+          </button>
+        )}
+      </div>
+      {search && (
+        <div style={{ padding: "0 12px 8px" }}>
+          <SearchInput value={query} onChange={setQuery} placeholder="Search chats" shortcut={null} theme={theme} />
+        </div>
+      )}
+      <div role="list" aria-label={title}
+        onKeyDown={(e) => { if (e.target.tagName === "INPUT") return; arrowNav(e, { selector: '[role="listitem"] > button:not([aria-haspopup])', horizontal: false }); }}
+        style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "0 8px 8px", scrollbarWidth: "thin", scrollbarColor: `${pal.bgMuted} transparent` }}>
+        {visible.length === 0 ? (
+          <div style={{ padding: "24px 10px", textAlign: "center" }}>
+            <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>{q ? "No chats match." : "No chats yet."}</Text>
+          </div>
+        ) : sections.map(([label, list]) => (
+          <div key={label || "all"}>
+            {label && <ChatHistoryHeading theme={theme}>{label}</ChatHistoryHeading>}
+            {list.map(row)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── ChatInput (added 2026-10-28) ───
+// ─── AGENTS · ChatInput: the composer ────────────────────────
+// Suggestions above the field, removable attachment chips, a model pill, a
+// mic button and a send button that turns into Stop while streaming.
+
+const CHATIN_SUGGESTIONS = [
+  "What's open with Acme?",
+  "Close tickets idle over 30 days",
+  "Summarize overnight tickets",
+];
+
+const CHATIN_MODELS = [
+  { id: "alpha-4-fast", label: "alpha-4 · fast" },
+  { id: "alpha-4", label: "alpha-4 · deep" },
+  { id: "alpha-mini", label: "alpha-mini" },
+];
+
+// One text row of the field, and the field's vertical padding, in px.
+const CHATIN_ROW = Math.round(tokens.type.base.fontSize * tokens.type.base.lineHeight);
+const CHATIN_PAD_Y = 14 + 4;
+
+function ChatInputGlyph({ name, size = 14 }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor",
+    strokeWidth: 1.25, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true,
+    style: { display: "block", flexShrink: 0 },
+  };
+  if (name === "plus") return <svg {...common}><line x1="8" y1="3.5" x2="8" y2="12.5" /><line x1="3.5" y1="8" x2="12.5" y2="8" /></svg>;
+  if (name === "mic") return <svg {...common}><rect x="6" y="1.5" width="4" height="7.5" rx="2" /><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0" /><line x1="8" y1="12" x2="8" y2="14.5" /></svg>;
+  if (name === "send") return <svg {...common} strokeWidth={1.5}><line x1="8" y1="12.5" x2="8" y2="3.5" /><polyline points="4,7.5 8,3.5 12,7.5" /></svg>;
+  if (name === "file") return <svg {...common}><path d="M4 1.5h5l3 3v10H4z" /><path d="M9 1.5v3h3" /></svg>;
+  return null;
+}
+
+function ChatInputIconBtn({ children, onClick, label, disabled, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" onClick={onClick} aria-label={label} disabled={disabled}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, width: 28, height: 28, borderRadius: tokens.radius.sm, padding: 0, flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: hover && !disabled ? pal.bgMuted : "transparent",
+        color: disabled ? pal.textMuted : hover ? pal.text : pal.textTertiary,
+        cursor: disabled ? "default" : "pointer",
+      }}>
+      {children}
+    </button>
+  );
+}
+
+function ChatInputChip({ label, onClick, disabled, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" onClick={onClick} disabled={disabled}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, padding: "5px 12px", borderRadius: tokens.radius.pill, maxWidth: "100%",
+        background: hover && !disabled ? pal.bgSubtle : "transparent",
+        border: `1px solid ${hover && !disabled ? pal.border : pal.borderSubtle}`,
+        ...tokens.type.sm, color: disabled ? pal.textMuted : hover ? pal.text : pal.textSecondary,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        cursor: disabled ? "default" : "pointer",
+      }}>
+      {label}
+    </button>
+  );
+}
+
+function ChatInputAttachment({ item, onRemove, disabled, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <span role="listitem" style={{
+      display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 6px 5px 10px", maxWidth: "100%",
+      borderRadius: tokens.radius.sm, background: pal.bgElevated, border: `1px solid ${pal.borderSubtle}`,
+      color: pal.textSecondary, animation: `halaska-scale-in 0.25s ${motion.easeOut} both`,
+      transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <ChatInputGlyph name="file" size={12} />
+      <span style={{ ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{item.name}</span>
+      {item.kind && <span style={{ ...tokens.type.xs, color: pal.textTertiary, flexShrink: 0 }}>{item.kind}</span>}
+      {onRemove && (
+        <button type="button" onClick={() => onRemove(item.id)} aria-label={`Remove ${item.name}`} disabled={disabled}
+          onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+          style={{
+            ...interactiveBase, width: 16, height: 16, padding: 0, borderRadius: 8, flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: hover ? pal.bgMuted : "transparent", color: hover ? pal.text : pal.textTertiary,
+            fontSize: 11, lineHeight: 1,
+          }}>×</button>
+      )}
+    </span>
+  );
+}
+
+// Model pill: a small menu that opens upward, since the composer usually
+// sits at the bottom of a screen.
+function ChatInputModelPill({ models, value, onChange, disabled, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [hoverIdx, setHoverIdx] = useState(-1);
+  const rootRef = useRef(null);
+  const menuRef = useRef(null);
+  const uid = useUid("chatin-model");
+  const current = models.find(m => m.id === value) || models[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  const close = (refocus) => {
+    setOpen(false);
+    if (refocus) rootRef.current?.querySelector("button[aria-haspopup]")?.focus();
+  };
+  const openMenu = (viaKeyboard) => {
+    if (disabled) return;
+    setOpen(true);
+    if (viaKeyboard) setTimeout(() => focusFirstItem(menuRef.current), 0);
+  };
+
+  return (
+    <div ref={rootRef} style={{ position: "relative", display: "inline-flex", minWidth: 0 }}>
+      <button type="button" aria-label="Change model" aria-haspopup="menu" aria-expanded={open} aria-controls={uid} disabled={disabled}
+        onClick={(e) => (open ? close() : openMenu(e.detail === 0))}
+        onKeyDown={(e) => { if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !open) { e.preventDefault(); openMenu(true); } }}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        style={{
+          ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0, maxWidth: "100%",
+          padding: "4px 10px", borderRadius: tokens.radius.pill,
+          background: (open || hover) && !disabled ? pal.bgMuted : pal.bgSubtle,
+          border: `1px solid ${open ? pal.border : pal.borderSubtle}`,
+          cursor: disabled ? "default" : "pointer",
+        }}>
+        <span key={current?.id} style={{
+          ...tokens.type.xs, fontFamily: tokens.font.mono, color: disabled ? pal.textMuted : pal.textSecondary,
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0,
+          animation: `halaska-tab-fade 0.25s ${motion.easeOut} both`,
+        }}>{current?.label}</span>
+        <ChevronIcon size={9} direction={open ? "down" : "up"} style={{ color: pal.textTertiary }} />
+      </button>
+      <div id={uid} ref={menuRef} role="menu" aria-label="Model" aria-hidden={!open}
+        onKeyDown={(e) => { if (e.key === "Tab") { close(); return; } arrowNav(e, { horizontal: false, onEscape: () => close(true) }); }}
+        style={{
+          position: "absolute", bottom: "calc(100% + 6px)", left: 0, zIndex: 20, minWidth: 180,
+          padding: 4, borderRadius: tokens.radius.md,
+          background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+          backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+          border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 12px 32px ${pal.shadowLg}`,
+          opacity: open ? 1 : 0, transform: open ? "translateY(0) scale(1)" : "translateY(4px) scale(0.97)",
+          pointerEvents: open ? "auto" : "none", visibility: open ? "visible" : "hidden", transformOrigin: "bottom left",
+          transition: `opacity ${motion.fast} ${motion.easeOut}, transform ${motion.normal} ${motion.emphasized}, visibility 0s linear ${open ? "0s" : motion.normal}`,
+        }}>
+        {models.map((m, i) => {
+          const active = m.id === current?.id;
+          return (
+            <button key={m.id} type="button" role="menuitemradio" aria-checked={active} tabIndex={open ? 0 : -1}
+              onClick={() => { onChange?.(m.id); close(true); }}
+              onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(-1)}
+              style={{
+                ...interactiveBase, display: "flex", alignItems: "center", gap: 10, width: "100%",
+                padding: "8px 10px", borderRadius: tokens.radius.sm, textAlign: "left",
+                background: hoverIdx === i ? pal.bgSubtle : "transparent",
+              }}>
+              <span style={{ ...tokens.type.sm, fontFamily: tokens.font.mono, color: pal.text, whiteSpace: "nowrap", flex: 1 }}>{m.label}</span>
+              <span aria-hidden="true" style={{ width: 14, textAlign: "center", ...tokens.type.sm, color: active ? pal.accent : "transparent" }}>✓</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ChatInput: the composer for an agent conversation.
+ * @prop value {string} Controlled text; leave undefined and the field keeps its own state
+ * @prop onChange {(text: string) => void} Fires on every edit, and with "" after a send
+ * @prop onSubmit {(text: string) => void} Fires with the trimmed text on Enter or the send button
+ * @prop placeholder {string} Placeholder and accessible name of the field (default: "Ask Alpha about your inbox…")
+ * @prop suggestions {string[]} Prompt chips above the field; [] hides the row (default: CHATIN_SUGGESTIONS)
+ * @prop onSuggestion {(text: string) => void} Fires when a chip is picked; without it the chip fills the field
+ * @prop attachments {{ id: string, name: string, kind?: string }[]} Files shown as removable chips (default: [])
+ * @prop onAttach {() => void} Shows the attach button and fires when it is pressed
+ * @prop onRemoveAttachment {(id: string) => void} Fires from an attachment chip's remove control
+ * @prop models {{ id: string, label: string }[]} Choices in the model pill; [] hides the pill (default: CHATIN_MODELS)
+ * @prop model {string} Controlled model id; leave undefined and the pill keeps its own state
+ * @prop onModelChange {(id: string) => void} Fires when a model is picked
+ * @prop streaming {boolean} Turns the send button into Stop (default: false)
+ * @prop onStop {() => void} Fires when Stop is pressed
+ * @prop onVoice {() => void} Shows the mic button and fires when it is pressed
+ * @prop disabled {boolean} Disables the field and every control (default: false)
+ * @prop maxRows {number} Rows the field grows to before it scrolls (default: 6)
+ */
+function ChatInput({
+  theme: themeProp,
+  value,
+  onChange,
+  onSubmit,
+  placeholder = "Ask Alpha about your inbox…",
+  suggestions = CHATIN_SUGGESTIONS,
+  onSuggestion,
+  attachments = [],
+  onAttach,
+  onRemoveAttachment,
+  models = CHATIN_MODELS,
+  model,
+  onModelChange,
+  streaming = false,
+  onStop,
+  onVoice,
+  disabled = false,
+  maxRows = 6,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [inner, setInner] = useState("");
+  const [innerModel, setInnerModel] = useState(() => models[0]?.id);
+  const [focused, setFocused] = useState(false);
+  const [sendHover, setSendHover] = useState(false);
+  const taRef = useRef(null);
+
+  const controlled = value !== undefined;
+  const text = controlled ? value : inner;
+  const modelId = model !== undefined ? model : innerModel;
+
+  const setText = (next) => {
+    if (!controlled) setInner(next);
+    onChange?.(next);
+  };
+  const pickModel = (id) => {
+    if (model === undefined) setInnerModel(id);
+    onModelChange?.(id);
+  };
+
+  // Grow the field with its content, up to maxRows.
+  useEffect(() => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(maxRows * CHATIN_ROW + CHATIN_PAD_Y, ta.scrollHeight) + "px";
+  }, [text, maxRows]);
+
+  const canSend = !disabled && text.trim().length > 0;
+  const live = streaming || canSend;
+
+  const submit = () => {
+    if (streaming) { onStop?.(); return; }
+    if (!canSend) return;
+    const out = text.trim();
+    setText("");
+    onSubmit?.(out);
+  };
+
+  const pickSuggestion = (s) => {
+    if (onSuggestion) { onSuggestion(s); return; }
+    setText(s);
+    taRef.current?.focus();
+  };
+
+  return (
+    <div style={{ width: 480, maxWidth: "100%", fontFamily: tokens.font.sans, boxSizing: "border-box" }}>
+      <Stack gap={12}>
+        {suggestions.length > 0 && (
+          <div role="list" aria-label="Suggestions" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {suggestions.map((s) => (
+              <div key={s} role="listitem" style={{ minWidth: 0, maxWidth: "100%" }}>
+                <ChatInputChip label={s} disabled={disabled} theme={theme} onClick={() => pickSuggestion(s)} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{
+          position: "relative", background: disabled ? pal.bgSubtle : pal.bgInput, borderRadius: tokens.radius.lg,
+          border: `1.5px solid ${focused && !disabled ? pal.borderFocus : "transparent"}`,
+          transition: `all ${motion.normal} ${motion.easeInOut}`,
+          /* no overflow hidden: the model menu opens out of the surface */
+        }}>
+          {attachments.length > 0 && (
+            <div role="list" aria-label="Attachments" style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "12px 12px 0" }}>
+              {attachments.map((a) => (
+                <ChatInputAttachment key={a.id} item={a} disabled={disabled} theme={theme}
+                  onRemove={onRemoveAttachment} />
+              ))}
+            </div>
+          )}
+
+          <textarea ref={taRef} value={text} rows={1} disabled={disabled}
+            onChange={(e) => setText(e.target.value)}
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+            placeholder={placeholder} aria-label={placeholder}
+            style={{
+              ...tokens.type.base, display: "block", width: "100%", boxSizing: "border-box",
+              fontFamily: tokens.font.sans, color: disabled ? pal.textMuted : pal.text, background: "transparent",
+              border: "none", outline: "none", resize: "none", overflowY: "auto",
+              padding: "14px 16px 4px", transition: `color ${motion.smooth} ${motion.easeInOut}`,
+            }} />
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px 10px", minWidth: 0 }}>
+            {onAttach && (
+              <ChatInputIconBtn label="Attach file" disabled={disabled} theme={theme} onClick={onAttach}>
+                <ChatInputGlyph name="plus" size={15} />
+              </ChatInputIconBtn>
+            )}
+
+            {models.length > 0 && (
+              <ChatInputModelPill models={models} value={modelId} onChange={pickModel} disabled={disabled} theme={theme} />
+            )}
+
+            <div style={{ flex: 1, minWidth: 8 }} />
+
+            {onVoice && (
+              <ChatInputIconBtn label="Voice input" disabled={disabled} theme={theme} onClick={onVoice}>
+                <ChatInputGlyph name="mic" size={14} />
+              </ChatInputIconBtn>
+            )}
+
+            <button type="button" onClick={submit} aria-label={streaming ? "Stop" : "Send"} disabled={disabled || !live}
+              onMouseEnter={() => setSendHover(true)} onMouseLeave={() => setSendHover(false)}
+              style={{
+                ...interactiveBase, width: 30, height: 30, borderRadius: 15, padding: 0, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: live ? (sendHover ? pal.accentHover : pal.accent) : pal.bgMuted,
+                color: live ? "#fff" : pal.textMuted,
+                cursor: live ? "pointer" : "default",
+              }}>
+              {streaming ? (
+                <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: 2, background: "#fff", animation: `halaska-scale-in 0.2s ${motion.easeOut} both` }} />
+              ) : (
+                <ChatInputGlyph name="send" size={14} />
+              )}
+            </button>
+          </div>
+        </div>
+      </Stack>
+    </div>
+  );
+}
+
+// ─── Conversation (added 2026-10-28) ───
+// ─── AGENTS · Conversation: the scrolling thread ─────────────
+// A fixed-height log of Message turns that follows new content until the
+// reader scrolls up, then offers a "Jump to latest" pill instead.
+
+const CONV_MESSAGES = [
+  { id: "m1", role: "user", text: "Should I refund Acme for Tuesday's outage or offer a credit?", time: "2:46 PM" },
+  { id: "m2", role: "agent", time: "2:47 PM",
+    text: "I'd offer a credit, not a refund. Acme was down for 3 hours and 12 minutes on Tuesday, still inside the 99.5% uptime floor in their contract, so a refund isn't owed. A $180 credit on next month's invoice matches what you gave Fjord Health in June and stays under your approval cap.",
+    sources: [{ name: "Acme contract · Notion" }, { name: "Incident 412 · Linear" }] },
+  { id: "m3", role: "user", text: "Draft the note to Sam Keller and queue the credit in Stripe.", time: "2:48 PM" },
+  { id: "m4", role: "agent", time: "2:48 PM",
+    text: "Drafted. The note apologises for Tuesday, names the $180 credit and points to the status page. The credit is queued in Stripe and waits for your approval before it posts." },
+];
+
+function ConversationJumpPill({ onClick, label, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" onClick={onClick}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px 6px 14px",
+        borderRadius: tokens.radius.pill, background: hover ? pal.bgMuted : pal.bgElevated,
+        border: `1px solid ${pal.border}`, boxShadow: `0 4px 16px ${pal.shadowMd}`,
+        ...tokens.type.xs, fontWeight: tokens.weight.medium, color: pal.text,
+        animation: `halaska-scale-in 0.2s ${motion.easeOut} both`,
+      }}>
+      {label}
+      <ChevronIcon size={10} direction="down" style={{ color: pal.textSecondary }} />
+    </button>
+  );
+}
+
+function ConversationEmpty({ theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, height: "100%", textAlign: "center", padding: 24 }}>
+      <AgentGlyph size={32} theme={theme} />
+      <div>
+        <Text size="base" weight="semibold" theme={theme} style={{ display: "block" }}>No messages yet</Text>
+        <Text size="sm" theme={theme} style={{ color: pal.textTertiary }}>Ask Alpha about your inbox, issues or billing.</Text>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Conversation: the scrolling thread of an agent chat, built from Message.
+ * @prop messages {{ id: string, role: "user" | "agent" | "system", text?: string, time?: string, status?: string, sources?: object[], actions?: object[], streaming?: boolean, name?: string }[]} Turns in order; every field is passed on to Message (default: CONV_MESSAGES)
+ * @prop renderMessage {(message: object, index: number) => node} Replaces the default Message for a turn
+ * @prop children {node} Turns rendered instead of `messages`, for fully custom content
+ * @prop autoScroll {boolean} Follow new content while the reader is at the bottom; scrolling up pauses it and shows a jump pill (default: true)
+ * @prop jumpLabel {string} Text of the jump pill (default: "Jump to latest")
+ * @prop typing {boolean} Shows the agent's thinking indicator after the last turn (default: false)
+ * @prop typingLabel {string} Label beside the thinking dots (default: "Thinking")
+ * @prop height {number} Height of the log in px (default: 420)
+ * @prop frame {boolean} Draw a hairline border and rounded corners around the log (default: true)
+ * @prop emptyState {node} Shown when there are no turns; the default invites the first question
+ * @prop compact {boolean} Passed on to every Message (default: false)
+ */
+function Conversation({
+  theme: themeProp,
+  messages = CONV_MESSAGES,
+  renderMessage,
+  children,
+  autoScroll = true,
+  jumpLabel = "Jump to latest",
+  typing = false,
+  typingLabel = "Thinking",
+  height = 420,
+  frame = true,
+  emptyState,
+  compact = false,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const scrollRef = useRef(null);
+  const innerRef = useRef(null);
+  const atBottomRef = useRef(true);
+  const firstRef = useRef(true);
+  const [atBottom, setAtBottom] = useState(true);
+
+  const hasChildren = children !== undefined && children !== null && children !== false;
+  const empty = !hasChildren && messages.length === 0 && !typing;
+  const last = messages[messages.length - 1];
+  const contentKey = `${messages.length}:${last?.id ?? ""}:${last?.text?.length ?? 0}:${typing ? 1 : 0}`;
+
+  const measure = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+    atBottomRef.current = near;
+    setAtBottom(near);
+  };
+
+  const toBottom = (smooth) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    atBottomRef.current = true;
+    setAtBottom(true);
+  };
+
+  // Follow new content, keyed on what changed (count, last id, last text length, typing),
+  // never on array identity. Also watch the inner height for streaming children.
+  useEffect(() => {
+    if (!autoScroll) return;
+    if (firstRef.current) { firstRef.current = false; toBottom(false); return; }
+    if (atBottomRef.current) toBottom(true);
+  }, [contentKey, autoScroll]);
+
+  useEffect(() => {
+    const node = innerRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      if (autoScroll && atBottomRef.current) toBottom(false);
+      else measure();
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, [autoScroll]);
+
+  const turns = hasChildren ? children : messages.map((m, i) => (
+    renderMessage ? (
+      <div key={m.id ?? i}>{renderMessage(m, i)}</div>
+    ) : (
+      <div key={m.id ?? i} style={{ animation: `halaska-step-in 0.3s ${motion.emphasized} both` }}>
+        <Message {...m} compact={m.compact ?? compact} theme={theme} />
+      </div>
+    )
+  ));
+
+  return (
+    <div style={{
+      position: "relative", width: 480, maxWidth: "100%", height, boxSizing: "border-box", fontFamily: tokens.font.sans,
+      border: frame ? `1px solid ${pal.borderSubtle}` : "none", borderRadius: frame ? tokens.radius.md : 0,
+      background: frame ? pal.bgElevated : "transparent", overflow: "hidden",
+      transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <div ref={scrollRef} role="log" aria-live="polite" aria-relevant="additions text" aria-busy={typing || undefined} tabIndex={0}
+        onScroll={measure}
+        style={{ height: "100%", overflowY: "auto", overflowX: "hidden", scrollbarWidth: "thin", scrollbarColor: `${pal.bgMuted} transparent`, outline: "none" }}>
+        {empty ? (
+          emptyState !== undefined ? emptyState : <ConversationEmpty theme={theme} />
+        ) : (
+          <div ref={innerRef} style={{ display: "flex", flexDirection: "column", gap: compact ? 10 : 16, padding: frame ? 16 : "4px 2px", boxSizing: "border-box" }}>
+            {turns}
+            {typing && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, animation: `halaska-fade-in 0.3s ease both` }}>
+                <AgentGlyph size={compact ? 20 : 24} theme={theme} />
+                <ThinkingIndicator label={typingLabel} size="sm" theme={theme} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {autoScroll && !atBottom && !empty && (
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 12, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+          <div style={{ pointerEvents: "auto" }}>
+            <ConversationJumpPill label={jumpLabel} theme={theme} onClick={() => toBottom(true)} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── DocumentAgent (added 2026-10-28) ───
+// ─── Document agent: a document the agent edits beside you ───
+
+const DOCAGENT_BLOCKS = [
+  { id: "b1", type: "h1", text: "Refund policy" },
+  { id: "b2", type: "p", text: "Northwind refunds any plan within 14 days of the charge. Requests arrive through Intercom and are logged in Stripe." },
+  { id: "b3", type: "h2", text: "Who approves" },
+  { id: "b4", type: "li", text: "Refunds up to $100 are approved by Alpha." },
+  { id: "b5", type: "li", text: "Larger refunds wait for Priya Nair." },
+  { id: "b6", type: "p", text: "Every refund gets a note on the customer record and a link to the Linear issue if one exists." },
+];
+
+const DOCAGENT_EDITS = [
+  { id: "e1", blockId: "b2", kind: "replace", text: "Northwind refunds any plan within 30 days of the charge. Requests arrive through Intercom and are logged in Stripe.", reason: "The runbook moved to 30 days in March." },
+  { id: "e2", blockId: "b5", kind: "replace", text: "Refunds over $100 wait for Priya Nair, or Dana Ruiz when Priya is out.", reason: "Adds the backup approver." },
+  { id: "e3", blockId: "b5", kind: "insert", text: "Fjord Health and Cobalt Dental have contract terms. Check the account before refunding.", reason: "Two accounts sit outside the standard policy." },
+  { id: "e4", blockId: "b6", kind: "delete", reason: "Duplicates the Stripe section in the runbook." },
+];
+
+const DOCAGENT_BAR_H = 34;
+
+const DOCAGENT_TYPE_STYLE = {
+  h1: { ...tokens.type.xl, fontWeight: tokens.weight.semibold, letterSpacing: "-0.02em", marginBottom: 6 },
+  h2: { ...tokens.type.md, fontWeight: tokens.weight.semibold, marginTop: 8 },
+  p: { ...tokens.type.base },
+  li: { ...tokens.type.base },
+};
+
+// The review bar under a block. Its height is reserved from the start for every
+// block that has an edit coming, so an arriving edit only adds its own text.
+function DocumentAgentPart({ edit, decision, arrived, onAccept, onReject, theme }) {
+  const pal = usePal(theme);
+  const open = arrived && !decision;
+  return (
+    <div style={{
+      height: decision ? 0 : DOCAGENT_BAR_H, overflow: "hidden", marginTop: decision ? 0 : 4,
+      opacity: open ? 1 : 0, visibility: open ? "visible" : "hidden",
+      transition: `height ${motion.normal} ${motion.easeInOut}, opacity ${motion.normal} ${motion.easeInOut}, margin ${motion.normal} ${motion.easeInOut}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, height: DOCAGENT_BAR_H - 4 }}>
+        <Text size="xs" theme={theme} truncate style={{ color: pal.textTertiary, flex: 1, minWidth: 0 }}>{edit.reason || ""}</Text>
+        <Button size="sm" variant="outline" theme={theme} onClick={() => onAccept(edit)} aria-label={`Accept edit: ${edit.reason || edit.id}`}>Accept</Button>
+        <Button size="sm" variant="ghost" theme={theme} onClick={() => onReject(edit)} aria-label={`Reject edit: ${edit.reason || edit.id}`}>Reject</Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * DocumentAgent: a document the agent edits beside you, one suggested change at a time.
+ * @prop title {string} Document name shown in the header (default: "Refund policy · runbook")
+ * @prop agentName {string} Name of the agent proposing the edits (default: "Alpha")
+ * @prop blocks {{ id: string, type: "h1" | "h2" | "p" | "li", text: string }[]} The document as blocks (default: DOCAGENT_BLOCKS)
+ * @prop edits {{ id: string, blockId: string, kind: "replace" | "insert" | "delete", text?: string, reason?: string }[]} Suggested edits; insert places a new block after blockId (default: DOCAGENT_EDITS)
+ * @prop autoplay {boolean} Edits arrive one by one every `stepMs`; false shows them all at once with no timers (default: true)
+ * @prop stepMs {number} Milliseconds between arriving edits (default: 1400)
+ * @prop acceptAllLabel {string} Header action label (default: "Accept all")
+ * @prop onAccept {(edit) => void} Fires when one edit is accepted
+ * @prop onReject {(edit) => void} Fires when one edit is rejected
+ * @prop onAcceptAll {() => void} Fires when every pending edit is accepted from the header
+ */
+function DocumentAgent({
+  theme: themeProp,
+  title = "Refund policy · runbook",
+  agentName = "Alpha",
+  blocks = DOCAGENT_BLOCKS,
+  edits = DOCAGENT_EDITS,
+  autoplay = true,
+  stepMs = 1400,
+  acceptAllLabel = "Accept all",
+  onAccept,
+  onReject,
+  onAcceptAll,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [arrived, setArrived] = useState(autoplay ? 0 : edits.length);
+  const [decisions, setDecisions] = useState({});
+  const cbRef = useRef({ onAccept, onReject, onAcceptAll });
+  cbRef.current = { onAccept, onReject, onAcceptAll };
+  const editKey = edits.map(e => e.id).join("|");
+
+  useEffect(() => {
+    if (!autoplay) { setArrived(edits.length); return; }
+    setArrived(0);
+    let n = 0;
+    const iv = setInterval(() => {
+      n += 1;
+      setArrived(n);
+      if (n >= edits.length) clearInterval(iv);
+    }, stepMs);
+    return () => clearInterval(iv);
+  }, [autoplay, stepMs, editKey, edits.length]);
+
+  const decide = (edit, verdict) => {
+    setDecisions(d => ({ ...d, [edit.id]: verdict }));
+    (verdict === "accepted" ? cbRef.current.onAccept : cbRef.current.onReject)?.(edit);
+  };
+  const acceptAll = () => {
+    const pending = edits.slice(0, arrived).filter(e => !decisions[e.id]);
+    if (!pending.length) return;
+    setDecisions(d => { const next = { ...d }; pending.forEach(e => { next[e.id] = "accepted"; }); return next; });
+    cbRef.current.onAcceptAll?.();
+  };
+
+  const pendingCount = edits.slice(0, arrived).filter(e => !decisions[e.id]).length;
+  const reviewed = Object.keys(decisions).length;
+  const allDone = arrived >= edits.length && pendingCount === 0;
+
+  const oldMark = { background: pal.dangerBg, textDecoration: "line-through", textDecorationColor: pal.textTertiary, textDecorationThickness: 1, borderRadius: tokens.radius.xs, padding: "0 3px", margin: "0 -1px", transition: `background ${motion.smooth} ${motion.easeInOut}` };
+  const newMark = { background: pal.successBg, borderRadius: tokens.radius.xs, padding: "0 3px", margin: "0 -1px", transition: `background ${motion.smooth} ${motion.easeInOut}` };
+  const arrive = { animation: `halaska-fade-in ${motion.smooth} ${motion.easeOut} both` };
+
+  // The text a block shows given its own replace or delete edit.
+  const textFor = (block, edit, decision, isArrived) => {
+    if (!edit || !isArrived) return block.text;
+    if (edit.kind === "delete") {
+      if (decision === "accepted") return null;
+      if (decision === "rejected") return block.text;
+      return <span data-halaska-calm style={{ ...oldMark, ...arrive }}>{block.text}</span>;
+    }
+    if (decision === "accepted") return edit.text;
+    if (decision === "rejected") return block.text;
+    return (
+      <span data-halaska-calm style={arrive}>
+        <span style={oldMark}>{block.text}</span>{" "}<span style={newMark}>{edit.text}</span>
+      </span>
+    );
+  };
+
+  // One block: li blocks render as real list items, everything else in a div.
+  // Inserted blocks grow from zero height when they arrive.
+  const renderBlock = ({ block, textNode, edit, decision, isArrived, isInsert }) => {
+    if (textNode === null) return null;
+    const st = DOCAGENT_TYPE_STYLE[block.type] || DOCAGENT_TYPE_STYLE.p;
+    const isLi = block.type === "li";
+    const Outer = isLi ? "li" : "div";
+    const Inner = block.type === "h1" ? "h1" : block.type === "h2" ? "h2" : isLi ? "div" : "p";
+    const body = isInsert && decision !== "accepted"
+      ? <span data-halaska-calm style={{ ...newMark, ...arrive }}>{textNode}</span>
+      : textNode;
+    return (
+      <Outer key={block.id} style={{
+        listStyle: "none", margin: 0, padding: 0,
+        display: "grid", gridTemplateRows: isInsert && !isArrived ? "0fr" : "1fr", overflow: "hidden",
+        transition: `grid-template-rows ${motion.smooth} ${motion.emphasized}`,
+      }}>
+        <div style={{ minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <Inner style={{
+            ...st, margin: 0, color: pal.text, fontFamily: tokens.font.sans,
+            paddingLeft: isLi ? 18 : 0, position: "relative",
+            transition: `color ${motion.smooth} ${motion.easeInOut}`,
+          }}>
+            {isLi && <span aria-hidden="true" style={{ position: "absolute", left: 4, top: 0, color: pal.textTertiary }}>·</span>}
+            {body}
+          </Inner>
+          {edit && <DocumentAgentPart edit={edit} decision={decision} arrived={isArrived} onAccept={(e) => decide(e, "accepted")} onReject={(e) => decide(e, "rejected")} theme={theme} />}
+        </div>
+      </Outer>
+    );
+  };
+
+  // Build the sequence, then group consecutive list items into one ul.
+  const seq = [];
+  blocks.forEach((block) => {
+    const own = edits.find(e => e.blockId === block.id && e.kind !== "insert");
+    const ownIdx = own ? edits.indexOf(own) : -1;
+    const ownArrived = ownIdx > -1 && ownIdx < arrived;
+    const ownDecision = own ? decisions[own.id] : undefined;
+    const node = renderBlock({ block, textNode: textFor(block, own, ownDecision, ownArrived), edit: own, decision: ownDecision, isArrived: ownArrived, isInsert: false });
+    if (node) seq.push({ node, li: block.type === "li" });
+    edits.filter(e => e.blockId === block.id && e.kind === "insert").forEach((ins) => {
+      const d = decisions[ins.id];
+      if (d === "rejected") return;
+      const insBlock = { id: ins.id, type: block.type === "li" ? "li" : "p", text: ins.text };
+      const insNode = renderBlock({ block: insBlock, textNode: ins.text, edit: ins, decision: d, isArrived: edits.indexOf(ins) < arrived, isInsert: true });
+      if (insNode) seq.push({ node: insNode, li: insBlock.type === "li" });
+    });
+  });
+  const nodes = [];
+  seq.forEach((item, i) => {
+    if (!item.li) { nodes.push(item.node); return; }
+    const last = nodes[nodes.length - 1];
+    if (last && last.type === "ul" && seq[i - 1]?.li) {
+      nodes[nodes.length - 1] = <ul key={last.key} style={last.props.style}>{[...last.props.children, item.node]}</ul>;
+    } else {
+      nodes.push(<ul key={`ul-${item.node.key}`} style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>{[item.node]}</ul>);
+    }
+  });
+
+  return (
+    <div style={{
+      width: 560, maxWidth: "100%", fontFamily: tokens.font.sans,
+      background: pal.bgElevated, border: `1px solid ${pal.border}`, borderRadius: tokens.radius.md,
+      boxShadow: `0 1px 4px ${pal.shadow}`, overflow: "hidden", boxSizing: "border-box",
+      transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", flexWrap: "wrap",
+        borderBottom: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle, minHeight: 50, boxSizing: "border-box",
+        transition: `background ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        <Text size="sm" weight="medium" theme={theme} truncate style={{ flex: "1 1 120px", minWidth: 0 }}>{title}</Text>
+        <div role="status" aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <AgentGlyph size={16} theme={theme} />
+          <Text size="xs" secondary theme={theme} style={{ whiteSpace: "nowrap" }}>
+            {allDone
+              ? `${agentName} · ${reviewed} ${reviewed === 1 ? "edit" : "edits"} reviewed`
+              : pendingCount === 0
+                ? `${agentName} is reading`
+                : `${agentName} · ${pendingCount} ${pendingCount === 1 ? "edit" : "edits"} to review`}
+          </Text>
+        </div>
+        <Button size="sm" variant="secondary" theme={theme} onClick={acceptAll} disabled={pendingCount === 0}>{acceptAllLabel}</Button>
+      </div>
+      <div style={{ padding: "22px 26px 26px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {nodes}
+      </div>
+    </div>
+  );
+}
+
+// ─── Marker (added 2026-10-28) ───
+// ─── Marker: an inline citation marker that opens its source ───
+
+const MARKER_SOURCE = {
+  name: "Notion · Runbooks",
+  title: "Refund policy, updated March 2026",
+  url: "https://notion.so/northwind/refund-policy",
+  snippet: "Refunds up to $100 are approved by Alpha. Larger refunds wait for Priya Nair.",
+};
+
+const MARKER_CARD_W = 260;
+
+function MarkerPart({ source, id, visible, theme }) {
+  const pal = usePal(theme);
+  const ref = useRef(null);
+  const [shift, setShift] = useState(0);
+  const host = source.url ? source.url.replace(/^https?:\/\//, "").split("/")[0] : "";
+
+  // Keep the card inside the viewport when the marker sits near an edge.
+  useEffect(() => {
+    if (!visible || !ref.current || typeof window === "undefined") return;
+    const r = ref.current.getBoundingClientRect();
+    const pad = 8;
+    let dx = 0;
+    if (r.left - shift < pad) dx = pad - (r.left - shift);
+    else if (r.right - shift > window.innerWidth - pad) dx = window.innerWidth - pad - (r.right - shift);
+    setShift(dx);
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <span ref={ref} id={id} role="group" aria-label={`Source: ${source.name}`} aria-hidden={!visible} style={{
+      position: "absolute", bottom: "100%", left: "50%", marginBottom: 8, width: MARKER_CARD_W, zIndex: 20,
+      transform: `translateX(calc(-50% + ${shift}px))`, display: "block", textAlign: "left", boxSizing: "border-box",
+      background: pal.bgElevated, border: `1px solid ${pal.border}`, borderRadius: tokens.radius.md, padding: 12,
+      boxShadow: `0 12px 32px ${pal.shadowLg}`, fontFamily: tokens.font.sans, whiteSpace: "normal",
+      opacity: visible ? 1 : 0, visibility: visible ? "visible" : "hidden", pointerEvents: visible ? "auto" : "none",
+      transition: `opacity ${motion.fast} ${motion.easeInOut}, visibility ${motion.fast}`,
+    }}>
+      <span style={{ display: "block", animation: visible ? `halaska-tab-fade 0.25s ${motion.easeOut} both` : "none" }}>
+        <Text size="sm" weight="medium" theme={theme} as="span" style={{ display: "block" }} truncate>{source.name}</Text>
+        {source.title && <Text size="sm" secondary theme={theme} as="span" style={{ display: "block", marginTop: 2 }}>{source.title}</Text>}
+        {source.snippet && (
+          <span style={{ display: "block", marginTop: 8, paddingLeft: 10, borderLeft: `2px solid ${pal.borderSubtle}`, ...tokens.type.xs, color: pal.textSecondary, fontFamily: tokens.font.sans, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
+            {source.snippet}
+          </span>
+        )}
+        {source.url && (
+          <a href={source.url} target="_blank" rel="noreferrer" tabIndex={visible ? 0 : -1} style={{
+            display: "block", marginTop: 8, ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textTertiary,
+            textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            transition: `color ${motion.smooth} ${motion.easeInOut}`,
+          }}>{host} ↗</a>
+        )}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * Marker: the small inline citation marker inside a sentence that opens its source.
+ * @prop n {number | string} The marker's number or label (default: 1)
+ * @prop source {{ name: string, title?: string, url?: string, snippet?: string }} What the marker points at; shown in the card on hover or focus (default: MARKER_SOURCE)
+ * @prop variant {"number" | "dot" | "name"} Number shows `n` in mono, dot shows a small accent dot, name shows the source name (default: "number")
+ * @prop onOpen {(source) => void} Fires on click or Enter; the card stays a hover and focus preview
+ */
+function Marker({
+  theme: themeProp,
+  n = 1,
+  source = MARKER_SOURCE,
+  variant = "number",
+  onOpen,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const leaveRef = useRef(null);
+  const uid = useUid("marker");
+  const visible = (hover || focus) && !dismissed;
+
+  const enter = () => { clearTimeout(leaveRef.current); setHover(true); setDismissed(false); };
+  const leave = () => { clearTimeout(leaveRef.current); leaveRef.current = setTimeout(() => setHover(false), 120); };
+  useEffect(() => () => clearTimeout(leaveRef.current), []);
+
+  const label = variant === "name" ? source.name : variant === "dot" ? "" : String(n);
+  const accessibleName = `Source ${n}: ${source.name}`;
+
+  return (
+    <span style={{ position: "relative", display: "inline-block", verticalAlign: "baseline" }}
+      onMouseEnter={enter} onMouseLeave={leave}
+      onFocus={() => { setFocus(true); setDismissed(false); }}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocus(false); }}
+      onKeyDown={(e) => { if (e.key === "Escape" && visible) { e.stopPropagation(); setDismissed(true); } }}>
+      <button type="button" onClick={() => onOpen?.(source)} aria-label={accessibleName} aria-describedby={uid}
+        style={{
+          ...interactiveBase, display: "inline-flex", alignItems: "center", justifyContent: "center",
+          height: 18, minWidth: 18, padding: variant === "dot" ? 0 : variant === "name" ? "0 7px" : "0 5px", margin: "0 2px",
+          borderRadius: tokens.radius.pill, verticalAlign: "baseline", boxSizing: "border-box",
+          background: visible ? pal.accentBg : pal.bgSubtle,
+          border: `1px solid ${visible ? `${pal.accent}55` : pal.borderSubtle}`,
+          color: visible ? pal.accentText : pal.textSecondary,
+          fontFamily: variant === "name" ? tokens.font.sans : tokens.font.mono, fontSize: 10, lineHeight: 1, fontWeight: tokens.weight.medium,
+          fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", maxWidth: variant === "name" ? 140 : undefined,
+          overflow: "hidden", textOverflow: "ellipsis",
+          transition: `all ${motion.fast} ${motion.easeInOut}`,
+        }}>
+        {variant === "dot"
+          ? <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 3, background: pal.accent, display: "block", transition: `background ${motion.smooth} ${motion.easeInOut}` }} />
+          : label}
+      </button>
+      <MarkerPart source={source} id={uid} visible={visible} theme={theme} />
+    </span>
+  );
+}
+
+// ─── MediaGeneration (added 2026-10-28) ───
+// ─── Media generation: waiting, progress and result for a generated image or video ───
+
+const MEDIAGEN_ASPECT = {
+  "1:1": { ratio: "1 / 1", cols: 8, rows: 8, maxW: 420 },
+  "4:3": { ratio: "4 / 3", cols: 8, rows: 6, maxW: 420 },
+  "16:9": { ratio: "16 / 9", cols: 12, rows: 7, maxW: 420 },
+  "9:16": { ratio: "9 / 16", cols: 6, rows: 10, maxW: 236 },
+};
+
+const MEDIAGEN_PROMPT = "Hero image for the Northwind status page: a calm control room at dawn, soft light, no people.";
+
+function MediaGenerationPart({ aspect, live, theme }) {
+  const pal = usePal(theme);
+  const a = MEDIAGEN_ASPECT[aspect] || MEDIAGEN_ASPECT["1:1"];
+  const tiles = [];
+  for (let r = 0; r < a.rows; r++) for (let c = 0; c < a.cols; c++) tiles.push([r, c]);
+  return (
+    <div aria-hidden="true" style={{
+      position: "absolute", inset: 0, display: "grid", gap: 2, padding: 2, boxSizing: "border-box",
+      gridTemplateColumns: `repeat(${a.cols}, 1fr)`, gridTemplateRows: `repeat(${a.rows}, 1fr)`,
+      background: pal.bgSubtle, transition: `background ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      {tiles.map(([r, c]) => (
+        <span key={`${r}-${c}`} data-halaska-calm style={{
+          background: pal.bgMuted, borderRadius: 2, display: "block",
+          animation: live ? `halaska-blink 2.6s ${motion.easeInOut} ${(r + c) * 0.09}s infinite` : "none",
+          transition: `background ${motion.smooth} ${motion.easeInOut}`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * MediaGeneration: the waiting, progress and result states for a generated image or video.
+ * @prop prompt {string} The prompt that produced the media, shown above the frame (default: MEDIAGEN_PROMPT)
+ * @prop status {"queued" | "generating" | "done" | "failed"} Current state when autoplay is off (default: "generating")
+ * @prop progress {number} 0 to 100 while generating, when autoplay is off (default: 42)
+ * @prop etaSeconds {number} Seconds left, shown beside the progress bar (default: 9)
+ * @prop src {string} Image url once done; without one a neutral tile placeholder renders (default: undefined)
+ * @prop aspect {"1:1" | "4:3" | "16:9" | "9:16"} Frame proportion, kept in every state (default: "16:9")
+ * @prop variations {number} Number of frames shown when done (default: 1)
+ * @prop autoplay {boolean} Walks queued, generating and done on its own over `generateMs`; false renders `status` with no timers (default: true)
+ * @prop generateMs {number} Length of the generating phase in autoplay (default: 4200)
+ * @prop error {string} Message shown in the failed state (default: "The image service timed out. Nothing was charged.")
+ * @prop onRegenerate {() => void} Fires from Regenerate and from Retry
+ * @prop onDownload {() => void} Fires from Download
+ * @prop onVariation {(index: number) => void} Fires when a variation frame is chosen
+ */
+function MediaGeneration({
+  theme: themeProp,
+  prompt = MEDIAGEN_PROMPT,
+  status = "generating",
+  progress = 42,
+  etaSeconds = 9,
+  src,
+  aspect = "16:9",
+  variations = 1,
+  autoplay = true,
+  generateMs = 4200,
+  error = "The image service timed out. Nothing was charged.",
+  onRegenerate,
+  onDownload,
+  onVariation,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [run, setRun] = useState(0);
+  const [auto, setAuto] = useState({ status: "queued", progress: 0, eta: Math.round(generateMs / 1000) });
+  const cbRef = useRef({ onRegenerate, onDownload, onVariation });
+  cbRef.current = { onRegenerate, onDownload, onVariation };
+
+  useEffect(() => {
+    if (!autoplay) return;
+    setAuto({ status: "queued", progress: 0, eta: Math.round(generateMs / 1000) });
+    let iv;
+    const start = setTimeout(() => {
+      const t0 = Date.now();
+      iv = setInterval(() => {
+        const p = Math.min(100, ((Date.now() - t0) / generateMs) * 100);
+        const eased = 100 * (1 - Math.pow(1 - p / 100, 1.6));
+        setAuto({ status: p >= 100 ? "done" : "generating", progress: eased, eta: Math.max(0, Math.ceil(((100 - p) / 100) * generateMs / 1000)) });
+        if (p >= 100) clearInterval(iv);
+      }, 80);
+    }, 900);
+    return () => { clearTimeout(start); clearInterval(iv); };
+  }, [autoplay, generateMs, run]);
+
+  const st = autoplay ? auto.status : status;
+  const pct = autoplay ? auto.progress : Math.max(0, Math.min(100, progress));
+  const eta = autoplay ? auto.eta : etaSeconds;
+  const a = MEDIAGEN_ASPECT[aspect] || MEDIAGEN_ASPECT["16:9"];
+  const count = st === "done" ? Math.max(1, variations) : 1;
+  const cols = count > 1 ? 2 : 1;
+  const regenerate = () => { setRun(n => n + 1); cbRef.current.onRegenerate?.(); };
+
+  const frameStyle = {
+    position: "relative", aspectRatio: a.ratio, width: "100%", borderRadius: tokens.radius.md, overflow: "hidden",
+    background: pal.bgSubtle, border: `1px solid ${pal.border}`, boxSizing: "border-box",
+    transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}`,
+  };
+
+  const statusLine = st === "queued" ? "In queue"
+    : st === "generating" ? `Generating · about ${eta}s left`
+      : st === "failed" ? "Generation failed"
+        : `Done${count > 1 ? ` · ${count} variations` : ""}`;
+
+  return (
+    <div style={{ width: 420, maxWidth: "100%", fontFamily: tokens.font.sans, display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+        <AgentGlyph size={18} theme={theme} />
+        <Text size="sm" theme={theme} style={{ color: pal.textSecondary, paddingTop: 1, flex: 1, minWidth: 0 }}>{prompt}</Text>
+      </div>
+
+      <div style={{ width: "100%", maxWidth: a.maxW, display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 8 }}>
+        {Array.from({ length: count }, (_, i) => {
+          const Frame = st === "done" && count > 1 ? "button" : "div";
+          const frameProps = Frame === "button" ? { type: "button", onClick: () => cbRef.current.onVariation?.(i), "aria-label": `Variation ${i + 1}` } : {};
+          return (
+            <Frame key={`${run}-${i}`} {...frameProps} style={{
+              ...(Frame === "button" ? { ...interactiveBase, padding: 0, display: "block" } : {}), ...frameStyle,
+            }}>
+              {st === "done" && src ? (
+                <img src={src} alt={prompt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              ) : (
+                <MediaGenerationPart aspect={aspect} live={st === "generating"} theme={theme} />
+              )}
+              {st === "queued" && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <StatusDot status="pending" pulse theme={theme} />
+                  <Text size="sm" secondary theme={theme}>Waiting for a slot</Text>
+                </div>
+              )}
+              {st === "failed" && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, textAlign: "center" }}>
+                  <Text size="sm" theme={theme} style={{ color: pal.danger, maxWidth: 260 }}>{error}</Text>
+                  <Button size="sm" variant="outline" theme={theme} onClick={regenerate}>Retry</Button>
+                </div>
+              )}
+              {st === "done" && count > 1 && (
+                <span aria-hidden="true" style={{
+                  position: "absolute", left: 8, bottom: 8, padding: "2px 7px", borderRadius: tokens.radius.pill,
+                  background: pal.bgElevated, border: `1px solid ${pal.border}`, ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary,
+                }}>{i + 1}</span>
+              )}
+            </Frame>
+          );
+        })}
+      </div>
+
+      <span role="status" aria-live="polite" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
+        {st === "queued" ? "In queue" : st === "generating" ? "Generating" : st === "failed" ? "Generation failed" : "Done"}
+      </span>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 36 }}>
+        {st === "generating" && (
+          <>
+            <Progress value={pct} theme={theme} height={4} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <Text size="xs" secondary theme={theme}>{statusLine}</Text>
+              <Text size="xs" mono theme={theme} style={{ color: pal.textTertiary, fontVariantNumeric: "tabular-nums" }}>{Math.round(pct)}%</Text>
+            </div>
+          </>
+        )}
+        {st === "queued" && <Text size="xs" secondary theme={theme}>{statusLine}</Text>}
+        {st === "failed" && <Text size="xs" theme={theme} style={{ color: pal.danger }}>{statusLine}</Text>}
+        {st === "done" && (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", animation: `halaska-fade-in ${motion.smooth} ${motion.easeOut} both` }}>
+            <Text size="xs" secondary theme={theme} style={{ marginRight: "auto" }}>{statusLine}</Text>
+            <Button size="sm" variant="ghost" theme={theme} onClick={regenerate}>Regenerate</Button>
+            <Button size="sm" variant="ghost" theme={theme} onClick={() => cbRef.current.onDownload?.()}>Download</Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Message (added 2026-10-28) ───
+// ─── AGENTS · Message: one turn in a conversation ────────────
+// User turns sit right in a bubble; agent turns sit left beside the agent's
+// mark with no bubble; system turns are a quiet centred line.
+
+const MSG_DEMO_TEXT = "I'd offer a credit, not a refund. Acme was down for 3 hours and 12 minutes on Tuesday, still inside the 99.5% uptime floor in their contract. A $180 credit on next month's invoice matches what you gave Fjord Health in June and stays under your approval cap.";
+
+const MSG_DEMO_SOURCES = [
+  { name: "Acme contract · Notion" },
+  { name: "Incident 412 · Linear" },
+];
+
+const MSG_THUMB_PATH = "M5 7.2 7.6 2.6c.9 0 1.6.7 1.6 1.6L8.7 6.7h3.3c.9 0 1.6.9 1.3 1.8l-1.2 4c-.2.6-.7 1-1.3 1H5M5 7.2H2.8v6.3H5M5 7.2v6.3";
+
+// Built-in action glyphs: pass icon: "copy" | "retry" | "up" | "down" | "check" | "edit".
+function MessageGlyph({ name, size = 13, style }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor",
+    strokeWidth: 1.25, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true,
+    style: { display: "block", flexShrink: 0, ...style },
+  };
+  if (name === "copy") return <svg {...common}><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" /><path d="M10.5 5.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" /></svg>;
+  if (name === "retry") return <svg {...common}><path d="M13.5 8a5.5 5.5 0 1 1-1.7-4" /><polyline points="13.6,1.8 13.6,5 10.4,5" /></svg>;
+  if (name === "up") return <svg {...common}><path d={MSG_THUMB_PATH} /></svg>;
+  if (name === "down") return <svg {...common} style={{ ...common.style, transform: "rotate(180deg)" }}><path d={MSG_THUMB_PATH} /></svg>;
+  if (name === "check") return <svg {...common} strokeWidth={1.5}><polyline points="3,8.5 6.5,12 13,4" /></svg>;
+  if (name === "edit") return <svg {...common}><path d="M11.5 2.5l2 2L6 12H4v-2z" /><path d="M10 4l2 2" /></svg>;
+  if (name === "doc") return <svg {...common}><path d="M4 1.5h5l3 3v10H4z" /><path d="M9 1.5v3h3" /><path d="M6 8.5h4M6 11h4" /></svg>;
+  return null;
+}
+
+function MessageActionBtn({ action, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const icon = typeof action.icon === "string" ? <MessageGlyph name={action.icon} /> : action.icon;
+  return (
+    <button type="button" onClick={action.onClick} aria-label={icon ? action.label : undefined} aria-pressed={action.active != null ? !!action.active : undefined}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, height: 26, minWidth: 26, padding: icon ? 0 : "0 8px", borderRadius: tokens.radius.sm,
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        background: action.active ? pal.accentBg : hover ? pal.bgSubtle : "transparent",
+        color: action.active ? pal.accentText : hover ? pal.text : pal.textTertiary,
+        ...tokens.type.xs, fontWeight: tokens.weight.medium,
+      }}>
+      {icon || action.label}
+    </button>
+  );
+}
+
+function MessageSource({ source, theme: themeProp }) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const Tag = source.href ? "a" : "span";
+  return (
+    <Tag href={source.href} target={source.href ? "_blank" : undefined} rel={source.href ? "noreferrer" : undefined}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px 3px 8px", maxWidth: "100%",
+        borderRadius: tokens.radius.pill, background: hover && source.href ? pal.bgMuted : pal.bgSubtle,
+        border: `1px solid ${pal.borderSubtle}`, textDecoration: "none", fontFamily: tokens.font.sans,
+        ...tokens.type.xs, color: hover && source.href ? pal.text : pal.textSecondary,
+        transition: `all ${motion.normal} ${motion.easeInOut}`, cursor: source.href ? "pointer" : "default",
+      }}>
+      <MessageGlyph name="doc" size={11} />
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{source.name}</span>
+    </Tag>
+  );
+}
+
+/**
+ * Message: one turn in an agent conversation.
+ * @prop role {"user" | "agent" | "system"} Who is speaking; sets alignment, bubble and default avatar (default: "agent")
+ * @prop text {string} The message as plain text (default: MSG_DEMO_TEXT); `children` replaces it with any content
+ * @prop children {node} Rich content for the turn; wins over `text`
+ * @prop name {string} Speaker name; shown above an agent turn, used for the user's default avatar
+ * @prop time {string} Timestamp label shown with the turn, for example "2:47 PM"
+ * @prop avatar {node} Replaces the default avatar; `null` hides it. Default is AgentGlyph for the agent and Avatar with the name for the user
+ * @prop status {"sending" | "sent" | "failed"} Delivery state of a user turn; failed keeps the actions visible so Retry is reachable
+ * @prop actions {{ label: string, icon?: node | "copy" | "retry" | "up" | "down" | "check" | "edit", onClick: () => void, active?: boolean }[]} Quiet actions shown on hover and focus
+ * @prop streaming {boolean} Shows a caret at the end of the text while it arrives (default: false)
+ * @prop sources {{ name: string, href?: string }[]} Source chips under an agent turn
+ * @prop compact {boolean} Tighter spacing, smaller avatar and type (default: false)
+ */
+function Message({
+  theme: themeProp,
+  role = "agent",
+  text = MSG_DEMO_TEXT,
+  children,
+  name,
+  time,
+  avatar,
+  status,
+  actions = [],
+  streaming = false,
+  sources = [],
+  compact = false,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const [focusWithin, setFocusWithin] = useState(false);
+
+  const body = children !== undefined ? children : text;
+  const type = compact ? tokens.type.sm : tokens.type.base;
+  const avatarSize = compact ? 20 : 24;
+  const showActions = actions.length > 0 && (hover || focusWithin || status === "failed" || actions.some(a => a.active));
+  const caret = streaming && (
+    <span aria-hidden="true" style={{
+      display: "inline-block", width: 2, height: "1.05em", background: pal.accent, marginLeft: 2,
+      verticalAlign: "text-bottom", borderRadius: 1, animation: "halaska-blink 1s step-end infinite",
+    }} />
+  );
+
+  const metaRow = (actions.length > 0 || time) && (
+    <div style={{ display: "flex", alignItems: "center", gap: 2, minHeight: 26, marginTop: compact ? 2 : 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 2, opacity: showActions ? 1 : 0, transition: `opacity ${motion.normal} ${motion.easeInOut}` }}>
+        {actions.map((a, i) => <MessageActionBtn key={a.label || i} action={a} theme={theme} />)}
+      </div>
+      {time && (
+        <span style={{ ...tokens.type.xs, color: pal.textTertiary, marginLeft: "auto", paddingRight: 2, whiteSpace: "nowrap", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{time}</span>
+      )}
+    </div>
+  );
+
+  const wrap = {
+    onMouseEnter: () => setHover(true), onMouseLeave: () => setHover(false),
+    onFocus: () => setFocusWithin(true), onBlur: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocusWithin(false); },
+  };
+
+  if (role === "system") {
+    return (
+      <div role="note" style={{ width: 460, maxWidth: "100%", fontFamily: tokens.font.sans, display: "flex", justifyContent: "center", padding: compact ? "2px 0" : "6px 0" }}>
+        <span style={{ ...tokens.type.xs, color: pal.textTertiary, textAlign: "center", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
+          {body}{time && <span> · {time}</span>}
+        </span>
+      </div>
+    );
+  }
+
+  if (role === "user") {
+    const pic = avatar === undefined ? <Avatar name={name || "You"} size={avatarSize} theme={theme} /> : avatar;
+    const statusLine = status === "sending" ? (
+      <span role="status" style={{ display: "inline-flex", alignItems: "center", gap: 6, ...tokens.type.xs, color: pal.textTertiary }}>
+        <Spinner size={10} color={pal.textTertiary} /> Sending
+      </span>
+    ) : status === "failed" ? (
+      <span role="status" style={{ ...tokens.type.xs, color: pal.danger }}>Not sent</span>
+    ) : null;
+    return (
+      <div {...wrap} style={{ width: 460, maxWidth: "100%", fontFamily: tokens.font.sans, display: "flex", justifyContent: "flex-end", gap: 10, boxSizing: "border-box" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", minWidth: 0, maxWidth: pic ? "calc(100% - 34px)" : "100%" }}>
+          <div style={{
+            maxWidth: "100%", boxSizing: "border-box", padding: compact ? "7px 12px" : "10px 14px",
+            background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}`,
+            borderRadius: `${tokens.radius.md}px ${tokens.radius.md}px ${tokens.radius.xs}px ${tokens.radius.md}px`,
+            opacity: status === "sending" ? 0.7 : 1,
+            transition: `all ${motion.smooth} ${motion.easeInOut}`,
+          }}>
+            <div style={{ ...type, color: pal.text, lineHeight: 1.55, overflowWrap: "anywhere", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{body}{caret}</div>
+          </div>
+          {(statusLine || metaRow) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, alignSelf: "stretch", justifyContent: "flex-end" }}>
+              {statusLine}
+              {metaRow && <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "flex-end" }}>{metaRow}</div>}
+            </div>
+          )}
+        </div>
+        {pic && <div style={{ flexShrink: 0, paddingTop: 2 }}>{pic}</div>}
+      </div>
+    );
+  }
+
+  const pic = avatar === undefined ? <AgentGlyph size={avatarSize} theme={theme} /> : avatar;
+  return (
+    <div {...wrap} style={{ width: 460, maxWidth: "100%", fontFamily: tokens.font.sans, display: "flex", gap: 10, boxSizing: "border-box" }}>
+      {pic && <div style={{ flexShrink: 0, paddingTop: 2 }}>{pic}</div>}
+      <div style={{ flex: 1, minWidth: 0, paddingTop: compact ? 1 : 2 }}>
+        {name && (
+          <div style={{ ...tokens.type.xs, fontWeight: tokens.weight.semibold, color: pal.textSecondary, marginBottom: 3, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{name}</div>
+        )}
+        <div aria-busy={streaming || undefined} style={{ ...type, color: pal.text, lineHeight: 1.65, overflowWrap: "anywhere", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>
+          {body}{caret}
+        </div>
+        {sources.length > 0 && (
+          <div role="list" aria-label="Sources" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: compact ? 6 : 10 }}>
+            {sources.map((s, i) => (
+              <div key={s.name || i} role="listitem" style={{ minWidth: 0, maxWidth: "100%" }}><MessageSource source={s} theme={theme} /></div>
+            ))}
+          </div>
+        )}
+        {metaRow}
+      </div>
+    </div>
+  );
+}
+
+// ─── QuestionCard (added 2026-10-28) ───
+// QuestionCard: the agent needs a few answers before it continues
+const QCARD_QUESTIONS = [
+  {
+    id: "scope",
+    question: "Which duplicate charges should I refund?",
+    context: "Last night's billing run charged three accounts twice.",
+    options: [
+      { id: "all",   label: "All three",                          sub: "Acme, Lumen Labs, Cobalt Dental" },
+      { id: "cap",   label: "Only the ones under the $50 cap",    sub: "Acme and Cobalt Dental" },
+      { id: "hold",  label: "None yet, draft the replies first" },
+    ],
+    allowOther: true,
+  },
+  {
+    id: "tone",
+    question: "How should the apology read?",
+    options: [
+      { id: "plain",  label: "Short and plain",  sub: "Two sentences, no excuses" },
+      { id: "cause",  label: "With the cause",   sub: "Mention the billing run" },
+      { id: "formal", label: "Formal",           sub: "Fjord Health's procurement team will read it" },
+    ],
+  },
+  {
+    id: "issue",
+    question: "Open a Linear issue for the billing bug?",
+    context: "Dana Ruiz owns billing this sprint.",
+    options: [
+      { id: "assign", label: "Yes, assign it to Dana" },
+      { id: "triage", label: "Yes, leave it in triage" },
+      { id: "no",     label: "No, it is already tracked" },
+    ],
+  },
+];
+
+const QCARD_LETTERS = "ABCDEFGHIJ";
+
+function QuestionCardOption({ option, letter, checked, tabIndex, onSelect, theme }) {
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" role="radio" aria-checked={checked} tabIndex={tabIndex} onClick={onSelect}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        ...interactiveBase, display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
+        padding: "9px 12px", boxSizing: "border-box", borderRadius: tokens.radius.sm,
+        background: checked ? pal.accentBg : hover ? pal.bgSubtle : pal.bgElevated,
+        border: `1px solid ${checked ? pal.accent : pal.border}`,
+        color: pal.text,
+      }}>
+      <Kbd theme={theme}>{letter}</Kbd>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <Text size="sm" weight="medium" theme={theme} style={{ display: "block" }}>{option.label}</Text>
+        {option.sub && <Text size="xs" theme={theme} style={{ display: "block", color: pal.textTertiary }}>{option.sub}</Text>}
+      </span>
+      <span aria-hidden="true" style={{
+        width: 14, height: 14, borderRadius: 7, boxSizing: "border-box", flexShrink: 0,
+        border: `1.5px solid ${checked ? pal.accent : pal.border}`,
+        background: checked ? pal.accent : "transparent",
+        boxShadow: checked ? `inset 0 0 0 3px ${pal.bgElevated}` : "none",
+        transition: `all ${motion.normal} ${motion.easeInOut}`,
+      }} />
+    </button>
+  );
+}
+
+/**
+ * QuestionCard: the agent asks several questions before it continues, one at a time, then shows the answers.
+ * @prop title {string} Header line beside the agent mark (default: "Before Alpha continues")
+ * @prop questions {{ id: string, question: string, context?: string, options: { id: string, label: string, sub?: string }[], allowOther?: boolean }[]} Questions in order (default: QCARD_QUESTIONS)
+ * @prop skipLabel {string} Ghost action that hands the decision back to the agent (default: "Skip, use defaults")
+ * @prop nextLabel {string} Primary action between questions (default: "Next")
+ * @prop doneLabel {string} Primary action on the last question (default: "Continue")
+ * @prop otherLabel {string} Label of the free-text option when a question allows it (default: "Other")
+ * @prop otherPlaceholder {string} Placeholder of the free-text field (default: "Tell Alpha what you would prefer")
+ * @prop skippedText {string} Line shown after skipping (default: "Skipped. Alpha will go with its defaults.")
+ * @prop onAnswer {(questionId: string, optionId: string) => void} Fires when an option is picked; "other" for the free-text option
+ * @prop onComplete {(answers: Record<string, { optionId: string, label: string }>) => void} Fires once with every answer when the last question is confirmed
+ * @prop onSkip {() => void} Fires when the user skips the remaining questions
+ */
+function QuestionCard({
+  theme: themeProp,
+  title = "Before Alpha continues",
+  questions = QCARD_QUESTIONS,
+  skipLabel = "Skip, use defaults",
+  nextLabel = "Next",
+  doneLabel = "Continue",
+  otherLabel = "Other",
+  otherPlaceholder = "Tell Alpha what you would prefer",
+  skippedText = "Skipped. Alpha will go with its defaults.",
+  onAnswer,
+  onComplete,
+  onSkip,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [idx, setIdx] = useState(0);
+  const [answers, setAnswers] = useState({});   // questionId -> optionId
+  const [other, setOther] = useState({});       // questionId -> typed text
+  const [phase, setPhase] = useState("ask");     // ask | done | skipped
+  const rootRef = useRef(null);
+  const groupId = useUid("qcard");
+
+  const n = questions.length;
+  const current = questions[idx];
+  const optionsFor = (q) => (q.allowOther ? [...q.options, { id: "other", label: otherLabel }] : q.options);
+  const picked = current ? answers[current.id] : undefined;
+  const canNext = !!picked && (picked !== "other" || (other[current.id] || "").trim().length > 0);
+
+  const select = (q, optionId) => {
+    setAnswers(a => ({ ...a, [q.id]: optionId }));
+    onAnswer?.(q.id, optionId);
+    if (optionId === "other") {
+      // Move focus into the text field once it is visible
+      setTimeout(() => {
+        const input = rootRef.current?.querySelector(`[data-qcard-other="${q.id}"] input`);
+        if (input) input.focus({ preventScroll: true });
+      }, 0);
+    }
+  };
+
+  const summary = () => {
+    const out = {};
+    questions.forEach(q => {
+      const id = answers[q.id];
+      if (!id) return;
+      const opt = optionsFor(q).find(o => o.id === id);
+      out[q.id] = { optionId: id, label: id === "other" ? (other[q.id] || "").trim() : (opt ? opt.label : id) };
+    });
+    return out;
+  };
+
+  const next = () => {
+    if (!canNext) return;
+    if (idx < n - 1) { setIdx(idx + 1); return; }
+    const result = summary();
+    setPhase("done");
+    onComplete?.(result);
+  };
+
+  const skip = () => { setPhase("skipped"); onSkip?.(); };
+
+  // Letter keys pick an option; the text field keeps its own keys
+  const onKeyDown = (e) => {
+    if (phase !== "ask" || !current) return;
+    if (e.target && e.target.tagName === "INPUT") return;
+    if (e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1) return;
+    const i = QCARD_LETTERS.indexOf(e.key.toUpperCase());
+    const opts = optionsFor(current);
+    if (i > -1 && i < opts.length) { e.preventDefault(); select(current, opts[i].id); }
+  };
+
+  const answered = summary();
+  const count = phase === "ask" ? `${idx + 1} of ${n}` : phase === "done" ? `${Object.keys(answered).length} of ${n} answered` : "";
+
+  return (
+    <div ref={rootRef} onKeyDown={onKeyDown} style={{
+      width: 420, maxWidth: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
+      background: pal.bgElevated, border: `1px solid ${pal.border}`, borderRadius: tokens.radius.md,
+      padding: 16, transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <AgentGlyph size={20} theme={theme} />
+        <Text size="sm" weight="medium" secondary theme={theme} style={{ flex: 1, minWidth: 0 }} truncate>{title}</Text>
+      </div>
+
+      {/* Every question and the summary share one grid cell, so the card keeps the height of the tallest */}
+      <div style={{ display: "grid" }}>
+        {questions.map((q, i) => {
+          const show = phase === "ask" && i === idx;
+          const opts = optionsFor(q);
+          const value = answers[q.id];
+          const hasValue = opts.some(o => o.id === value);
+          return (
+            <div key={q.id} aria-hidden={!show} style={{
+              gridArea: "1 / 1", visibility: show ? "visible" : "hidden",
+              animation: show ? `halaska-fade-in 0.25s ${motion.easeOut} both` : "none",
+            }}>
+              <div id={`${groupId}-q${i}`} style={{
+                ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text,
+                transition: `color ${motion.smooth} ${motion.easeInOut}`,
+              }}>{q.question}</div>
+              {q.context && <Text size="sm" theme={theme} style={{ display: "block", color: pal.textTertiary, marginTop: 2 }}>{q.context}</Text>}
+              <div role="radiogroup" aria-labelledby={`${groupId}-q${i}`}
+                onKeyDown={(e) => { const el = arrowNav(e, { selector: '[role="radio"]', horizontal: false }); if (el) el.click(); }}
+                style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+                {opts.map((o, j) => (
+                  <QuestionCardOption key={o.id} option={o} letter={QCARD_LETTERS[j]} checked={value === o.id}
+                    tabIndex={show ? (value === o.id || (!hasValue && j === 0) ? 0 : -1) : -1}
+                    onSelect={() => select(q, o.id)} theme={theme} />
+                ))}
+              </div>
+              {q.allowOther && (
+                <div data-qcard-other={q.id} style={{ marginTop: 8, visibility: show && value === "other" ? "visible" : "hidden" }}>
+                  <TextInput size="sm" theme={theme} value={other[q.id] || ""} placeholder={otherPlaceholder} aria-label={otherLabel}
+                    onChange={(v) => setOther(t => ({ ...t, [q.id]: v }))} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <div aria-hidden={phase === "ask"} style={{
+          gridArea: "1 / 1", visibility: phase === "ask" ? "hidden" : "visible",
+          animation: phase !== "ask" ? `halaska-fade-in 0.25s ${motion.easeOut} both` : "none",
+        }}>
+          {phase === "skipped" ? (
+            <Text size="sm" secondary theme={theme} style={{ display: "block" }}>{skippedText}</Text>
+          ) : (
+            <div role="list" aria-label="Your answers" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {questions.map(q => (
+                <div key={q.id} role="listitem" style={{ display: "flex", flexDirection: "column", gap: 1, paddingBottom: 10, borderBottom: `1px solid ${pal.borderSubtle}` }}>
+                  <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>{q.question}</Text>
+                  <Text size="sm" weight="medium" theme={theme}>{answered[q.id] ? answered[q.id].label : "No answer"}</Text>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 14, minHeight: 30 }}>
+        <span role="status" aria-live="polite" style={{
+          ...tokens.type.xs, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", color: pal.textSecondary,
+        }}>{count}</span>
+        {phase === "ask" && (
+          <Stack direction="row" gap={6} align="center">
+            <Button theme={theme} variant="ghost" size="sm" onClick={skip}>{skipLabel}</Button>
+            <Button theme={theme} variant="accent" size="sm" disabled={!canNext} onClick={next}>{idx === n - 1 ? doneLabel : nextLabel}</Button>
+          </Stack>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── ReasoningSteps (added 2026-10-28) ───
+// ReasoningSteps: a compact, collapsible trace of what the agent did
+const REASON_STEPS = [
+  { id: "r1", kind: "thought", label: "Three refund requests point at the same invoice run",     durationMs: 700 },
+  { id: "r2", kind: "search",  label: "Searched Stripe for charges on 14 October",              detail: "3 duplicates, all under $50", durationMs: 1300 },
+  { id: "r3", kind: "read",    label: "Read the refunds runbook",                               detail: "Notion · Refunds under the cap", durationMs: 900 },
+  { id: "r4", kind: "tool",    label: "Checked each account's plan in Intercom",                detail: "Acme, Lumen Labs, Cobalt Dental", durationMs: 1100 },
+  { id: "r5", kind: "write",   label: "Drafted three replies and a Linear issue for Dana Ruiz", durationMs: 800 },
+];
+
+// Text glyphs, no emoji, so they take the text colour and render everywhere
+const REASON_KINDS = {
+  thought: { glyph: "◌", label: "Thought" },
+  search:  { glyph: "◔", label: "Searched" },
+  read:    { glyph: "▤", label: "Read" },
+  tool:    { glyph: "▸", label: "Ran a tool" },
+  write:   { glyph: "◆", label: "Wrote" },
+};
+
+const ReasoningStepsSeconds = (ms) => (ms >= 10000 ? `${Math.round(ms / 1000)}s` : `${(ms / 1000).toFixed(1)}s`);
+
+function ReasoningStepsRow({ step, state, stepMs, theme }) {
+  const pal = usePal(theme);
+  const kind = REASON_KINDS[step.kind] || REASON_KINDS.thought;
+  const reached = state !== "pending";
+  const active = state === "active";
+  return (
+    <li aria-current={active ? "step" : undefined} style={{
+      display: "flex", alignItems: "flex-start", gap: 10, padding: "3px 0", listStyle: "none", margin: 0,
+      visibility: reached ? "visible" : "hidden",
+      animation: reached ? `halaska-step-in 0.3s ${motion.emphasized} both` : "none",
+    }}>
+      <span role="img" aria-label={kind.label} style={{
+        width: 14, flexShrink: 0, textAlign: "center", ...tokens.type.sm, lineHeight: "19px",
+        fontFamily: tokens.font.mono, color: active ? pal.accent : pal.textTertiary,
+        transition: `color ${motion.smooth} ${motion.easeInOut}`,
+      }}>{kind.glyph}</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <Text size="sm" weight={active ? "medium" : "regular"} theme={theme}
+          style={{ display: "block", color: active ? pal.text : pal.textSecondary, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{step.label}</Text>
+        {step.detail && (
+          <Text size="xs" theme={theme} style={{ display: "block", color: pal.textTertiary, fontFamily: tokens.font.mono }}>{step.detail}</Text>
+        )}
+      </span>
+      <span style={{
+        width: 36, flexShrink: 0, textAlign: "right", ...tokens.type.xs, lineHeight: "19px",
+        fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", color: pal.textTertiary,
+        visibility: state === "done" ? "visible" : "hidden",
+      }}>{ReasoningStepsSeconds(step.durationMs ?? stepMs)}</span>
+    </li>
+  );
+}
+
+/**
+ * ReasoningSteps: a dense trace of what the agent did, open while it runs and folded to one line when done.
+ * @prop steps {{ id: string, kind: "thought" | "search" | "read" | "tool" | "write", label: string, detail?: string, durationMs?: number }[]} Steps in order; each shows for its durationMs, or stepMs when absent (default: REASON_STEPS)
+ * @prop autoplay {boolean} Stream the steps in on mount; false renders the finished trace with no timers (default: true)
+ * @prop stepMs {number} Fallback duration for a step without durationMs (default: 900)
+ * @prop runningLabel {string} Header text while running (default: "Thinking")
+ * @prop summaryLabel {string | (seconds: number) => string} Header text once done; a function receives the total seconds (default: `Thought for ${seconds} seconds`)
+ * @prop collapsed {boolean} Fold to the summary line once done; false leaves the steps open (default: true)
+ * @prop collapseDelayMs {number} Pause between the last step and the fold (default: 700)
+ * @prop onDone {(seconds: number) => void} Fires when the last step finishes (autoplay only)
+ * @prop onToggle {(open: boolean) => void} Fires when the trace opens or folds, by click or by the automatic fold
+ */
+function ReasoningSteps({
+  theme: themeProp,
+  steps = REASON_STEPS,
+  autoplay = true,
+  stepMs = 900,
+  runningLabel = "Thinking",
+  summaryLabel,
+  collapsed = true,
+  collapseDelayMs = 700,
+  onDone,
+  onToggle,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const totalMs = steps.reduce((a, s) => a + (s.durationMs ?? stepMs), 0);
+  const durKey = steps.map(s => s.durationMs ?? stepMs).join(",");
+  const [shown, setShown] = useState(autoplay ? 1 : steps.length); // how many steps are on screen
+  const [done, setDone] = useState(!autoplay);
+  const [open, setOpen] = useState(autoplay ? true : !collapsed);
+  const [elapsedMs, setElapsedMs] = useState(autoplay ? 0 : totalMs);
+  const [hover, setHover] = useState(false);
+  const [bodyH, setBodyH] = useState(0);
+  const bodyRef = useRef(null);
+  const bodyId = useUid("reason");
+  const cbRef = useRef({ onDone, onToggle }); cbRef.current = { onDone, onToggle };
+
+  useEffect(() => {
+    if (!autoplay) return;
+    const durs = durKey.split(",").map(Number);
+    const total = durs.reduce((a, b) => a + b, 0);
+    const t0 = Date.now();
+    const timers = [];
+    const iv = setInterval(() => setElapsedMs(Math.min(total, Date.now() - t0)), 100);
+    let acc = 0;
+    durs.forEach((d, i) => {
+      acc += d;
+      timers.push(setTimeout(() => {
+        if (i + 1 < durs.length) { setShown(i + 2); return; }
+        clearInterval(iv);
+        setElapsedMs(total);
+        setDone(true);
+        cbRef.current.onDone?.(total / 1000);
+        if (collapsed) timers.push(setTimeout(() => { setOpen(false); cbRef.current.onToggle?.(false); }, collapseDelayMs));
+      }, acc));
+    });
+    return () => { clearInterval(iv); timers.forEach(clearTimeout); };
+  }, [autoplay, durKey, collapsed, collapseDelayMs]);
+
+  // Measure the open body once so the fold animates to a real height
+  useEffect(() => {
+    if (bodyRef.current) setBodyH(bodyRef.current.scrollHeight);
+  }, [steps.length]);
+
+  const toggle = () => {
+    if (!done) return;
+    const next = !open;
+    setOpen(next);
+    cbRef.current.onToggle?.(next);
+  };
+
+  const seconds = elapsedMs / 1000;
+  const summary = typeof summaryLabel === "function" ? summaryLabel(seconds)
+    : summaryLabel || `Thought for ${Math.max(1, Math.round(seconds))} seconds`;
+
+  return (
+    <div style={{ width: 400, maxWidth: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans }}>
+      <button type="button" onClick={toggle} aria-expanded={open} aria-controls={bodyId}
+        onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        style={{
+          ...interactiveBase, display: "flex", alignItems: "center", gap: 10, width: "100%",
+          padding: "8px 10px", borderRadius: tokens.radius.sm, textAlign: "left",
+          background: hover && done ? pal.bgSubtle : "transparent",
+          cursor: done ? "pointer" : "default", color: pal.text,
+        }}>
+        {done ? (
+          <ChevronIcon size={12} direction={open ? "down" : "right"} style={{ color: pal.textTertiary }} />
+        ) : (
+          <ThinkingIndicator label="" size="sm" theme={theme} />
+        )}
+        <Text size="sm" weight="medium" secondary theme={theme} style={{ flex: 1, minWidth: 0 }} truncate>
+          {done ? summary : runningLabel}
+        </Text>
+        <span style={{
+          ...tokens.type.xs, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", color: pal.textTertiary,
+        }}>{ReasoningStepsSeconds(elapsedMs)}</span>
+      </button>
+
+      <div id={bodyId} aria-live="polite" style={{
+        overflow: "hidden",
+        maxHeight: open ? (bodyH || "none") : 0,
+        opacity: open ? 1 : 0,
+        transition: `max-height 0.4s ${motion.emphasized}, opacity ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        <ul ref={bodyRef} role="list" style={{ margin: 0, padding: "2px 10px 8px 12px", listStyle: "none" }}>
+          {steps.map((s, i) => {
+            const state = i < shown - 1 || done ? "done" : i === shown - 1 ? "active" : "pending";
+            return <ReasoningStepsRow key={s.id || i} step={s} state={state} stepMs={stepMs} theme={theme} />;
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ─── ResultCards (added 2026-10-28) ───
+// ─── Result cards: the agent answers with a row of cards instead of text ───
+
+const RESULT_ITEMS = [
+  { id: "helpdesk", title: "Helpdesk Pro", subtitle: "Shared inbox with routing rules and SLA timers.", meta: "$49 per seat", badge: "Best fit" },
+  { id: "replyboard", title: "Replyboard", subtitle: "Light inbox with a strong Linear sync.", meta: "$29 per seat" },
+  { id: "tidewater", title: "Tidewater", subtitle: "Ticketing with a Stripe refund panel built in.", meta: "$39 per seat" },
+  { id: "northstar", title: "Northstar Desk", subtitle: "Runbooks and macros live beside the thread.", meta: "$59 per seat" },
+];
+
+const RESULT_CARD_W = 220;
+
+function ResultCardsPart({ item, selected, onSelect, actionLabel, selectedLabel, theme }) {
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const Title = item.href ? "a" : "button";
+  const titleProps = item.href
+    ? { href: item.href, target: "_blank", rel: "noreferrer" }
+    : { type: "button", onClick: () => onSelect(item) };
+  return (
+    <div role="listitem"
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex", flexDirection: "column", minWidth: 0, flex: 1, width: "100%", boxSizing: "border-box",
+        background: pal.bgElevated, borderRadius: tokens.radius.md, overflow: "hidden",
+        border: `1px solid ${selected ? pal.accent : pal.border}`,
+        boxShadow: selected ? `0 0 0 1px ${pal.accent}` : hover ? `0 4px 16px ${pal.shadowMd}` : `0 1px 4px ${pal.shadow}`,
+        transition: `box-shadow ${motion.normal} ${motion.easeInOut}, border-color ${motion.normal} ${motion.easeInOut}, background ${motion.smooth} ${motion.easeInOut}`,
+        fontFamily: tokens.font.sans,
+      }}>
+      <div aria-hidden={!item.image || typeof item.image !== "string"} style={{
+        aspectRatio: "16 / 10", background: pal.bgMuted, display: "flex", alignItems: "center", justifyContent: "center",
+        overflow: "hidden", borderBottom: `1px solid ${pal.borderSubtle}`, transition: `background ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        {typeof item.image === "string" ? (
+          <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        ) : item.image ? item.image : (
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke={pal.textMuted} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4.5" y="6.5" width="19" height="15" rx="2.5" />
+            <circle cx="10" cy="12" r="1.6" />
+            <path d="M5 19.5 L11.5 14.5 L15.5 17.5 L19 15 L23 18.5" />
+          </svg>
+        )}
+      </div>
+      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <Title {...titleProps} style={{
+            ...interactiveBase, background: "transparent", padding: 0, textAlign: "left", minWidth: 0, flex: 1,
+            ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text, textDecoration: "none",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block",
+          }}>{item.title}</Title>
+          {item.badge && <Badge variant={selected ? "accent" : "default"} theme={theme} style={{ flexShrink: 0 }}>{item.badge}</Badge>}
+        </div>
+        {item.subtitle && (
+          <Text size="sm" secondary theme={theme} as="div" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: 37 }}>
+            {item.subtitle}
+          </Text>
+        )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: "auto", paddingTop: 6 }}>
+          <Text size="sm" weight="medium" mono theme={theme} style={{ color: pal.textSecondary, fontVariantNumeric: "tabular-nums" }}>{item.meta}</Text>
+          <Button size="sm" variant={selected ? "secondary" : "outline"} theme={theme}
+            aria-label={`${selected ? selectedLabel : (item.actionLabel || actionLabel)}: ${item.title}`}
+            onClick={() => (item.onAction ? item.onAction(item) : onSelect(item))}>
+            {selected ? selectedLabel : (item.actionLabel || actionLabel)}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ResultCards: a row of result cards the agent returns inside a reply, one shape for products, places, people and documents.
+ * @prop items {{ id: string, title: string, subtitle?: string, meta?: string, badge?: string, image?: string | ReactNode, href?: string, actionLabel?: string, onAction?: (item) => void }[]} Cards to show; without an image a neutral placeholder tile renders (default: RESULT_ITEMS)
+ * @prop layout {"row" | "grid"} row scrolls horizontally with snap points, grid wraps into `columns` (default: "row")
+ * @prop columns {number} Columns in grid layout on wide containers; narrow containers collapse to one (default: 2)
+ * @prop intro {string} One line above the cards, written as the agent's sentence (default: "Four support tools fit Northwind's stack. Helpdesk Pro is the closest match.")
+ * @prop actionLabel {string} Label of each card's outline action unless the item sets its own (default: "Choose")
+ * @prop selectedLabel {string} Action label on the selected card (default: "Chosen")
+ * @prop onSelect {(item) => void} Fires when a card's title or action is activated; the card is also marked as selected
+ */
+function ResultCards({
+  theme: themeProp,
+  items = RESULT_ITEMS,
+  layout = "row",
+  columns = 2,
+  intro = "Four support tools fit Northwind's stack. Helpdesk Pro is the closest match.",
+  actionLabel = "Choose",
+  selectedLabel = "Chosen",
+  onSelect,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [rootRef, narrow] = useNarrow(460);
+  const [selectedId, setSelectedId] = useState(null);
+  const select = (item) => { setSelectedId(item.id); onSelect?.(item); };
+  const grid = layout === "grid";
+  const cols = narrow ? 1 : Math.max(1, columns);
+
+  return (
+    <div ref={rootRef} style={{ width: 560, maxWidth: "100%", fontFamily: tokens.font.sans, display: "flex", flexDirection: "column", gap: 10 }}>
+      {intro && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <AgentGlyph size={18} theme={theme} />
+          <Text size="sm" theme={theme} style={{ color: pal.textSecondary, paddingTop: 1 }}>{intro}</Text>
+        </div>
+      )}
+      <div role="list" aria-label="Results" style={grid ? {
+        display: "grid", gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 12,
+      } : {
+        display: "flex", gap: 12, overflowX: "auto", overflowY: "hidden", scrollSnapType: "x mandatory",
+        scrollbarWidth: "thin", padding: "2px 2px 10px", margin: "-2px -2px 0", WebkitOverflowScrolling: "touch",
+      }}>
+        {items.map((item) => (
+          <div key={item.id} style={grid ? { minWidth: 0, display: "flex" } : { flex: `0 0 ${RESULT_CARD_W}px`, scrollSnapAlign: "start", display: "flex" }}>
+            <ResultCardsPart item={item} selected={selectedId === item.id} onSelect={select}
+              actionLabel={actionLabel} selectedLabel={selectedLabel} theme={theme} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── TaskList (added 2026-10-28) ───
+// TaskList: the agent's running to-do list for one job
+const TASKLIST_TASKS = [
+  { id: "read",    label: "Read the 42 unread threads",            status: "done",    detail: "Intercom · 3 inboxes" },
+  { id: "group",   label: "Group them by customer",                status: "done",    detail: "5 accounts, Acme leads" },
+  { id: "issue",   label: "Open a Linear issue for the sync bug",  status: "failed",  detail: "Linear rejected the token" },
+  { id: "draft",   label: "Draft replies for the 11 sync threads", status: "running", detail: "Workaround first, then the fix date" },
+  { id: "refund",  label: "Refund Lumen Labs' duplicate charge",   status: "todo",    detail: "Stripe · $49, under the cap" },
+  { id: "runbook", label: "Update the refunds runbook",            status: "blocked", detail: "Waiting on Dana Ruiz" },
+];
+
+const TASKLIST_STATUS_LABEL = { todo: "To do", running: "Running", done: "Done", failed: "Failed", blocked: "Blocked" };
+
+// One step of the demo: the running task finishes and the next open task starts.
+// Returns the same array when nothing is left to move so callers can stop.
+function TaskListAdvance(tasks) {
+  const running = tasks.findIndex(t => t.status === "running");
+  const nextTodo = tasks.findIndex(t => t.status === "todo");
+  if (running === -1 && nextTodo === -1) return tasks;
+  return tasks.map((t, i) =>
+    i === running ? { ...t, status: "done" } : i === nextTodo ? { ...t, status: "running" } : t);
+}
+
+function TaskListGlyph({ status, theme }) {
+  const pal = usePal(theme);
+  const box = { width: 20, height: 20, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+  const ring = (color) => ({
+    width: 16, height: 16, borderRadius: 8, boxSizing: "border-box",
+    border: `1.5px solid ${color}`, display: "inline-flex", alignItems: "center", justifyContent: "center",
+    transition: `all ${motion.smooth} ${motion.easeInOut}`,
+  });
+  if (status === "running") {
+    return <span style={box} role="img" aria-label={TASKLIST_STATUS_LABEL.running}><ThinkingIndicator label="" size="sm" theme={theme} /></span>;
+  }
+  if (status === "done") {
+    return (
+      <span style={box} role="img" aria-label={TASKLIST_STATUS_LABEL.done}>
+        <span style={{ ...ring(pal.accent), background: pal.accent, animation: `halaska-scale-in 0.25s ${motion.easeOut} both` }}>
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="1.5,5.2 4,7.6 8.5,2.6" />
+          </svg>
+        </span>
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span style={box} role="img" aria-label={TASKLIST_STATUS_LABEL.failed}>
+        <span style={{ ...ring(pal.danger), color: pal.danger, fontSize: 11, lineHeight: 1, fontFamily: tokens.font.sans }}>×</span>
+      </span>
+    );
+  }
+  if (status === "blocked") {
+    return (
+      <span style={box} role="img" aria-label={TASKLIST_STATUS_LABEL.blocked}>
+        <span style={ring(pal.warning)}><span style={{ width: 6, height: 1.5, background: pal.warning, borderRadius: 1 }} /></span>
+      </span>
+    );
+  }
+  return <span style={box} role="img" aria-label={TASKLIST_STATUS_LABEL.todo}><span style={ring(pal.border)} /></span>;
+}
+
+function TaskListRow({ task, retryLabel, onRetry, theme }) {
+  const pal = usePal(theme);
+  const s = task.status;
+  const labelColor = s === "done" || s === "todo" ? pal.textSecondary : pal.text;
+  return (
+    <li aria-current={s === "running" ? "step" : undefined} style={{
+      display: "flex", alignItems: "flex-start", gap: 10, padding: "6px 0", minHeight: 44, boxSizing: "border-box",
+      listStyle: "none", margin: 0,
+    }}>
+      <span style={{ marginTop: 1 }}><TaskListGlyph status={s} theme={theme} /></span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Text size="sm" weight={s === "running" ? "medium" : "regular"} theme={theme}
+          style={{ display: "block", color: labelColor, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{task.label}</Text>
+        {task.detail && (
+          <Text size="xs" theme={theme} style={{ display: "block", color: pal.textTertiary }}>{task.detail}</Text>
+        )}
+      </div>
+      {/* Reserved so a Retry button appearing never shifts the row */}
+      <span style={{ width: 64, flexShrink: 0, display: "flex", justifyContent: "flex-end", minHeight: 30 }}>
+        {s === "failed" && (
+          <Button theme={theme} variant="ghost" size="sm" onClick={onRetry} aria-label={`${retryLabel}: ${task.label}`}
+            style={{ animation: `halaska-fade-in 0.2s ${motion.easeOut} both` }}>{retryLabel}</Button>
+        )}
+      </span>
+    </li>
+  );
+}
+
+/**
+ * TaskList: the agent's running to-do list for one job, with a count and a progress bar.
+ * @prop title {string} Header text (default: "Clearing the support backlog")
+ * @prop tasks {{ id: string, label: string, status: "todo" | "running" | "done" | "failed" | "blocked", detail?: string }[]} The job's tasks in order; copied into state on mount (default: TASKLIST_TASKS)
+ * @prop autoplay {boolean} Advance statuses on a timer: the running task finishes and the next to-do starts, until none are left (default: true)
+ * @prop stepMs {number} Milliseconds between autoplay steps (default: 1400)
+ * @prop collapsible {boolean} The header toggles the list; the count and bar stay visible (default: false)
+ * @prop defaultOpen {boolean} Initial list state when collapsible (default: true)
+ * @prop retryLabel {string} Label of the button on a failed task (default: "Retry")
+ * @prop onChange {(tasks: Task[]) => void} Fires with the whole list whenever a status changes, by autoplay or retry
+ * @prop onRetry {(task: Task) => void} Fires when a failed task's retry is pressed; the task is set to running
+ * @prop onToggle {(open: boolean) => void} Fires when a collapsible list opens or closes
+ */
+function TaskList({
+  theme: themeProp,
+  title = "Clearing the support backlog",
+  tasks = TASKLIST_TASKS,
+  autoplay = true,
+  stepMs = 1400,
+  collapsible = false,
+  defaultOpen = true,
+  retryLabel = "Retry",
+  onChange,
+  onRetry,
+  onToggle,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [items, setItems] = useState(() => tasks.map(t => ({ ...t })));
+  const [open, setOpen] = useState(defaultOpen);
+  const [epoch, setEpoch] = useState(0); // bumped by Retry so a settled autoplay re-arms
+  const [bodyH, setBodyH] = useState(0);
+  const bodyRef = useRef(null);
+  const listId = useUid("tasklist");
+
+  // Latest values live in refs so the timer effect never re-arms on identity change
+  const itemsRef = useRef(items); itemsRef.current = items;
+  const cbRef = useRef({ onChange, onRetry, onToggle }); cbRef.current = { onChange, onRetry, onToggle };
+
+  // Report changes, but not the initial copy
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
+    cbRef.current.onChange?.(items);
+  }, [items]);
+
+  useEffect(() => {
+    if (!autoplay) return;
+    const iv = setInterval(() => {
+      const next = TaskListAdvance(itemsRef.current);
+      if (next === itemsRef.current) { clearInterval(iv); return; }
+      setItems(next);
+    }, stepMs);
+    return () => clearInterval(iv);
+  }, [autoplay, stepMs, tasks.length, epoch]);
+
+  // Measure the list once so the collapse animates to a real height
+  useEffect(() => {
+    if (bodyRef.current) setBodyH(bodyRef.current.scrollHeight);
+  }, [items.length]);
+
+  const total = items.length;
+  const done = items.filter(t => t.status === "done").length;
+  const failed = items.filter(t => t.status === "failed").length;
+  const pct = total ? (done / total) * 100 : 0;
+
+  const retry = (task) => {
+    setItems(prev => prev.map(t => (t.id === task.id ? { ...t, status: "running" } : t)));
+    cbRef.current.onRetry?.(task);
+    setEpoch(e => e + 1);
+  };
+
+  const toggle = () => {
+    if (!collapsible) return;
+    const next = !open;
+    setOpen(next);
+    cbRef.current.onToggle?.(next);
+  };
+
+  const headerInner = (
+    <>
+      {collapsible && <ChevronIcon size={12} direction={open ? "down" : "right"} style={{ color: pal.textTertiary }} />}
+      <Text size="sm" weight="medium" theme={theme} style={{ flex: 1, minWidth: 0 }} truncate>{title}</Text>
+      <span role="status" aria-live="polite" style={{
+        ...tokens.type.xs, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums",
+        color: pal.textSecondary, whiteSpace: "nowrap", transition: `color ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        {done} of {total}{failed ? ` · ${failed} failed` : ""}
+      </span>
+    </>
+  );
+
+  return (
+    <div style={{
+      width: 400, maxWidth: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
+      background: pal.bgElevated, border: `1px solid ${pal.border}`, borderRadius: tokens.radius.md,
+      padding: "12px 16px 10px", transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      {collapsible ? (
+        <button type="button" onClick={toggle} aria-expanded={open} aria-controls={listId} style={{
+          ...interactiveBase, display: "flex", alignItems: "center", gap: 8, width: "100%",
+          padding: "4px 0", background: "transparent", textAlign: "left", color: pal.text,
+        }}>{headerInner}</button>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>{headerInner}</div>
+      )}
+
+      <div style={{ padding: "8px 0 6px" }}>
+        <Progress value={pct} height={4} theme={theme} />
+      </div>
+
+      <div id={listId} style={{
+        overflow: "hidden",
+        maxHeight: open ? (bodyH || "none") : 0,
+        opacity: open ? 1 : 0,
+        transition: `max-height 0.4s ${motion.emphasized}, opacity ${motion.smooth} ${motion.easeInOut}`,
+      }}>
+        <ul ref={bodyRef} role="list" aria-label={labelText(title)} style={{ margin: 0, padding: "4px 0 0", listStyle: "none" }}>
+          {items.map(t => (
+            <TaskListRow key={t.id} task={t} retryLabel={retryLabel} onRetry={() => retry(t)} theme={theme} />
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ─── TraceWaterfall (added 2026-10-28) ───
+// TraceWaterfall: an agent run on a timeline, for debugging and cost
+const TRACE_SPANS = [
+  { id: "plan",     name: "Plan the refund sweep",       kind: "model",   startMs: 0,    endMs: 1600, tokens: 1180, costUsd: 0.0059, model: "alpha-4" },
+  { id: "charges",  name: "stripe.charges.list",         kind: "tool",    startMs: 1650, endMs: 2400 },
+  { id: "classify", name: "Classify the duplicates",     kind: "model",   startMs: 2450, endMs: 3900, tokens: 2310, costUsd: 0.0116, model: "alpha-4" },
+  { id: "account",  name: "intercom.accounts.get",       kind: "tool",    startMs: 2900, endMs: 3300, parentId: "classify" },
+  { id: "approval", name: "Waiting for approval",        kind: "wait",    startMs: 3950, endMs: 6100 },
+  { id: "handoff",  name: "Hand off to Dana Ruiz",       kind: "handoff", startMs: 6100, endMs: 7700 },
+  { id: "refund",   name: "stripe.refunds.create",       kind: "tool",    startMs: 6450, endMs: 7100, parentId: "handoff" },
+  { id: "issue",    name: "linear.issues.create",        kind: "failed",  startMs: 7150, endMs: 7700, parentId: "handoff" },
+  { id: "summary",  name: "Write the summary",           kind: "model",   startMs: 7750, endMs: 9200, tokens: 940, costUsd: 0.0047, model: "alpha-4" },
+];
+
+const TRACE_KIND_LABEL = { model: "Model", tool: "Tool", wait: "Wait", handoff: "Handoff", failed: "Failed" };
+
+const TraceWaterfallColor = (kind, pal) => ({
+  model: pal.accent, tool: pal.textSecondary, wait: pal.warning, handoff: pal.success, failed: pal.danger,
+}[kind] || pal.textSecondary);
+
+const TraceWaterfallMs = (ms) => (ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)}s`);
+const TraceWaterfallUsd = (usd) => (usd < 1 ? `$${usd.toFixed(4)}` : `$${usd.toFixed(2)}`);
+const TraceWaterfallInt = (n) => n.toLocaleString("en-US");
+
+// Depth-first order: roots by start time, then each span's children by start time
+function TraceWaterfallOrder(spans) {
+  const ids = new Set(spans.map(s => s.id));
+  const byParent = {};
+  spans.forEach(s => {
+    const key = s.parentId && ids.has(s.parentId) ? s.parentId : "";
+    (byParent[key] = byParent[key] || []).push(s);
+  });
+  Object.values(byParent).forEach(list => list.sort((a, b) => a.startMs - b.startMs));
+  const out = [];
+  const walk = (key, depth) => (byParent[key] || []).forEach(s => { out.push({ span: s, depth }); walk(s.id, depth + 1); });
+  walk("", 0);
+  return out;
+}
+
+function TraceWaterfallRow({ span, depth, t0, total, selected, nameW, showDur, onHover, onLeave, onFocus, onBlur, onSelect, theme }) {
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  const color = TraceWaterfallColor(span.kind, pal);
+  const left = ((span.startMs - t0) / total) * 100;
+  const width = ((span.endMs - span.startMs) / total) * 100;
+  const dur = span.endMs - span.startMs;
+  return (
+    <div role="listitem">
+      <button type="button" aria-pressed={selected}
+        aria-label={`${span.name}, ${TRACE_KIND_LABEL[span.kind] || span.kind}, ${TraceWaterfallMs(dur)}`}
+        onClick={onSelect}
+        onMouseEnter={() => { setHover(true); onHover(); }} onMouseLeave={() => { setHover(false); onLeave(); }}
+        onFocus={onFocus} onBlur={onBlur}
+        style={{
+          ...interactiveBase, display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",
+          padding: "3px 6px", borderRadius: tokens.radius.xs, color: pal.text,
+          background: selected ? pal.bgMuted : hover ? pal.bgSubtle : "transparent",
+        }}>
+        <span style={{
+          width: nameW, flexShrink: 0, paddingLeft: depth * 12, boxSizing: "border-box",
+          ...tokens.type.sm, color: span.kind === "failed" ? pal.danger : pal.text,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>{span.name}</span>
+        <span aria-hidden="true" style={{ flex: 1, minWidth: 0, position: "relative", height: 18 }}>
+          {[25, 50, 75].map(p => (
+            <span key={p} style={{ position: "absolute", top: 0, bottom: 0, left: `${p}%`, width: 1, background: pal.borderSubtle }} />
+          ))}
+          <span style={{
+            position: "absolute", top: 4, height: 10, left: `${left}%`, width: `max(2px, ${width}%)`,
+            background: color, borderRadius: 3, opacity: span.kind === "wait" ? 0.55 : 1,
+            transition: `background ${motion.smooth} ${motion.easeInOut}`,
+          }} />
+        </span>
+        {showDur && (
+          <span aria-hidden="true" style={{
+            width: 44, flexShrink: 0, textAlign: "right", ...tokens.type.xs, fontFamily: tokens.font.mono,
+            fontVariantNumeric: "tabular-nums", color: pal.textTertiary,
+          }}>{TraceWaterfallMs(dur)}</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+/**
+ * TraceWaterfall: an agent run as a timeline of spans, with totals, a legend and a detail line for the span under the pointer or focus.
+ * @prop spans {{ id: string, name: string, kind: "model" | "tool" | "wait" | "handoff" | "failed", startMs: number, endMs: number, parentId?: string, tokens?: number, costUsd?: number, model?: string }[]} Spans of the run; children nest under parentId (default: TRACE_SPANS)
+ * @prop totals {{ durationMs?: number, costUsd?: number, tokens?: number, llmCalls?: number, toolCalls?: number, errors?: number }} Overrides for the stat row; anything left out is computed from the spans
+ * @prop title {string} Header text (default: "Refund sweep · run 4f2a")
+ * @prop onSelect {(span: Span) => void} Fires when a row is clicked or activated with the keyboard
+ */
+function TraceWaterfall({
+  theme: themeProp,
+  spans = TRACE_SPANS,
+  totals,
+  title = "Refund sweep · run 4f2a",
+  onSelect,
+}) {
+  const ctxTheme = useThemeContext(); const theme = themeProp || ctxTheme;
+  const pal = usePal(theme);
+  const [rootRef, narrow] = useNarrow(460);
+  const [hoverId, setHoverId] = useState(null);
+  const [focusId, setFocusId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const rows = TraceWaterfallOrder(spans);
+  const t0 = spans.length ? Math.min(...spans.map(s => s.startMs)) : 0;
+  const t1 = spans.length ? Math.max(...spans.map(s => s.endMs)) : 1;
+  const total = Math.max(1, t1 - t0);
+  const computed = {
+    durationMs: total,
+    costUsd: spans.reduce((a, s) => a + (s.costUsd || 0), 0),
+    tokens: spans.reduce((a, s) => a + (s.tokens || 0), 0),
+    llmCalls: spans.filter(s => s.kind === "model").length,
+    toolCalls: spans.filter(s => s.kind === "tool" || s.kind === "failed").length,
+    errors: spans.filter(s => s.kind === "failed").length,
+  };
+  const t = { ...computed, ...(totals || {}) };
+  const stats = [
+    { label: "Duration", value: TraceWaterfallMs(t.durationMs) },
+    { label: "Cost", value: TraceWaterfallUsd(t.costUsd) },
+    { label: "Tokens", value: TraceWaterfallInt(t.tokens) },
+    { label: "LLM calls", value: String(t.llmCalls) },
+    { label: "Tool calls", value: String(t.toolCalls) },
+    { label: "Errors", value: String(t.errors), tone: t.errors ? pal.danger : undefined },
+  ];
+  const kinds = Object.keys(TRACE_KIND_LABEL).filter(k => spans.some(s => s.kind === k));
+
+  const activeId = hoverId || focusId || selectedId;
+  const active = activeId ? spans.find(s => s.id === activeId) : null;
+  const nameW = narrow ? 112 : 176;
+
+  const select = (span) => { setSelectedId(span.id); onSelect?.(span); };
+
+  const detailParts = active ? [
+    `${TraceWaterfallMs(active.startMs - t0)} to ${TraceWaterfallMs(active.endMs - t0)}`,
+    TraceWaterfallMs(active.endMs - active.startMs),
+    active.model,
+    active.tokens != null ? `${TraceWaterfallInt(active.tokens)} tokens` : null,
+    active.costUsd != null ? TraceWaterfallUsd(active.costUsd) : null,
+  ].filter(Boolean) : [];
+
+  return (
+    <div ref={rootRef} style={{
+      width: 560, maxWidth: "100%", boxSizing: "border-box", fontFamily: tokens.font.sans,
+      background: pal.bgElevated, border: `1px solid ${pal.border}`, borderRadius: tokens.radius.md,
+      padding: 16, transition: `all ${motion.smooth} ${motion.easeInOut}`,
+    }}>
+      <Text size="sm" weight="medium" theme={theme} style={{ display: "block" }} truncate>{title}</Text>
+
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(${narrow ? 72 : 80}px, 1fr))`, gap: 10, marginTop: 12 }}>
+        {stats.map(s => (
+          <div key={s.label}>
+            <div style={{ ...tokens.type.xs, color: pal.textTertiary, whiteSpace: "nowrap" }}>{s.label}</div>
+            <div style={{
+              ...tokens.type.sm, fontWeight: tokens.weight.medium, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums",
+              color: s.tone || pal.text, whiteSpace: "nowrap",
+            }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div role="list" aria-label="Span kinds" style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", marginTop: 12 }}>
+        {kinds.map(k => (
+          <span key={k} role="listitem" style={{ display: "inline-flex", alignItems: "center", gap: 6, ...tokens.type.xs, color: pal.textSecondary }}>
+            <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 2, background: TraceWaterfallColor(k, pal), opacity: k === "wait" ? 0.55 : 1 }} />
+            {TRACE_KIND_LABEL[k]}
+          </span>
+        ))}
+      </div>
+
+      {/* Time axis */}
+      <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 6px 2px" }}>
+        <span style={{ width: nameW, flexShrink: 0 }} />
+        <span style={{ flex: 1, minWidth: 0, position: "relative", height: 14, ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textTertiary }}>
+          <span style={{ position: "absolute", left: 0 }}>0</span>
+          <span style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>{TraceWaterfallMs(total / 2)}</span>
+          <span style={{ position: "absolute", right: 0 }}>{TraceWaterfallMs(total)}</span>
+        </span>
+        {!narrow && <span style={{ width: 44, flexShrink: 0 }} />}
+      </div>
+
+      <div role="list" aria-label="Spans"
+        onKeyDown={(e) => arrowNav(e, { selector: "button", horizontal: false })}
+        style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        {rows.map(({ span, depth }) => (
+          <TraceWaterfallRow key={span.id} span={span} depth={depth} t0={t0} total={total}
+            selected={selectedId === span.id} nameW={nameW} showDur={!narrow}
+            onHover={() => setHoverId(span.id)} onLeave={() => setHoverId(null)}
+            onFocus={() => setFocusId(span.id)} onBlur={() => setFocusId(null)}
+            onSelect={() => select(span)} theme={theme} />
+        ))}
+      </div>
+
+      {/* Detail line: fixed height so the rows never move */}
+      <div aria-live="polite" style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${pal.borderSubtle}`, minHeight: 40 }}>
+        {active ? (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
+              <Text size="sm" weight="medium" theme={theme} truncate style={{ color: active.kind === "failed" ? pal.danger : pal.text }}>{active.name}</Text>
+              <Text size="xs" theme={theme} style={{ color: pal.textTertiary, whiteSpace: "nowrap" }}>{TRACE_KIND_LABEL[active.kind] || active.kind}</Text>
+            </div>
+            <div style={{ ...tokens.type.xs, fontFamily: tokens.font.mono, fontVariantNumeric: "tabular-nums", color: pal.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {detailParts.join(" · ")}
+            </div>
+          </>
+        ) : (
+          <Text size="xs" theme={theme} style={{ display: "block", color: pal.textTertiary }}>
+            {spans.length} spans across {TraceWaterfallMs(total)}
+          </Text>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const Input = TextInput;
 const Textarea = TextArea;
 const Switch = SwitchToggle;
@@ -14240,6 +16883,19 @@ export {
   useModalFocus, arrowNav,
   // Layout helpers
   useNarrow, useFitScale,
+  TraceWaterfall,
+  TaskList,
+  ResultCards,
+  ReasoningSteps,
+  QuestionCard,
+  Message,
+  MediaGeneration,
+  Marker,
+  DocumentAgent,
+  Conversation,
+  ChatInput,
+  ChatHistory,
+  Attachment,
   // shadcn/ui names (aliases of the components above)
   Input, Textarea, Switch, Separator, Alert, Empty, Item, Command,
   // Registries (for building indexes and docs)
