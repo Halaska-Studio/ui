@@ -1,0 +1,27 @@
+{
+  "name": "halaska-ui",
+  "version": "1.1.0",
+  "description": "A single-file React UI kit for AI products: 40 AI UX patterns and 90 styled components for agents, chat and generative UI, built on the shadcn/ui base. react and react-dom only.",
+  "license": "MIT",
+  "author": "Chris Halaska <https://chrishalaska.com>",
+  "homepage": "https://ui.halaska.com",
+  "repository": { "type": "git", "url": "git+https://github.com/Halaska-Studio/ui.git" },
+  "bugs": { "url": "https://github.com/Halaska-Studio/ui/issues" },
+  "keywords": ["react", "ui-kit", "ai", "agents", "generative-ui", "chat-ui", "shadcn-ui", "design-system", "components", "ux-patterns", "copilot", "llm"],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./halaska-kit.jsx": "./halaska-kit.jsx",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "halaska-kit.jsx", "README.md", "LICENSE"],
+  "sideEffects": true,
+  "peerDependencies": { "react": ">=18", "react-dom": ">=18" },
+  "scripts": {
+    "build": "node build.mjs",
+    "prepack": "node build.mjs"
+  }
+}

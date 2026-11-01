@@ -31,3 +31,10 @@ CLAUDE.md
 
 # licensed web font: deployed from the local folder, never published in the repo
 halaska-kit/public/fonts/FKRaster*
+
+# npm package: generated from the kit on prepack
+halaska-kit/npm/dist/
+halaska-kit/npm/halaska-kit.jsx
+halaska-kit/npm/README.md
+halaska-kit/npm/LICENSE
+halaska-kit/npm/*.tgz
