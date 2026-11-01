@@ -52,7 +52,24 @@ const NON_COMPONENT = new Set(["tokens", "motion", "interactiveBase", "usePal", 
   "setKitMotion", "setKitFont", "KIT_MOTION_PRESETS", "KIT_FONT_PRESETS"]);
 
 // ── llms.txt ───────────────────────────────────────────────────
-let out = `# Halaska UI: API reference for coding agents
+let out = `# Halaska UI
+
+> A single-file React UI kit for AI products: 40 UX patterns and 90 styled components built on the shadcn/ui base. react and react-dom only, inline styles, MIT. Made by Chris Halaska and Halaska Studio.
+
+## Start here
+- [Site](https://ui.halaska.com): every screen, pattern and component with live previews
+- [Install guide for agents](https://ui.halaska.com/install.md): setup, usage, theming, the retrofit steps
+- [The kit file](https://ui.halaska.com/halaska-kit.jsx) and its [TypeScript shim](https://ui.halaska.com/halaska-kit.d.ts)
+- [Everything as one text file](https://ui.halaska.com/llms-full.txt): all pages, then this API reference
+- [Source on GitHub](https://github.com/Halaska-Studio/ui)
+
+## Pages
+- [Patterns](https://ui.halaska.com/patterns): 40 AI UX patterns in six lifecycle groups
+- [Components](https://ui.halaska.com/components): 90 components, grouped Agents, Generative UI, Content, Feedback, Forms, Layout, Navigation, Overlays
+- [Screens](https://ui.halaska.com/screens): Chat and Canvas, two complete example screens
+- [Changelog](https://ui.halaska.com/changelog)
+
+# API reference for coding agents
 # https://ui.halaska.com · file: halaska-kit.jsx · by Halaska
 
 Halaska UI is a single-file React UI kit for AI products: 40 UX patterns + 90 styled
