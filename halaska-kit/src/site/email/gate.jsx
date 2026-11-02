@@ -18,7 +18,12 @@ const store = {
 };
 export const hasSubscribed = () => store.get(SUBSCRIBED_KEY) === "1";
 
-const track = (event, params) => { try { window.gtag?.("event", event, params); } catch (e) { /* no analytics */ } };
+const track = (event, params) => {
+  try {
+    window.gtag?.("event", event, params);               // GA4, via the Google tag inside GTM
+    window.dataLayer?.push({ event, ...(params || {}) }); // lets GTM fire X / Google Ads pixels on kit_prompt_copy and kit_signup
+  } catch (e) { /* no analytics */ }
+};
 
 // Sign-up. Only the email address is sent to Kit.
 export async function subscribe(email) {
