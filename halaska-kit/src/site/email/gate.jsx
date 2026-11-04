@@ -138,7 +138,7 @@ export function GateModal() {
     }}>
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
         width: delivered ? 620 : 440, maxWidth: "100%", maxHeight: "calc(100vh - 32px)", overflowY: "auto",
-        background: theme === "dark" ? "rgba(30,30,30,0.97)" : "rgba(255,255,255,0.97)",
+        background: theme === "dark" ? "rgba(23,23,23,0.97)" : "rgba(255,255,255,0.97)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg, padding: 24,
         boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
         animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,

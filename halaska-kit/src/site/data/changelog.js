@@ -1,6 +1,11 @@
 // Dated list of what shipped. Newest first. Pure data.
 export const VERSION = "1.1.0";
 export const CHANGELOG = [
+  { date: "2026-11-03", title: "A darker dark mode", items: [
+    "Dark mode starts from near black. Containers sit on the page as tonal layers, each one step lighter, with hairlines close to their surface instead of outlines.",
+    "Type is white on black, with a mid-grey secondary tone. Light mode is the reverse: a white page, grey stages, white cards and near-black type.",
+    "Cards, dialogs, menus, popovers and toasts share the new elevated tone. Cards take a slightly tighter corner.",
+  ] },
   { date: "2026-10-28", title: "Agent surfaces and generative UI", items: [
     "Thirteen new components, all prop-driven: Task List, Question Card, Reasoning Steps, Trace Waterfall, Chat Input, Message, Conversation, Chat History, Result Cards, Document Agent, Media Generation, Attachment and Marker.",
     "The components index is grouped by how an AI product is built: Agents, Generative UI, Content, then the base layer.",

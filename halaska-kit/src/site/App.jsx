@@ -62,7 +62,7 @@ function MobileMenu({ open, onClose }) {
   if (!shown) return null;
   return (
     <div className="site-menu" role="dialog" aria-modal="true" aria-label="Navigation" style={{
-      background: theme === "dark" ? "rgba(26,26,26,0.94)" : "rgba(250,250,250,0.94)",
+      background: theme === "dark" ? "rgba(17,17,17,0.96)" : "rgba(250,250,250,0.94)",
       border: `1px solid ${pal.borderSubtle}`, boxShadow: theme === "dark" ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.12)",
       opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(16px)",
     }}>
@@ -146,7 +146,7 @@ function Shell({ theme, children }) {
   return (
     <div className="site" style={{
       "--s-bg": pal.bg, "--s-text": pal.text, "--s-text-3": pal.textTertiary, "--s-border": pal.borderSubtle,
-      "--s-accent-bg": pal.accentBg, "--s-glass": theme === "dark" ? "rgba(17,17,17,0.8)" : "rgba(255,255,255,0.8)",
+      "--s-accent-bg": pal.accentBg, "--s-glass": theme === "dark" ? "rgba(10,10,10,0.8)" : "rgba(255,255,255,0.8)",
     }}>{children}</div>
   );
 }

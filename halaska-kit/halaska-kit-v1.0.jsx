@@ -191,21 +191,23 @@ const tokens = {
     mono: "var(--halaska-mono, 'Geist Mono'), 'SF Mono', 'Fira Code', monospace",
   },
   weight: { regular: 400, medium: 500, semibold: 600, bold: 700 },
+  // Light: a white page, containers one step grey, elevated surfaces back to
+  // white. Near-black type with mid-grey secondary text.
   light: {
-    bg: "#fafafa",
+    bg: "#ffffff",
     bgElevated: "#ffffff",
-    bgSubtle: "#f3f3f3",
-    bgMuted: "#eeeeee",
-    bgHover: "#e8e8e8",
-    bgInput: "#f0f0f0",
-    border: "#e5e5e5",
-    borderSubtle: "#eeeeee",
-    borderInput: "rgba(0,0,0,0.06)",
-    borderFocus: "#444444",
-    text: "#3d3d3d",
-    textSecondary: "#888888",
-    textTertiary: "#aaaaaa",
-    textMuted: "#cccccc",
+    bgSubtle: "#f4f4f4",
+    bgMuted: "#ebebeb",
+    bgHover: "#e3e3e3",
+    bgInput: "#f4f4f4",
+    border: "#e2e2e2",
+    borderSubtle: "#ebebeb",
+    borderInput: "rgba(0,0,0,0.08)",
+    borderFocus: "#161616",
+    text: "#161616",
+    textSecondary: "#6f6f6f",
+    textTertiary: "#9e9e9e",
+    textMuted: "#c8c8c8",
     textInverse: "#ffffff",
     shadow: "rgba(0,0,0,0.04)",
     shadowMd: "rgba(0,0,0,0.06)",
@@ -224,25 +226,28 @@ const tokens = {
     dangerHover: "#dc2626",
     dangerBg: "#fef2f2",
   },
+  // Dark: a near-black page and tonal layers, each container one step lighter
+  // than what it sits on, so surfaces read by tone rather than by outline.
+  // Borders are hairlines close to their surface. Type is white on black.
   dark: {
-    bg: "#1a1a1a",
-    bgElevated: "#2a2a2a",
-    bgSubtle: "#222222",
-    bgMuted: "#333333",
-    bgHover: "#3d3d3d",
-    bgInput: "#252525",
-    border: "#3a3a3a",
-    borderSubtle: "#2f2f2f",
-    borderInput: "rgba(255,255,255,0.06)",
-    borderFocus: "#cccccc",
-    text: "#d8d8d8",
-    textSecondary: "#999999",
-    textTertiary: "#6a6a6a",
+    bg: "#0a0a0a",
+    bgElevated: "#171717",
+    bgSubtle: "#111111",
+    bgMuted: "#202020",
+    bgHover: "#292929",
+    bgInput: "#141414",
+    border: "#262626",
+    borderSubtle: "#1d1d1d",
+    borderInput: "rgba(255,255,255,0.07)",
+    borderFocus: "#8f8f8f",
+    text: "#f2f2f2",
+    textSecondary: "#8f8f8f",
+    textTertiary: "#6e6e6e",
     textMuted: "#4a4a4a",
-    textInverse: "#1a1a1a",
-    shadow: "rgba(0,0,0,0.2)",
-    shadowMd: "rgba(0,0,0,0.3)",
-    shadowLg: "rgba(0,0,0,0.4)",
+    textInverse: "#0a0a0a",
+    shadow: "rgba(0,0,0,0.3)",
+    shadowMd: "rgba(0,0,0,0.4)",
+    shadowLg: "rgba(0,0,0,0.5)",
     accent: "#a78bfa",
     accentHover: "#8b5cf6",
     accentBg: "rgba(167,139,250,0.12)",
@@ -1178,7 +1183,7 @@ function SegmentedControl({ options, value, onChange, theme: tp }) {
       onKeyDown={(e) => { const el = arrowNav(e); if (el) el.click(); }}
       style={{
       display: "flex", alignItems: "center",
-      background: theme === "dark" ? "rgba(51,51,51,0.5)" : "rgba(238,238,238,0.6)",
+      background: theme === "dark" ? "rgba(38,38,38,0.6)" : "rgba(235,235,235,0.7)",
       backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
       borderRadius: tokens.radius.md, padding: 3, position: "relative", transition: `all ${motion.smooth} ${motion.easeInOut}`,
     }}>
@@ -1210,10 +1215,10 @@ function Card({ children, theme: tp, padding, hover, onClick, style: sp }) {
   return (
     <div onClick={onClick} {...pressable(onClick)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
-        background: theme === "dark" ? "rgba(42,42,42,0.7)" : "rgba(255,255,255,0.8)",
+        background: theme === "dark" ? "rgba(23,23,23,0.9)" : "rgba(255,255,255,0.85)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-        border: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"}`,
-        borderRadius: tokens.radius.lg, padding: padding ?? 24,
+        border: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
+        borderRadius: tokens.radius.md, padding: padding ?? 24,
         boxShadow: hovered && hover ? `0 4px 16px ${pal.shadowMd}` : `0 1px 4px ${pal.shadow}`,
         transition: `all ${motion.normal} ${motion.easeInOut}`, fontFamily: tokens.font.sans,
         cursor: onClick ? "pointer" : "default", ...sp,
@@ -1254,7 +1259,7 @@ function DotGrid({ theme: tp, spacing = 20 }) {
   return (
     <div style={{
       position: "absolute", inset: 0,
-      backgroundImage: `radial-gradient(circle, ${theme === "light" ? "#d4d4d4" : "#333"} 1px, transparent 1px)`,
+      backgroundImage: `radial-gradient(circle, ${theme === "light" ? "#d4d4d4" : "#262626"} 1px, transparent 1px)`,
       backgroundSize: `${spacing}px ${spacing}px`, borderRadius: "inherit", pointerEvents: "none",
     }} />
   );
@@ -2109,7 +2114,7 @@ function CommandPalette({ items = [], placeholder = "Type a command or search…
   return (
     <div style={{
       width: 420, maxWidth: "100%", fontFamily: tokens.font.sans,
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
       boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2180,7 +2185,7 @@ function CommandMenu({ open, onClose, items = [], placeholder = "Type a command 
     }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Command menu" onClick={e => e.stopPropagation()} style={{
         width: 520, maxWidth: "92vw", fontFamily: tokens.font.sans,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
         boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2323,7 +2328,7 @@ function Combobox({ options = [], value, onChange, placeholder = "Select…", la
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100,
-          background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+          background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
           boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2476,7 +2481,7 @@ function ContextMenu({ items, children, theme: tp }) {
           onKeyDown={(e) => { if (e.key === "Tab") { setMenu(null); return; } arrowNav(e, { horizontal: false, onEscape: closeAndReturn }); }}
           style={{
           position: "fixed", top: menu.y, left: menu.x, zIndex: 10000,
-          background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+          background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
           padding: 4, minWidth: 180, boxShadow: `0 8px 24px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
@@ -2540,7 +2545,7 @@ function Menubar({ menus, theme: tp }) {
                 }}
                 style={{
                 position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
-                background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+                background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md, padding: 4, minWidth: 180,
                 boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2689,7 +2694,7 @@ function AlertDialog({ open, onClose, title, description, variant = "danger", co
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div ref={panelRef} role="alertdialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 420,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2722,7 +2727,7 @@ function FormDialog({ open, onClose, title, description, children, submitLabel =
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 360, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2753,7 +2758,7 @@ function CardDialog({ open, onClose, cover, title, description, children, action
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, overflow: "hidden", minWidth: 360, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2817,7 +2822,7 @@ function Dialog({ open, onClose, title, children, theme: tp }) {
       animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both`,
     }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: 24, minWidth: 320, maxWidth: 480,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`,
@@ -2872,7 +2877,7 @@ function Popover({ trigger, children, theme: tp }) {
       {open && <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9999 }} />}
       <div role="dialog" aria-hidden={!open} style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 10000,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 200, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -2894,7 +2899,7 @@ function Sheet({ open, onClose, title, children, side = "right", theme: tp }) {
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label={labelText(title)} aria-hidden={!open} tabIndex={-1} style={{
         position: "fixed", top: 0, bottom: 0, [isRight ? "right" : "left"]: 0,
         width: 320, maxWidth: "100%", boxSizing: "border-box", zIndex: 10001,
-        background: theme === "dark" ? "rgba(26,26,26,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(20,20,20,0.96)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         border: `1px solid ${pal.borderSubtle}`, padding: 24,
         transform: open ? "translateX(0)" : `translateX(${isRight ? "100%" : "-100%"})`,
@@ -3079,7 +3084,7 @@ function Breadcrumb({ items, maxVisible, home, theme: tp }) {
               }}>…</span>
               <div style={{
                 position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
-                background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+                background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
                 padding: "8px 10px", boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3132,7 +3137,7 @@ function HoverCard({ trigger, children, theme: tp }) {
       {trigger}
       <div aria-hidden={!show} style={{
         position: "absolute", top: "100%", left: 0, marginTop: 8, zIndex: 100,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 16, minWidth: 240, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3267,7 +3272,7 @@ function DropdownMenu({ trigger, items, theme: tp }) {
         onKeyDown={(e) => { if (e.key === "Tab") { close(); return; } arrowNav(e, { horizontal: false, onEscape: () => close(true) }); }}
         style={{
         position: "absolute", top: "100%", right: 0, marginTop: 6, zIndex: 10000,
-        background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+        background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
         padding: 4, minWidth: 180, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3422,7 +3427,7 @@ function SplitButton({ children, onClick, items = [], variant = "primary", size 
             onKeyDown={(e) => { if (e.key === "Tab") { setOpen(false); return; } arrowNav(e, { horizontal: false, onEscape: closeAndReturn }); }}
             style={{
             position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 91, minWidth: 200,
-            background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+            background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
             backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
             border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.md,
             padding: 4, boxShadow: `0 8px 24px ${pal.shadowLg}`,
@@ -3858,11 +3863,11 @@ function ShowcaseCard({ children, controls, label, anchor, housed, theme: themeP
     <ThemeProvider theme={theme}>
       <div id={ownId} style={{ display: "flex", flexDirection: "column", gap: 12 }}
         onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-        {label && <span style={{ ...tokens.type.base, color: theme === "dark" ? "#555" : "#bbb", fontFamily: tokens.font.sans, paddingLeft: 8 }}>{label}</span>}
+        {label && <span style={{ ...tokens.type.base, color: theme === "dark" ? "#6e6e6e" : "#9e9e9e", fontFamily: tokens.font.sans, paddingLeft: 8 }}>{label}</span>}
         <div style={{
-          background: theme === "dark" ? "rgba(26,26,26,0.85)" : "rgba(250,250,250,0.75)",
+          background: theme === "dark" ? "rgba(17,17,17,0.9)" : "rgba(244,244,244,0.8)",
           borderRadius: isMobile ? tokens.radius.lg : tokens.radius.xl,
-          border: theme === "dark" ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.04)",
+          border: theme === "dark" ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.05)",
           padding: `${padT}px ${padX}px ${padB}px`,
           height: isMobile ? (fit.h ? mobileH : undefined) : (height || undefined),
           minHeight: isMobile ? undefined : (height ? undefined : 532),
@@ -3915,7 +3920,7 @@ function StudioLink({ theme: themeProp, href = STUDIO_URL, children = "Halaska",
     <a href={href} target="_blank" rel="noreferrer"
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
-        color: hover ? (isDark ? "#d8d8d8" : "#3d3d3d") : "inherit",
+        color: hover ? (isDark ? "#f2f2f2" : "#161616") : "inherit",
         textDecoration: "underline", textUnderlineOffset: 3,
         textDecorationColor: hover ? "currentColor" : (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"),
         transition: "color 0.25s ease, text-decoration-color 0.25s ease",
@@ -4024,7 +4029,7 @@ function InstallPromptModal({ open, onClose, pageTheme }) {
     }}>
       <div role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
         width: step === "prompt" ? 640 : 440, maxWidth: "100%", maxHeight: "calc(100vh - 32px)", display: "flex", flexDirection: "column",
-        background: pageTheme === "dark" ? "rgba(30,30,30,0.97)" : "rgba(255,255,255,0.97)",
+        background: pageTheme === "dark" ? "rgba(23,23,23,0.97)" : "rgba(255,255,255,0.97)",
         backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderRadius: tokens.radius.lg, padding: isMobile ? 20 : 24,
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
@@ -4090,7 +4095,7 @@ function ShowcasePage({ children, title, subtitle, pageTheme = "light" }) {
   const bg = isDark
     ? "linear-gradient(180deg, #111 0%, #0a0a0a 50%, #111 100%)"
     : "linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%)";
-  const textColor = isDark ? "#d8d8d8" : "#3d3d3d";
+  const textColor = isDark ? "#f2f2f2" : "#161616";
   const dimColor = isDark ? "#666" : "#999";
   const mutedColor = isDark ? "#555" : "#aaa";
   const t = (prop) => `${prop} 0.35s ease`;
@@ -4740,7 +4745,7 @@ function InlinePanelPreview({ title, children, actions, theme: themeProp, shape 
   return (
     <div style={{
       width: isSheet ? 320 : 400, maxWidth: "100%", boxSizing: "border-box",
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       borderTop: `1px solid ${pal.borderSubtle}`, borderLeft: `1px solid ${pal.borderSubtle}`, borderRight: `1px solid ${pal.borderSubtle}`,
       borderBottom: isDrawer ? "none" : `1px solid ${pal.borderSubtle}`,
@@ -6361,7 +6366,7 @@ function AgentPreviewCard({ state, strategyObj, riskObj, budgetNum, theme: theme
     <div style={{
       padding: 18,
       borderRadius: tokens.radius.lg,
-      background: anyBuilt ? (theme === "dark" ? "rgba(42,42,42,0.5)" : "rgba(255,255,255,0.6)") : "transparent",
+      background: anyBuilt ? (theme === "dark" ? "rgba(23,23,23,0.6)" : "rgba(255,255,255,0.7)") : "transparent",
       border: anyBuilt ? `1px solid ${pal.borderSubtle}` : `1.5px dashed ${pal.borderSubtle}`,
       transition: `all ${motion.smooth} ${motion.easeInOut}`,
       fontFamily: tokens.font.sans,
@@ -7478,7 +7483,7 @@ function ContextChunkCard({ chunk, theme: themeProp}) {
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
         padding: 16, borderRadius: tokens.radius.md,
-        background: theme === "dark" ? "rgba(42,42,42,0.6)" : "rgba(255,255,255,0.7)",
+        background: theme === "dark" ? "rgba(23,23,23,0.7)" : "rgba(255,255,255,0.8)",
         border: `1px solid ${hover ? pal.border : pal.borderSubtle}`,
         transform: hover ? "translateY(-1px)" : "none",
         boxShadow: hover ? `0 4px 16px ${pal.shadowMd}` : "none",
@@ -7627,7 +7632,7 @@ function CommandSearchPattern({ theme: themeProp}) {
   return (
     <div style={{
       width: 440, maxWidth: "100%", fontFamily: tokens.font.sans,
-      background: theme === "dark" ? "rgba(30,30,30,0.95)" : "rgba(255,255,255,0.95)",
+      background: theme === "dark" ? "rgba(23,23,23,0.95)" : "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
       boxShadow: `0 16px 48px ${pal.shadowLg}`, overflow: "hidden",
@@ -7798,7 +7803,7 @@ function AgentChatPattern({ theme: themeProp}) {
   return (
     <div style={{
       width: 440, maxWidth: "100%", fontFamily: tokens.font.sans,
-      background: theme === "dark" ? "rgba(30,30,30,0.9)" : "rgba(255,255,255,0.9)",
+      background: theme === "dark" ? "rgba(23,23,23,0.9)" : "rgba(255,255,255,0.9)",
       border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg,
       display: "flex", flexDirection: "column", overflow: "hidden",
       transition: `all ${motion.smooth} ${motion.easeInOut}`,
@@ -7930,7 +7935,7 @@ function PromptinModelPill({ index, onSelect, theme: themeProp}) {
         <div role="menu" style={{
           position: "absolute", bottom: "calc(100% + 6px)", left: 0, zIndex: 20, minWidth: 300,
           padding: 6, borderRadius: tokens.radius.md,
-          background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+          background: theme === "dark" ? "rgba(23,23,23,0.96)" : "rgba(255,255,255,0.96)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 12px 32px ${pal.shadowLg}`,
           animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`, transformOrigin: "bottom left",
@@ -11969,7 +11974,7 @@ function ChatXModelPill({ index, onSelect, theme: themeProp}) {
         <div role="menu" style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 20, minWidth: 300,
           padding: 6, borderRadius: tokens.radius.md,
-          background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+          background: theme === "dark" ? "rgba(23,23,23,0.96)" : "rgba(255,255,255,0.96)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 12px 32px ${pal.shadowLg}`,
           animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`, transformOrigin: "top left",
@@ -12936,7 +12941,7 @@ function PatternHeader({ n, title, desc, theme: themeProp}) {
       <PatternDot theme={theme} style={{ marginTop: 6 }} />
       <div>
         <span style={{ ...tokens.type.base, fontWeight: tokens.weight.semibold, color: theme === "dark" ? "#888" : "#777", display: "block", transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{title}</span>
-        <span style={{ ...tokens.type.sm, color: theme === "dark" ? "#555" : "#bbb", display: "block", marginTop: 2, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{desc}</span>
+        <span style={{ ...tokens.type.sm, color: theme === "dark" ? "#6e6e6e" : "#9e9e9e", display: "block", marginTop: 2, transition: `color ${motion.smooth} ${motion.easeInOut}` }}>{desc}</span>
       </div>
     </div>
   );
@@ -13213,7 +13218,7 @@ function CompareSlider({ before, after, theme: tp, initial = 0.5, labels = ["Bef
         style={{
           ...interactiveBase, position: "absolute", top: "50%", left: `${pct}%`, zIndex: 3,
           width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: 20, padding: 0,
-          background: isDark ? "#1c1c1c" : "#fff", color: pal.text,
+          background: isDark ? "#171717" : "#fff", color: pal.text,
           boxShadow: "0 0 0 1px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.25)",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: dragging ? "grabbing" : "grab",
@@ -13587,7 +13592,7 @@ function BetaChip({ pageTheme }) {
     <div aria-label="Beta" style={{
       display: "inline-flex", alignItems: "center", gap: 6,
       padding: "4px 10px", borderRadius: tokens.radius.pill,
-      background: isDark ? "rgba(30,30,30,0.85)" : "rgba(255,255,255,0.85)",
+      background: isDark ? "rgba(23,23,23,0.85)" : "rgba(255,255,255,0.85)",
       backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
       boxShadow: `0 0 0 1px ${pal.borderSubtle}`,
       fontFamily: tokens.font.mono, fontSize: 10, letterSpacing: "0.12em",
@@ -13656,7 +13661,7 @@ function StudioCta({ pageTheme }) {
     return () => window.removeEventListener("halaska:prompt-copied", reopen);
   }, []);
   const surface = {
-    background: isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
+    background: isDark ? "rgba(23,23,23,0.92)" : "rgba(255,255,255,0.92)",
     backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
     boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
     transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
@@ -13708,7 +13713,7 @@ function PageDock({ pageTheme }) {
   const isDark = pageTheme === "dark";
   const { isMobile } = useViewport();
   const surface = {
-    background: isDark ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
+    background: isDark ? "rgba(23,23,23,0.92)" : "rgba(255,255,255,0.92)",
     backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
     boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
     transition: `background ${motion.smooth} ${motion.easeInOut}, box-shadow ${motion.smooth} ${motion.easeInOut}`,
@@ -13765,12 +13770,12 @@ function BookmarkRail({ pageTheme, scrollTo }) {
 
   if (!visible) return null;
 
-  const lineBase = isDark ? "#3a3a3a" : "#d4d4d4";
+  const lineBase = isDark ? "#2a2a2a" : "#d4d4d4";
   const lineNear = isDark ? "#999" : "#666";
   const labelDim = isDark ? "#555" : "#b3b3b3";
   const textDim = isDark ? "#666" : "#a3a3a3";
   const textHover = isDark ? "#bbb" : "#555";
-  const textActive = isDark ? "#d8d8d8" : "#3d3d3d";
+  const textActive = isDark ? "#f2f2f2" : "#161616";
 
   let tickIdx = -1;
   return (
@@ -13877,7 +13882,7 @@ function SectionMenu({ open, onClose, scrollTo, pageTheme, bar }) {
   }, [open, onClose]);
   if (!open) return null;
   const surface = {
-    background: pageTheme === "dark" ? "rgba(30,30,30,0.92)" : "rgba(255,255,255,0.92)",
+    background: pageTheme === "dark" ? "rgba(23,23,23,0.92)" : "rgba(255,255,255,0.92)",
     backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
     boxShadow: `0 0 0 1px ${pal.borderSubtle}, 0 12px 32px ${pal.shadowLg}`,
   };
@@ -14376,7 +14381,7 @@ function ChatHistoryMenu({ items, onClose, theme: themeProp }) {
       style={{
         position: "absolute", top: "calc(100% - 6px)", right: 8, zIndex: 30, minWidth: 150, padding: 4,
         borderRadius: tokens.radius.md,
-        background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+        background: theme === "dark" ? "rgba(23,23,23,0.96)" : "rgba(255,255,255,0.96)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 8px 24px ${pal.shadowLg}`,
         animation: `halaska-scale-in 0.15s ${motion.easeOut} both`, transformOrigin: "top right",
@@ -14769,7 +14774,7 @@ function ChatInputModelPill({ models, value, onChange, disabled, theme: themePro
         style={{
           position: "absolute", bottom: "calc(100% + 6px)", left: 0, zIndex: 20, minWidth: 180,
           padding: 4, borderRadius: tokens.radius.md,
-          background: theme === "dark" ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.96)",
+          background: theme === "dark" ? "rgba(23,23,23,0.96)" : "rgba(255,255,255,0.96)",
           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 12px 32px ${pal.shadowLg}`,
           opacity: open ? 1 : 0, transform: open ? "translateY(0) scale(1)" : "translateY(4px) scale(0.97)",

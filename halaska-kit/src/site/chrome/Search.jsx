@@ -34,7 +34,7 @@ export function Search() {
     <div onClick={() => setSearch(false)} style={{ position: "fixed", inset: 0, zIndex: 1150, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "12vh 16px 16px", animation: `halaska-fade-in ${motion.fast} ${motion.easeOut} both` }}>
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Search" onClick={(e) => e.stopPropagation()} style={{
         width: 560, maxWidth: "100%", maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden",
-        background: theme === "dark" ? "rgba(30,30,30,0.98)" : "rgba(255,255,255,0.98)", border: `1px solid ${pal.borderSubtle}`,
+        background: theme === "dark" ? "rgba(23,23,23,0.98)" : "rgba(255,255,255,0.98)", border: `1px solid ${pal.borderSubtle}`,
         borderRadius: tokens.radius.lg, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
         animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
       }}>

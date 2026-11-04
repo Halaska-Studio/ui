@@ -81,24 +81,24 @@
     .hc-actions { display: flex; gap: 8px; justify-content: flex-end; }
     .hc-btn { height: 30px; padding: 0 12px; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 500; letter-spacing: 0.01em; cursor: pointer;
       transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-    .hc-btn--ghost { background: transparent; color: #888888; border: 1px solid #e5e5e5; }
-    .hc-btn--ghost:hover { color: #3d3d3d; background: #f4f4f4; }
-    .hc-btn--solid { background: #3d3d3d; color: #ffffff; border: 1px solid transparent; }
-    .hc-btn--solid:hover { background: #1a1a1a; }
+    .hc-btn--ghost { background: transparent; color: #6f6f6f; border: 1px solid #e2e2e2; }
+    .hc-btn--ghost:hover { color: #161616; background: #f4f4f4; }
+    .hc-btn--solid { background: #161616; color: #ffffff; border: 1px solid transparent; }
+    .hc-btn--solid:hover { background: #000000; }
     @media (prefers-color-scheme: dark) {
-      .hc-banner { background: #2a2a2a; color: #d8d8d8; border-color: #3a3a3a; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-      .hc-btn--ghost { color: #999999; border-color: #3a3a3a; }
-      .hc-btn--ghost:hover { color: #d8d8d8; background: #333333; }
-      .hc-btn--solid { background: #d8d8d8; color: #1a1a1a; }
+      .hc-banner { background: #171717; color: #f2f2f2; border-color: #262626; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+      .hc-btn--ghost { color: #8f8f8f; border-color: #262626; }
+      .hc-btn--ghost:hover { color: #f2f2f2; background: #202020; }
+      .hc-btn--solid { background: #f2f2f2; color: #0a0a0a; }
       .hc-btn--solid:hover { background: #ffffff; }
     }
     @supports (color: light-dark(#000, #fff)) {
-      .hc-banner { background: light-dark(#ffffff, #2a2a2a); color: light-dark(#3d3d3d, #d8d8d8); border-color: light-dark(#eeeeee, #3a3a3a);
-        box-shadow: 0 8px 32px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.3)); }
-      .hc-btn--ghost { color: light-dark(#888888, #999999); border-color: light-dark(#e5e5e5, #3a3a3a); }
-      .hc-btn--ghost:hover { color: light-dark(#3d3d3d, #d8d8d8); background: light-dark(#f4f4f4, #333333); }
-      .hc-btn--solid { background: light-dark(#3d3d3d, #d8d8d8); color: light-dark(#ffffff, #1a1a1a); }
-      .hc-btn--solid:hover { background: light-dark(#1a1a1a, #ffffff); }
+      .hc-banner { background: light-dark(#ffffff, #171717); color: light-dark(#161616, #f2f2f2); border-color: light-dark(#e2e2e2, #262626);
+        box-shadow: 0 8px 32px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.4)); }
+      .hc-btn--ghost { color: light-dark(#6f6f6f, #8f8f8f); border-color: light-dark(#e2e2e2, #262626); }
+      .hc-btn--ghost:hover { color: light-dark(#161616, #f2f2f2); background: light-dark(#f4f4f4, #202020); }
+      .hc-btn--solid { background: light-dark(#161616, #f2f2f2); color: light-dark(#ffffff, #0a0a0a); }
+      .hc-btn--solid:hover { background: light-dark(#000000, #ffffff); }
     }
     /* Below 1100px the centred action bar reaches under the banner: sit above it. */
     @media (max-width: 1099px) { .hc-banner { bottom: 84px; } }
