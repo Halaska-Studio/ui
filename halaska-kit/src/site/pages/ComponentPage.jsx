@@ -39,7 +39,7 @@ export function ComponentPage({ slug }) {
       <PageHeader eyebrow={meta.group} eyebrowTo="/components" title={meta.name} lead={meta.description} tags={meta.tags || []}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 14, ...tokens.type.sm, color: pal.textTertiary }}>
           <TagPill>{STATUS_LABEL[meta.status] || "Halaska only"}</TagPill>
-          {meta.shadcn && <span>shadcn/ui equivalent: <a href={`https://ui.shadcn.com/docs/components/${meta.shadcn.toLowerCase().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>{meta.shadcn}</a></span>}
+          {meta.shadcn && <span>shadcn/ui equivalent: <a href={`https://ui.shadcn.com/docs/components/${meta.shadcn.toLowerCase().replace(/\s+/g, "-")}`} target="_blank" rel="noreferrer" className="tl">{meta.shadcn}</a></span>}
           <span style={{ fontFamily: tokens.font.mono }}>{(meta.exports || []).join(", ")}</span>
         </div>
       </PageHeader>

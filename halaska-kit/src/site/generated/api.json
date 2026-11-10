@@ -12,6 +12,30 @@
    "description": "Content."
   }
  ],
+ "BrandProvider": [
+  {
+   "name": "color",
+   "type": "string",
+   "description": ""
+  },
+  {
+   "name": "type",
+   "type": "string",
+   "default": "\"clean\"",
+   "description": ""
+  },
+  {
+   "name": "radius",
+   "type": "string",
+   "default": "\"round\"",
+   "description": ""
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "description": "Content."
+  }
+ ],
  "Text": [
   {
    "name": "children",
@@ -304,6 +328,11 @@
    "name": "children",
    "type": "ReactNode",
    "description": "Content."
+  },
+  {
+   "name": "size",
+   "type": "string | number",
+   "description": "Size of the control."
   },
   {
    "name": "theme",

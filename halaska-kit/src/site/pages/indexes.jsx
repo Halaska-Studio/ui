@@ -25,8 +25,8 @@ function IndexBlock({ id, title, tags = [], line, detail, children }) {
           </div>
           {line && <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, margin: "4px 0 0", maxWidth: 420 }}>{line}</p>}
         </div>
-        <Link to={detail} style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, paddingTop: 4 }}>
-          Details <span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
+        <Link to={detail} className="tl-link" style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, paddingTop: 4 }}>
+          <span className="tl">Details</span><span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
         </Link>
       </div>
       {children}
@@ -70,7 +70,7 @@ function JumpChips({ items }) {
   return (
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
       {items.map(([to, label, n]) => (
-        <Link key={to} to={to} style={{ height: 30, padding: "0 12px", borderRadius: tokens.radius.pill, display: "inline-flex", alignItems: "center", gap: 8, ...tokens.type.sm, whiteSpace: "nowrap", background: pal.bgSubtle, color: pal.textSecondary, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}` }}>
+        <Link key={to} to={to} className="chip" style={{ height: 30, padding: "0 12px", borderRadius: tokens.radius.pill, display: "inline-flex", alignItems: "center", gap: 8, ...tokens.type.sm, whiteSpace: "nowrap", background: pal.bgSubtle, color: pal.textSecondary, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}` }}>
           {label}{n != null && <span style={{ fontFamily: tokens.font.mono, ...tokens.type.xs, opacity: 0.7 }}>{n}</span>}
         </Link>
       ))}
@@ -107,10 +107,10 @@ export function ScreensIndex() {
         {SCREENS.map((s) => (
           <div key={s.slug}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-              <Link to={`/screens/${s.slug}`} style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text }}>{s.name}</Link>
+              <Link to={`/screens/${s.slug}`} className="tl" style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text }}>{s.name}</Link>
               <span style={{ ...tokens.type.sm, color: pal.textTertiary, fontFamily: tokens.font.mono }}>{s.paradigm} · {s.hotspots.length} patterns</span>
               <span style={{ flex: 1 }} />
-              <Link to={`/screens/${s.slug}`} style={{ ...tokens.type.sm, color: pal.textSecondary, textDecoration: "underline", textUnderlineOffset: 3 }}>Open the anatomy</Link>
+              <Link to={`/screens/${s.slug}`} className="tl" style={{ ...tokens.type.sm, color: pal.textSecondary }}>Open the anatomy</Link>
             </div>
             <Link to={`/screens/${s.slug}`} aria-label={`${s.name} screen`} style={{ display: "block" }}><ScreenStage screen={s} layout={layout} /></Link>
             <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.65, margin: "12px 0 0", maxWidth: 420 }}>{s.description}</p>
@@ -149,7 +149,7 @@ export function ComponentsIndex() {
                 <tr key={r.shadcn}>
                   <td style={{ color: pal.text, fontWeight: 500, whiteSpace: "nowrap" }}>{r.shadcn}</td>
                   <td style={{ whiteSpace: "nowrap", color: pal[tone] || pal.textTertiary, fontFamily: tokens.font.mono, fontSize: 12 }}>{label}</td>
-                  <td style={{ whiteSpace: "nowrap" }}>{r.slug ? <Link to={r.to || `/components/${r.slug}`} style={{ textDecoration: "underline", textUnderlineOffset: 3, color: pal.text }}>{r.kit || r.slug}</Link> : <span style={{ color: pal.textTertiary }}>{r.kit || "·"}</span>}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{r.slug ? <Link to={r.to || `/components/${r.slug}`} className="tl" style={{ color: pal.text }}>{r.kit || r.slug}</Link> : <span style={{ color: pal.textTertiary }}>{r.kit || "·"}</span>}</td>
                   <td style={{ color: pal.textSecondary }}>{r.note}</td>
                 </tr>
               ); })}

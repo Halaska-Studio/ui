@@ -1,7 +1,7 @@
 // The landing page: whole screens first, then patterns, then single
 // components, so a visitor sees the three tiers in order. The shell supplies
 // the header, footer and floating copy button.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   usePal, tokens, motion,
   Button, TextInput, Select, SwitchToggle, Checkbox, Tabs, Card as KitCard, CardHeader, Stat,
@@ -12,8 +12,9 @@ import { useSite, usePageMeta } from "../state";
 import { GROUPS, COMPONENTS, SCREENS, COUNTS } from "../registry";
 import { Link, navigate } from "../router";
 import { ScreenStage, BeforeAfter, LayoutToggle, useLayout, spotsFor } from "../ui/ScreenStage";
-import { LiveThumb } from "../ui/PreviewFrame";
-import { Count, TagPill, tagTone, Card } from "../ui/bits";
+import { PreviewFrame } from "../ui/PreviewFrame";
+import { Branded } from "../ui/Branded";
+import { Count, TagPill, tagTone, Card, FRAME_RADIUS } from "../ui/bits";
 import { InlineGate, BOOK_URL } from "../email/gate";
 import { FAQ, HOW } from "../data/site.js";
 
@@ -40,8 +41,8 @@ function Block({ eyebrow, title, lead, children, id }) {
 function ArrowLink({ to, children, strong }) {
   const pal = usePalette();
   return (
-    <Link to={to} style={{ display: "inline-flex", alignItems: "center", gap: 6, ...tokens.type.base, fontWeight: tokens.weight.medium, color: strong ? pal.text : pal.textSecondary }}>
-      {children}<span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
+    <Link to={to} className="tl-link" style={{ display: "inline-flex", alignItems: "center", gap: 6, ...tokens.type.base, fontWeight: tokens.weight.medium, color: strong ? pal.text : pal.textSecondary }}>
+      <span className="tl">{children}</span><span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
     </Link>
   );
 }
@@ -68,7 +69,7 @@ function ScreenBlock({ screen, layout }) {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
-        <Link to={`/screens/${screen.slug}`} style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text }}>{screen.name}</Link>
+        <Link to={`/screens/${screen.slug}`} className="tl" style={{ ...tokens.type.lg, fontWeight: tokens.weight.semibold, color: pal.text }}>{screen.name}</Link>
         <span style={{ fontFamily: tokens.font.mono, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: pal.textTertiary }}>{screen.paradigm}</span>
       </div>
       <p style={{ ...tokens.type.base, color: pal.textSecondary, lineHeight: 1.65, margin: "0 0 20px", maxWidth: 420 }}>{screen.description}</p>
@@ -83,13 +84,19 @@ function ScreenBlock({ screen, layout }) {
 }
 
 // ─── 4. Component sampler ─────────────────────────────────────
+// The demo area of a tile sits inside the visitor's brand style, so its
+// surface comes from that palette.
+function TileDemo({ children }) {
+  const pal = usePalette();
+  return <div style={{ padding: 20, minWidth: 0, flex: 1, background: pal.bgElevated, transition: `background ${motion.smooth} ${motion.easeInOut}` }}>{children}</div>;
+}
 function Tile({ slug, name, children }) {
   const pal = usePalette();
   return (
-    <div style={{ display: "flex", flexDirection: "column", borderRadius: tokens.radius.lg, border: `1px solid ${pal.borderSubtle}`, background: pal.bgElevated, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}` }}>
-      <div style={{ padding: 20, minWidth: 0 }}>{children}</div>
-      <Link to={`/components/${slug}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderTop: `1px solid ${pal.borderSubtle}`, ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary }}>
-        {name}<span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
+    <div style={{ display: "flex", flexDirection: "column", borderRadius: FRAME_RADIUS, border: `1px solid ${pal.borderSubtle}`, background: pal.bgElevated, overflow: "hidden", transition: `background ${motion.smooth} ${motion.easeInOut}, border-color ${motion.smooth} ${motion.easeInOut}` }}>
+      <Branded><TileDemo>{children}</TileDemo></Branded>
+      <Link to={`/components/${slug}`} className="tl-link" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderTop: `1px solid ${pal.borderSubtle}`, ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary }}>
+        <span className="tl">{name}</span><span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
       </Link>
     </div>
   );
@@ -270,28 +277,62 @@ function SnippetTile() {
   );
 }
 
-// ─── 5. Patterns by lifecycle ─────────────────────────────────
-const oneLine = (s = "") => s.split(/(?<=\.)\s/)[0];
+// ─── 5. Patterns, one at a time ───────────────────────────────
+// Six thumbnails at a third of their size showed nothing. One pattern at full
+// size, cycling through the groups, shows what a pattern is. One per group;
+// the tabs jump, hovering or focusing pauses the cycle.
+const REEL = GROUPS.map((group) => ({ group, p: group.patterns[0] })).filter(({ p }) => p && p.Component);
+const REEL_MS = 7000;
+const REEL_HEIGHT = Math.max(...REEL.map(({ p }) => Math.max(280, (p.height || 480) - 72)));
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function GroupCard({ group }) {
+function PatternReel() {
   const pal = usePalette();
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [still] = useState(reducedMotion);
+  const tabsRef = useRef(null);
+  useEffect(() => {
+    const tabs = tabsRef.current; const on = tabs && tabs.children[i];
+    if (on && tabs.scrollWidth > tabs.clientWidth) tabs.scrollTo({ left: on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2, behavior: still ? "auto" : "smooth" });
+  }, [i, still]);
+  useEffect(() => {
+    if (paused || still) return;
+    const t = setTimeout(() => setI((n) => (n + 1) % REEL.length), REEL_MS);
+    return () => clearTimeout(t);
+  }, [i, paused, still]);
+  const { group, p } = REEL[i];
   return (
-    <Card to={`/patterns#${group.id}`} style={{ padding: 20, gap: 16 }}>
-      <div>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
-          <span style={{ ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text }}>{group.title}</span>
-          <span style={{ fontFamily: tokens.font.mono, fontSize: 12, color: pal.textTertiary, whiteSpace: "nowrap" }}>{group.patterns.length} patterns</span>
-        </div>
-        <p style={{ ...tokens.type.sm, color: pal.textSecondary, margin: "4px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{oneLine(group.blurb)}</p>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
-        {group.patterns.slice(0, 3).map((p) => (
-          <LiveThumb key={p.id} width={640} height={Math.min(420, (p.height || 480) - 60)} scale={0.3} housed={p.housed}>
-            {p.Component ? <p.Component /> : null}
-          </LiveThumb>
+    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
+      <div ref={tabsRef} className="reel-tabs" role="tablist" aria-label="Pattern groups" style={{ "--reel-ms": `${REEL_MS}ms`, borderBottom: `1px solid ${pal.borderSubtle}` }}>
+        {REEL.map(({ group: g }, k) => (
+          <button key={g.id} type="button" role="tab" aria-selected={k === i} className="reel-tab" data-on={k === i} data-paused={paused || still}
+            onClick={() => setI(k)}
+            style={{
+              border: "none", background: "transparent", cursor: "pointer", padding: "10px 12px", fontFamily: tokens.font.sans,
+              ...tokens.type.sm, fontWeight: k === i ? tokens.weight.medium : tokens.weight.regular, whiteSpace: "nowrap",
+              color: k === i ? pal.text : pal.textTertiary, transition: `color ${motion.fast} ${motion.easeOut}`,
+            }}>{g.title}</button>
         ))}
       </div>
-    </Card>
+      <div key={p.id} style={{ animation: `site-fade ${motion.smooth} ${motion.easeOut} both` }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 16, margin: "24px 0 14px" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ ...tokens.type.md, fontWeight: tokens.weight.semibold, color: pal.text, letterSpacing: "-0.01em" }}>{p.title}</div>
+            <p style={{ ...tokens.type.sm, color: pal.textSecondary, lineHeight: 1.6, margin: "4px 0 0", maxWidth: 420 }}>{p.docs.useWhen || p.desc}</p>
+          </div>
+          <Link to={`/patterns/${p.slug}`} className="tl-link" style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.textSecondary, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, paddingTop: 4 }}>
+            <span className="tl">Details</span><span aria-hidden="true" style={{ color: pal.textTertiary }}>→</span>
+          </Link>
+        </div>
+        <PreviewFrame toolbar={false} housed={p.housed} align="top" minHeight={REEL_HEIGHT}>
+          <p.Component />
+        </PreviewFrame>
+        <p style={{ ...tokens.type.sm, color: pal.textTertiary, margin: "14px 0 0" }}>
+          One of {group.patterns.length} in <Link to={`/patterns#${group.id}`} className="tl" style={{ color: pal.textSecondary }}>{group.title}</Link>.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -302,7 +343,7 @@ export function Landing() {
   usePageMeta(null, "A UI kit for AI products. Screens, AI UX patterns and components in one React file, made for founders building with coding agents.");
   const { theme } = useSite();
   const pal = usePal(theme);
-  const textLink = { color: pal.text, textDecoration: "underline", textDecorationColor: pal.border, textUnderlineOffset: 3 };
+  const textLink = { color: pal.text };
   // One layout choice drives the comparison and both screens.
   const [layout, setLayout] = useLayout();
 
@@ -326,7 +367,7 @@ export function Landing() {
           </p>
           <InlineGate placement="hero" size="lg" />
           <p style={{ ...tokens.type.sm, color: pal.textTertiary, margin: "18px 0 0" }}>
-            Built by <Link to="https://chrishalaska.com" style={{ ...textLink, color: pal.textSecondary }}>Chris Halaska</Link> and <Link to="https://halaska.com" style={{ ...textLink, color: pal.textSecondary }}>Halaska Studio</Link>
+            Built by <Link to="https://chrishalaska.com" className="tl" style={{ ...textLink, color: pal.textSecondary }}>Chris Halaska</Link> and <Link to="https://halaska.com" className="tl" style={{ ...textLink, color: pal.textSecondary }}>Halaska Studio</Link>
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 32px", marginTop: 40, paddingTop: 20, borderTop: `1px solid ${pal.borderSubtle}` }}>
@@ -369,9 +410,7 @@ export function Landing() {
 
       {/* 5. Patterns by lifecycle */}
       <Block eyebrow="Patterns" title="Patterns for every stage of an agent's work" lead={`${COUNTS.patterns} patterns in ${GROUPS.length} groups, from the first prompt to the audit log.`}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))", gap: 16 }}>
-          {GROUPS.map((g) => <GroupCard key={g.id} group={g} />)}
-        </div>
+        <PatternReel />
         <ViewAll to="/patterns">{`View all ${COUNTS.patterns} patterns`}</ViewAll>
       </Block>
 
@@ -379,8 +418,8 @@ export function Landing() {
       <Block eyebrow="Index" title="Every component" lead={`Follows the shadcn/ui component list, with Halaska additions tagged. ${COUNTS.components} components in total.`}>
         <div className="grid-names">
           {COMPONENTS.map((c) => (
-            <Link key={c.slug} to={`/components#${c.slug}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", minWidth: 0, ...tokens.type.base, color: pal.textSecondary }}>
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+            <Link key={c.slug} to={`/components#${c.slug}`} className="tl-link" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", minWidth: 0, ...tokens.type.base, color: pal.textSecondary }}>
+              <span className="tl" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>{c.name}</span>
               {(c.tags || []).map((t) => <TagPill key={t} tone={tagTone(t)}>{t}</TagPill>)}
             </Link>
           ))}
@@ -417,14 +456,14 @@ export function Landing() {
       <Block eyebrow="Studio" title="Built by a studio">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 24, alignItems: "start" }}>
           <p style={{ ...tokens.type.md, color: pal.textSecondary, lineHeight: 1.7, margin: 0, maxWidth: 420 }}>
-            Halaska UI is made by <Link to="https://chrishalaska.com" style={textLink}>Chris Halaska</Link> and <Link to="https://halaska.com" style={textLink}>Halaska Studio</Link>.
+            Halaska UI is made by <Link to="https://chrishalaska.com" className="tl" style={textLink}>Chris Halaska</Link> and <Link to="https://halaska.com" className="tl" style={textLink}>Halaska Studio</Link>.
             Halaska Studio is an AI-first product design studio.
-            This is the kit behind <Link to="https://dash.halaska.com" style={textLink}>Dash</Link>, where we take a founder's prototype and make it look designed.
+            This is the kit behind <Link to="https://dash.halaska.com" className="tl" style={textLink}>Dash</Link>, where we take a founder's prototype and make it look designed.
             <span style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px", marginTop: 16, ...tokens.type.sm }}>
-              <Link to="https://chrishalaska.com" style={textLink}>chrishalaska.com</Link>
-              <Link to="https://x.com/chalaska" style={textLink}>X</Link>
-              <Link to="https://www.linkedin.com/in/chrishalaska" style={textLink}>LinkedIn</Link>
-              <Link to="https://halaska.com" style={textLink}>halaska.com</Link>
+              <Link to="https://chrishalaska.com" className="tl" style={textLink}>chrishalaska.com</Link>
+              <Link to="https://x.com/chalaska" className="tl" style={textLink}>X</Link>
+              <Link to="https://www.linkedin.com/in/chrishalaska" className="tl" style={textLink}>LinkedIn</Link>
+              <Link to="https://halaska.com" className="tl" style={textLink}>halaska.com</Link>
             </span>
           </p>
           <Card style={{ padding: 24, gap: 8 }}>

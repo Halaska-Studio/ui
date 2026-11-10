@@ -2,7 +2,7 @@
 // only; everything else on the site is open. Sign-ups go straight to the
 // studio's Kit form, tagged with where they came from.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, IconButton, Stack, Text, TextInput, INSTALL_PROMPT, usePal, tokens, motion, interactiveBase, useModalFocus } from "../kit";
+import { Button, IconButton, Stack, Text, TextInput, INSTALL_PROMPT, usePal, tokens, motion, interactiveBase, useModalFocus, rad } from "../kit";
 import { useSite } from "../state";
 import { Link } from "../router";
 
@@ -139,7 +139,7 @@ export function GateModal() {
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Install prompt" onClick={(e) => e.stopPropagation()} style={{
         width: delivered ? 620 : 440, maxWidth: "100%", maxHeight: "calc(100vh - 32px)", overflowY: "auto",
         background: theme === "dark" ? "rgba(23,23,23,0.97)" : "rgba(255,255,255,0.97)",
-        border: `1px solid ${pal.borderSubtle}`, borderRadius: tokens.radius.lg, padding: 24,
+        border: `1px solid ${pal.borderSubtle}`, borderRadius: rad.lg, padding: 24,
         boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
         animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
       }}>
@@ -171,7 +171,7 @@ export function GateModal() {
               ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textSecondary, whiteSpace: "pre-wrap", lineHeight: 1.6,
             }}>{prompt}</pre>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <a href={BOOK_URL} target="_blank" rel="noreferrer" style={{ ...tokens.type.sm, color: pal.textSecondary, textDecoration: "underline", textUnderlineOffset: 3 }}>Rather have a designer do it? Book a call</a>
+              <a href={BOOK_URL} target="_blank" rel="noreferrer" className="tl" style={{ ...tokens.type.sm, color: pal.textSecondary }}>Rather have a designer do it? Book a call</a>
               <span style={{ flex: 1 }} />
               <Button theme={theme} variant="ghost" size="sm" onClick={close}>Done</Button>
               <Button theme={theme} variant="primary" size="sm" icon={copied ? "✓" : "⧉"} onClick={() => { copyText(prompt); setCopied(true); }}>{copied ? "Copied" : "Copy again"}</Button>
@@ -244,7 +244,7 @@ export function AddToProject({ target, placement = "detail-foot" }) {
   const pal = usePal(theme);
   return (
     <div style={{
-      marginTop: 56, padding: 24, borderRadius: tokens.radius.lg, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
+      marginTop: 56, padding: 24, borderRadius: 12, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
       display: "flex", flexDirection: "column", gap: 12,
     }}>
       <Text size="md" weight="semibold" theme={theme}>Add this to your project</Text>
@@ -253,7 +253,7 @@ export function AddToProject({ target, placement = "detail-foot" }) {
       </Text>
       <InlineGate placement={placement} target={target} />
       <Text size="xs" theme={theme} style={{ color: pal.textTertiary }}>
-        Or read the <Link to="/docs/install" style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>install guide</Link>.
+        Or read the <Link to="/docs/install" className="tl">install guide</Link>.
       </Text>
     </div>
   );

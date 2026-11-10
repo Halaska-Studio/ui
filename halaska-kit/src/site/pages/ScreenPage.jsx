@@ -1,7 +1,8 @@
 // The screen template: header, full preview with a desktop and mobile
 // toggle and a full-screen action, anatomy with numbered hotspots, code.
 import { useEffect, useState } from "react";
-import { usePal, tokens, motion, interactiveBase, Button, IconButton, ThemeProvider, AccentContext, useModalFocus } from "../kit";
+import { usePal, tokens, motion, interactiveBase, Button, IconButton, ThemeProvider, useModalFocus } from "../kit";
+import { Branded } from "../ui/Branded";
 import { useSite, usePageMeta } from "../state";
 import { Link } from "../router";
 import { SCREENS, patternById, screenComponent, relations } from "../registry";
@@ -33,12 +34,12 @@ function Fullscreen({ screen, layout, onClose }) {
         {layout === "mobile" ? (
           <div style={{ minHeight: "100%", boxSizing: "border-box", display: "flex", justifyContent: "center", alignItems: "center", padding: "56px 12px 16px", background: pal.bgSubtle }}>
             <div style={{ width: stageFor(layout).w, maxWidth: "100%", height: stageFor(layout).h, position: "relative", overflow: "hidden", borderRadius: 28, border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 8px 32px ${pal.shadow}` }}>
-              <AccentContext.Provider value={site.accent}><ThemeProvider theme={site.theme}><Example theme={site.theme} layout="mobile" /></ThemeProvider></AccentContext.Provider>
+              <Branded><ThemeProvider theme={site.theme}><Example theme={site.theme} layout="mobile" /></ThemeProvider></Branded>
             </div>
           </div>
         ) : (
           <div style={{ minWidth: 1000, height: "100%", position: "relative" }}>
-            <AccentContext.Provider value={site.accent}><ThemeProvider theme={site.theme}><Example theme={site.theme} /></ThemeProvider></AccentContext.Provider>
+            <Branded><ThemeProvider theme={site.theme}><Example theme={site.theme} /></ThemeProvider></Branded>
           </div>
         )}
       </div>

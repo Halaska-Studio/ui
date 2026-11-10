@@ -3,6 +3,11 @@ import { usePal, tokens, motion, Text, Heading } from "../kit";
 import { useSite } from "../state";
 import { Link } from "../router";
 
+// Site framing containers (preview frames, tiles, cards, stage frames) take
+// one tighter corner than the kit's own cards, so the frame never crowds
+// the controls sitting inside it.
+export const FRAME_RADIUS = 12;
+
 export function TagPill({ children, tone = "neutral" }) {
   const { theme } = useSite(); const pal = usePal(theme);
   const accent = tone === "accent";
@@ -57,7 +62,7 @@ export function Section({ id, title, lead, children, style: sp }) {
 export function ChipLink({ to, children, mono }) {
   const { theme } = useSite(); const pal = usePal(theme);
   return (
-    <Link to={to} style={{
+    <Link to={to} className="chip" style={{
       display: "inline-flex", alignItems: "center", gap: 6, height: 28, padding: "0 11px", borderRadius: tokens.radius.pill,
       background: pal.bgSubtle, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}`, color: pal.textSecondary,
       ...tokens.type.sm, fontFamily: mono ? tokens.font.mono : tokens.font.sans, whiteSpace: "nowrap",
@@ -69,12 +74,12 @@ export function ChipLink({ to, children, mono }) {
 export function PrevNext({ prev, next }) {
   const { theme } = useSite(); const pal = usePal(theme);
   const cell = (item, dir) => item ? (
-    <Link to={item.to} style={{
-      flex: 1, minWidth: 0, padding: "14px 16px", borderRadius: tokens.radius.md, border: `1px solid ${pal.borderSubtle}`,
+    <Link to={item.to} className="tl-link" style={{
+      flex: 1, minWidth: 0, padding: "14px 16px", borderRadius: FRAME_RADIUS, border: `1px solid ${pal.borderSubtle}`,
       display: "flex", flexDirection: "column", gap: 2, alignItems: dir === "next" ? "flex-end" : "flex-start",
     }}>
       <span style={{ ...tokens.type.xs, color: pal.textTertiary }}>{dir === "next" ? "Next" : "Previous"}</span>
-      <span style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>{item.label}</span>
+      <span className="tl" style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>{item.label}</span>
     </Link>
   ) : <span style={{ flex: 1 }} />;
   return <nav aria-label="Previous and next" style={{ display: "flex", gap: 12, marginTop: 56 }}>{cell(prev, "prev")}{cell(next, "next")}</nav>;
@@ -91,7 +96,7 @@ export function DetailLayout({ sections = [], wide, children }) {
           <div style={{ ...tokens.type.xs, color: pal.textTertiary, marginBottom: 10 }}>On this page</div>
           {sections.map((s) => (
             <a key={s.id} href={`#${s.id}`} onClick={(e) => { e.preventDefault(); const el = document.getElementById(s.id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 28, behavior: "smooth" }); }}
-              style={{ display: "block", padding: "5px 0", ...tokens.type.sm, color: pal.textSecondary }}>{s.title}</a>
+              className="tl-link" style={{ display: "block", padding: "5px 0", ...tokens.type.sm, color: pal.textSecondary }}><span className="tl">{s.title}</span></a>
           ))}
         </aside>
       )}
@@ -102,7 +107,7 @@ export function DetailLayout({ sections = [], wide, children }) {
 export function Card({ to, children, style: sp }) {
   const { theme } = useSite(); const pal = usePal(theme);
   const base = {
-    display: "flex", flexDirection: "column", gap: 10, padding: 14, borderRadius: tokens.radius.lg, minWidth: 0,
+    display: "flex", flexDirection: "column", gap: 10, padding: 14, borderRadius: FRAME_RADIUS, minWidth: 0,
     border: `1px solid ${pal.borderSubtle}`, background: pal.bgElevated,
     transition: `border-color ${motion.normal} ${motion.easeInOut}, background ${motion.smooth} ${motion.easeInOut}`, ...sp,
   };

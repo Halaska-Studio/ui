@@ -1,6 +1,6 @@
 // Highlighted code with a copy button. Line wrapping is off; long lines scroll.
 import { useState } from "react";
-import { usePal, tokens, motion, interactiveBase, useThemeContext } from "../kit";
+import { usePal, tokens, motion, interactiveBase, useThemeContext, radiusFor, rr } from "../kit";
 import { copyText } from "../email/gate";
 
 const TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`)|(<\/?)([A-Z][\w.]*|[a-z][\w-]*)|\b(import|from|export|default|function|return|const|let|if|else|new|async|await|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b/g;
@@ -30,7 +30,7 @@ export function CopyButton({ text, label = "Copy", theme: tp }) {
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       onClick={() => { copyText(text); setDone(true); setTimeout(() => setDone(false), 1600); }}
       style={{
-        ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: tokens.radius.sm, flexShrink: 0,
+        ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: rr(radiusFor(28)), flexShrink: 0,
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         background: hover ? pal.bgMuted : "transparent", color: done ? pal.success : pal.textTertiary,
         transition: `background ${motion.fast} ${motion.easeOut}, color ${motion.normal} ${motion.easeInOut}`,

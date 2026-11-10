@@ -85,7 +85,7 @@ export function DocsInstall() {
   usePageMeta("Install", "The install prompt for Halaska UI: what it does, which coding agents it works with, and how to add the kit by hand.");
   const { theme, gate } = useSite();
   const pal = usePal(theme);
-  const link = { color: pal.text, textDecoration: "underline", textUnderlineOffset: 3 };
+  const link = { color: pal.text };
   const mono = { fontFamily: tokens.font.mono, fontSize: 12, color: pal.text };
 
   return (
@@ -113,7 +113,7 @@ export function DocsInstall() {
           </div>
         ) : (
           <div style={{
-            padding: 20, borderRadius: tokens.radius.lg, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
+            padding: 20, borderRadius: 12, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
             display: "flex", flexDirection: "column", gap: 10,
           }}>
             <InlineGate placement="docs-install" />
@@ -162,7 +162,7 @@ export function DocsInstall() {
           <Prose>Then import what you need. Fonts and keyframes load themselves on import, so there is no CSS file to add and no config to change.</Prose>
           <CodeBlock code={IMPORT_EXAMPLE} />
           <Prose>
-            Colour schemes, tokens, typeface and motion are covered in <Link to="/docs/theming" style={link}>Theming</Link>.
+            Colour schemes, tokens, typeface and motion are covered in <Link to="/docs/theming" className="tl" style={link}>Theming</Link>.
           </Prose>
         </div>
       </Section>

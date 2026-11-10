@@ -1,7 +1,7 @@
 // The site: a landing page that sells the kit and a browser that documents
 // it. Built from the kit itself; the chrome stays quiet.
 import { useEffect, useMemo, useState } from "react";
-import { ThemeProvider, AccentContext, usePal, injectStyles, tokens, interactiveBase } from "./kit";
+import { ThemeProvider, usePal, injectStyles, tokens, interactiveBase, radiusFor, KIT_TYPE_STYLES, KIT_RADIUS_STYLES, rr } from "./kit";
 import { SiteContext, useSite } from "./state";
 import { useLocation, redirectLegacyHash } from "./router";
 import { useGateController, GateModal, GateToast } from "./email/gate";
@@ -18,6 +18,8 @@ import { ScreenPage } from "./pages/ScreenPage";
 import { PatternsIndex, ScreensIndex, ComponentsIndex } from "./pages/indexes";
 import { DocsInstall } from "./pages/DocsInstall";
 import { DocsTheming } from "./pages/DocsTheming";
+import { Styles } from "./pages/Styles";
+import { BRAND_DEFAULT } from "./ui/Branded";
 import { Changelog } from "./pages/Changelog";
 import { NotFound } from "./pages/NotFound";
 import "./site.css";
@@ -35,6 +37,7 @@ function route(path) {
   if (a === "docs" && b === "install") return { page: <DocsInstall /> };
   if (a === "docs" && b === "theming") return { page: <DocsTheming /> };
   if (a === "docs" && !b) return { page: <DocsInstall /> };
+  if (a === "styles" && !b) return { page: <Styles /> };
   if (a === "changelog") return { page: <Changelog /> };
   return { page: <NotFound /> };
 }
@@ -79,7 +82,7 @@ function NavCollapse({ open, onChange }) {
   return (
     <button type="button" className="nav-collapse" aria-label={open ? "Collapse menu" : "Expand menu"} title={open ? "Collapse menu" : "Expand menu"} aria-expanded={open}
       onClick={() => onChange(!open)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: tokens.radius.sm, display: "inline-flex", alignItems: "center", justifyContent: "center", background: hover ? pal.bgMuted : "transparent", color: pal.textTertiary }}>
+      style={{ ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: rr(radiusFor(28)), display: "inline-flex", alignItems: "center", justifyContent: "center", background: hover ? pal.bgMuted : "transparent", color: pal.textTertiary }}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15" />{open ? <path d="m15.5 10-2 2 2 2" /> : <path d="m14 10 2 2-2 2" />}
       </svg>
@@ -87,12 +90,21 @@ function NavCollapse({ open, onChange }) {
   );
 }
 
+// The visitor's brand style for previews: colour, headline style, corners.
+// A saved style that is no longer offered falls back to the default.
+const storedBrand = () => {
+  try {
+    const b = { ...BRAND_DEFAULT, ...(JSON.parse(window.localStorage.getItem("halaska:brand") || "null") || {}) };
+    return { ...b, type: KIT_TYPE_STYLES[b.type] ? b.type : BRAND_DEFAULT.type, radius: b.radius in KIT_RADIUS_STYLES ? b.radius : BRAND_DEFAULT.radius };
+  } catch (e) { return BRAND_DEFAULT; }
+};
+
 const systemTheme = () => (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 export default function App() {
   // Light or dark follows the system until the visitor picks one in the action bar.
   const [theme, setThemeState] = useState(() => stored("halaska:theme", null) || systemTheme());
-  const [accent, setAccentState] = useState(() => stored("halaska:accent", "#8b5cf6"));
+  const [brand, setBrandState] = useState(storedBrand);
   const [search, setSearch] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [activeId, setActiveId] = useState(null); // the index block in view, for the nav highlight
@@ -109,12 +121,11 @@ export default function App() {
     return () => mq.removeEventListener?.("change", follow);
   }, []);
   const setTheme = (t) => { setThemeState(t); keep("halaska:theme", t); };
-  const setAccent = (a) => { setAccentState(a); keep("halaska:accent", a); };
-  const site = useMemo(() => ({ theme, setTheme, accent, setAccent, search, setSearch, gate, menuOpen: drawer, setMenuOpen: setDrawer, activeId, setActiveId }), [theme, accent, search, gate, drawer, activeId]);
+  const setBrand = (patch) => setBrandState((b) => { const next = { ...b, ...patch }; keep("halaska:brand", JSON.stringify(next)); return next; });
+  const site = useMemo(() => ({ theme, setTheme, brand, setBrand, search, setSearch, gate, menuOpen: drawer, setMenuOpen: setDrawer, activeId, setActiveId }), [theme, brand, search, gate, drawer, activeId]);
   const { page, landing, target } = route(path);
   return (
     <SiteContext.Provider value={site}>
-      <AccentContext.Provider value={accent}>
         <ThemeProvider theme={theme}>
           <Shell theme={theme}>
             <div className={navOpen ? "site-shell" : "site-shell nav-closed"}>
@@ -133,7 +144,6 @@ export default function App() {
             <Search />
           </Shell>
         </ThemeProvider>
-      </AccentContext.Provider>
     </SiteContext.Provider>
   );
 }
@@ -146,7 +156,7 @@ function Shell({ theme, children }) {
   return (
     <div className="site" style={{
       "--s-bg": pal.bg, "--s-text": pal.text, "--s-text-3": pal.textTertiary, "--s-border": pal.borderSubtle,
-      "--s-accent-bg": pal.accentBg, "--s-glass": theme === "dark" ? "rgba(10,10,10,0.8)" : "rgba(255,255,255,0.8)",
+      "--s-accent-bg": pal.accentBg, "--s-bg-muted": pal.bgMuted, "--s-text-2": pal.textSecondary, "--s-glass": theme === "dark" ? "rgba(10,10,10,0.8)" : "rgba(255,255,255,0.8)",
     }}>{children}</div>
   );
 }

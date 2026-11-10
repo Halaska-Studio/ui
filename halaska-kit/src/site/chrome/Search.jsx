@@ -1,6 +1,6 @@
 // Cmd+K search across screens, patterns, components and docs.
 import { useEffect, useRef, useState } from "react";
-import { usePal, tokens, motion, interactiveBase, Kbd, useModalFocus } from "../kit";
+import { usePal, tokens, motion, interactiveBase, Kbd, useModalFocus, rad } from "../kit";
 import { useSite } from "../state";
 import { navigate } from "../router";
 import { SEARCH_INDEX } from "../registry";
@@ -35,7 +35,7 @@ export function Search() {
       <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Search" onClick={(e) => e.stopPropagation()} style={{
         width: 560, maxWidth: "100%", maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden",
         background: theme === "dark" ? "rgba(23,23,23,0.98)" : "rgba(255,255,255,0.98)", border: `1px solid ${pal.borderSubtle}`,
-        borderRadius: tokens.radius.lg, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
+        borderRadius: rad.lg, boxShadow: `0 16px 48px ${pal.shadowLg}`, fontFamily: tokens.font.sans,
         animation: `halaska-scale-in ${motion.normal} ${motion.emphasized} both`,
       }}>
         <input ref={inputRef} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} onKeyDown={onKeyDown}
@@ -45,7 +45,7 @@ export function Search() {
           {results.length === 0 && <div style={{ padding: "18px 12px", ...tokens.type.sm, color: pal.textTertiary }}>Nothing matches “{q.trim()}”.</div>}
           {results.map((item, i) => (
             <button key={item.to} type="button" role="option" aria-selected={i === active} onMouseEnter={() => setActive(i)} onClick={() => go(item)}
-              style={{ ...interactiveBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: tokens.radius.sm, textAlign: "left", background: i === active ? pal.bgMuted : "transparent" }}>
+              style={{ ...interactiveBase, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: rad.sm, textAlign: "left", background: i === active ? pal.bgMuted : "transparent" }}>
               <span style={{ width: 76, flexShrink: 0, ...tokens.type.xs, fontFamily: tokens.font.mono, color: pal.textTertiary }}>{item.kind}</span>
               <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.text }}>{item.label}</span>
               <span style={{ flex: 1, minWidth: 0, ...tokens.type.xs, color: pal.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.hint}</span>

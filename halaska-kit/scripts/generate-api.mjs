@@ -49,7 +49,8 @@ for (const line of exportBlock.split("\n")) {
 
 const NON_COMPONENT = new Set(["tokens", "motion", "interactiveBase", "usePal", "useThemeContext",
   "AccentContext", "useAccent", "injectStyles", "getAvatarColor", "PATTERN_GROUPS", "UX_PATTERNS", "DESIGN_HEURISTICS", "ACCENT_COLORS", "INSTALL_PROMPT",
-  "setKitMotion", "setKitFont", "KIT_MOTION_PRESETS", "KIT_FONT_PRESETS"]);
+  "setKitMotion", "setKitFont", "KIT_MOTION_PRESETS", "KIT_FONT_PRESETS",
+  "radiusFor", "rr", "rad", "BrandContext", "brandPalette", "tonalPalette", "neutralPalette", "toneOf", "loadKitTypeStyle", "KIT_TONES", "KIT_TYPE_STYLES", "KIT_RADIUS_STYLES"]);
 
 // ── llms.txt ───────────────────────────────────────────────────
 let out = `# Halaska UI
@@ -85,9 +86,14 @@ USAGE
   Every component accepts theme="light" | "dark" (or wrap in <ThemeProvider theme="dark">).
   Colors: const pal = usePal(theme) → pal.bg, bgElevated, bgSubtle, bgMuted, border, borderSubtle,
     text, textSecondary, textTertiary, textMuted, accent, accentBg, success, warning, danger (+ *Bg tints).
-  Accent: <AccentContext.Provider value="#8b5cf6">. Every accent-colored element follows.
+  Brand: <BrandProvider color="#2563eb" type="editorial" radius="round"> restyles everything inside it.
+    color = any hex: becomes the primary action (pal.primary / pal.onPrimary) and tints every grey slightly.
+    type = "clean" | "editorial" | "technical" (headline face, KIT_TYPE_STYLES).
+    radius = "sharp" | "soft" | "round" (scales every corner; "round" is the default). All three are optional; none set is the greyscale default.
+    tonalPalette(hex) returns the colour's tonal scale, tones 0 to 100; brandPalette(theme, hex) the full palette.
+  Accent only: <AccentContext.Provider value="#8b5cf6">. Every accent-colored element follows.
   Layout: <Stack gap={16} direction="row" align="center">; tokens.space {xs 4, sm 8, md 16, lg 32, xl 40};
-    tokens.radius {xs 4, sm 8, md 16, lg 24, xl 32, pill 999}; tokens.type {xs…display}; tokens.font.sans/mono.
+    tokens.radius {xs 4, sm 8, md 16, lg 24, xl 32, pill 999} (plain numbers; for a corner that follows the corner style use rad.md or rr(16)); tokens.type {xs…display}; tokens.font.sans/mono.
   Motion: motion.fast/normal/smooth/spring/slow durations; motion.easeInOut/easeOut/easeIn/emphasized/springCurve.
 
 UX PATTERNS: the lifecycle set is prop-driven with demo defaults. Pass your own copy, data,
@@ -133,6 +139,7 @@ declare const _any: any;
 `;
 for (const n of exportNames) {
   if (n === "AccentContext") dts += `export declare const AccentContext: Context<string | null>;\n`;
+  else if (n === "BrandProvider") dts += `export declare const BrandProvider: ComponentType<{ color?: string | null; type?: "clean" | "editorial" | "technical"; radius?: "sharp" | "soft" | "round" | number; children?: any }>;\n`;
   else if (n === "ThemeProvider") dts += `export declare const ThemeProvider: ComponentType<{ theme?: "light" | "dark"; children?: any }>;\n`;
   else if (NON_COMPONENT.has(n)) dts += `export declare const ${n}: any;\n`;
   else dts += `export declare const ${n}: ComponentType<any>;\n`;

@@ -47,7 +47,7 @@ export function Changelog() {
       </ol>
 
       <div style={{
-        marginTop: 48, padding: 20, borderRadius: tokens.radius.lg, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
+        marginTop: 48, padding: 20, borderRadius: 12, border: `1px solid ${pal.borderSubtle}`, background: pal.bgSubtle,
         display: "flex", flexDirection: "column", gap: 10,
       }}>
         <span style={{ ...tokens.type.base, fontWeight: tokens.weight.medium, color: pal.text }}>Get new patterns by email</span>

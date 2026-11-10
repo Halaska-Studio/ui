@@ -4,13 +4,15 @@
 // patterns in each region.
 import { useEffect, useRef, useState } from "react";
 import {
-  ThemeProvider, AccentContext, usePal, tokens, motion, interactiveBase,
-  CompareSlider, ChatParadigmBefore, ChatParadigmExample, PARADIGM_STAGE, PARADIGM_STAGE_MOBILE,
+  ThemeProvider, usePal, tokens, motion, interactiveBase, radiusFor,
+  CompareSlider, ChatParadigmBefore, ChatParadigmExample, PARADIGM_STAGE, PARADIGM_STAGE_MOBILE, rr
 } from "../kit";
 import { useSite } from "../state";
 import { Link } from "../router";
 import { screenComponent, patternById } from "../registry";
 import { useInView } from "./PreviewFrame";
+import { FRAME_RADIUS } from "./bits";
+import { Branded } from "./Branded";
 
 export const STAGE = PARADIGM_STAGE;
 export const STAGE_MOBILE = PARADIGM_STAGE_MOBILE;
@@ -31,13 +33,13 @@ const ICONS = {
 export function LayoutToggle({ value, onChange }) {
   const pal = usePal(useSite().theme);
   return (
-    <div role="radiogroup" aria-label="Layout" style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
+    <div role="radiogroup" aria-label="Layout" style={{ display: "inline-flex", gap: 2, padding: 3, borderRadius: `calc(${rr(radiusFor(28))} + 3px)`, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
       {["desktop", "mobile"].map((id) => {
         const on = value === id;
         return (
           <button key={id} type="button" role="radio" aria-checked={on} aria-label={id === "desktop" ? "Desktop" : "Mobile"} title={id === "desktop" ? "Desktop" : "Mobile"} onClick={() => onChange(id)}
             style={{
-              ...interactiveBase, height: 28, width: 34, padding: 0, borderRadius: tokens.radius.sm, display: "inline-flex", alignItems: "center", justifyContent: "center",
+              ...interactiveBase, height: 28, width: 34, padding: 0, borderRadius: rr(radiusFor(28)), display: "inline-flex", alignItems: "center", justifyContent: "center",
               ...tokens.type.xs, fontWeight: on ? tokens.weight.medium : tokens.weight.regular,
               background: on ? pal.bgElevated : "transparent", color: on ? pal.text : pal.textTertiary,
               boxShadow: on ? `0 1px 2px ${pal.shadow}, 0 0 0 1px ${pal.borderSubtle}` : "none",
@@ -66,7 +68,7 @@ function useFit(stageWidth) {
   return [ref, scale];
 }
 
-const frameRadius = (layout, scale) => (layout === "mobile" ? Math.round(28 * scale) : tokens.radius.lg);
+const frameRadius = (layout, scale) => (layout === "mobile" ? Math.round(28 * scale) : FRAME_RADIUS);
 
 export function ScreenStage({ screen, layout = "desktop", hotspots = false, interactive = false, activeSpot, onSpot }) {
   const site = useSite();
@@ -86,7 +88,7 @@ export function ScreenStage({ screen, layout = "desktop", hotspots = false, inte
         }}>
           <div style={{ position: "absolute", top: 0, left: 0, width: stage.w, height: stage.h, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: interactive ? "auto" : "none" }}>
             {seen && Example && (
-              <AccentContext.Provider value={site.accent}><ThemeProvider theme={site.theme}><Example key={layout} theme={site.theme} layout={layout} /></ThemeProvider></AccentContext.Provider>
+              <Branded><ThemeProvider theme={site.theme}><Example key={layout} theme={site.theme} layout={layout} /></ThemeProvider></Branded>
             )}
           </div>
           {hotspots && spots.map((h, i) => {
@@ -148,11 +150,11 @@ export function BeforeAfter({ layout = "desktop" }) {
           border: `1px solid ${pal.borderSubtle}`, boxShadow: `0 8px 32px ${pal.shadow}`, minHeight: Math.round(stage.h * scale), background: pal.bgSubtle,
         }}>
           {seen && (
-            <AccentContext.Provider value={site.accent}><ThemeProvider theme={site.theme}>
-              <CompareSlider key={layout} theme={site.theme}
+            <Branded><ThemeProvider theme={site.theme}>
+              <CompareSlider key={layout} theme={site.theme} style={{ borderRadius: frameRadius(layout, scale) }}
                 before={<Scaled stage={stage} scale={scale}><ChatParadigmBefore theme={site.theme} layout={layout} /></Scaled>}
                 after={<Scaled stage={stage} scale={scale}><ChatParadigmExample theme={site.theme} layout={layout} /></Scaled>} />
-            </ThemeProvider></AccentContext.Provider>
+            </ThemeProvider></Branded>
           )}
         </div>
       </div>

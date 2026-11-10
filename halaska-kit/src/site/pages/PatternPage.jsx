@@ -27,7 +27,7 @@ function Source({ component }) {
   return open ? (
     <div style={{ marginTop: 12 }}><CodeBlock code={code || "// Loading"} maxHeight={520} /></div>
   ) : (
-    <button type="button" onClick={load} style={{ marginTop: 12, border: "none", background: "transparent", padding: 0, cursor: "pointer", ...tokens.type.sm, color: pal.textSecondary, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: tokens.font.sans }}>
+    <button type="button" onClick={load} className="tl" style={{ marginTop: 12, border: "none", background: "transparent", padding: 0, cursor: "pointer", ...tokens.type.sm, color: pal.textSecondary, fontFamily: tokens.font.sans }}>
       Show the full source of {component}
     </button>
   );

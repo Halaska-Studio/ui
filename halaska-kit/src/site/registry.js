@@ -23,6 +23,7 @@ export const SEARCH_INDEX = [
   ...PATTERNS.map((p) => ({ kind: "Pattern", label: p.title, hint: p.group, to: `/patterns/${p.slug}` })),
   ...COMPONENTS.map((c) => ({ kind: "Component", label: c.name, hint: (c.exports || []).join(", "), to: `/components/${c.slug}` })),
   { kind: "Docs", label: "Install", hint: "The install prompt", to: "/docs/install" },
+  { kind: "Docs", label: "Styles", hint: "Brand colour, headline style and corners", to: "/styles" },
   { kind: "Docs", label: "Theming", hint: "Colour schemes and tokens", to: "/docs/theming" },
   { kind: "Docs", label: "Changelog", hint: "What shipped", to: "/changelog" },
 ];

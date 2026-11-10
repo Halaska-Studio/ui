@@ -18,6 +18,7 @@ A single-file React UI kit for AI products by Halaska (https://halaska.com). One
 
 - Named imports for everything: import { Button, Card, Orb, PlanPreviewPattern, usePal, tokens } from "./halaska-kit";
 - Theming: every component accepts theme="light" | "dark", or wrap a subtree in <ThemeProvider theme="dark">. Colors come from usePal(theme): pal.bg, pal.text, pal.textSecondary, pal.accent, pal.success, pal.danger and so on. Never hardcode grays or brand colors. Change the accent with <AccentContext.Provider value="#8b5cf6">.
+- Brand: if the project has a brand colour, wrap the app once in <BrandProvider color="#2563eb" type="clean" radius="round">. color becomes the primary action and tints every grey slightly; type picks the headline face ("clean", "editorial", "technical"); radius is "sharp", "soft" or "round" (round is the default). Leave all three out for the greyscale default. Use pal.primary and pal.onPrimary for a custom primary action.
 - Layout: <Stack gap={16} direction="row"> plus tokens.space, tokens.radius, tokens.type. Motion: the motion object has durations (fast, normal, smooth, spring, slow) and easings (easeInOut, easeOut, emphasized, springCurve).
 - If the project uses Tailwind, keep it for page layout. Kit components carry their own styles and need no classes.
 

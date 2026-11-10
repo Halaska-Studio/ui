@@ -6,7 +6,7 @@
 // opens on the landing page. Also used
 // inside the mobile drawer.
 import { useEffect, useState } from "react";
-import { Button, Kbd, usePal, tokens, motion, interactiveBase } from "../kit";
+import { Button, Kbd, usePal, tokens, motion, interactiveBase, radiusFor, rr, rad } from "../kit";
 import { useSite } from "../state";
 import { Link, useLocation } from "../router";
 import { GROUPS, COMPONENTS, SCREENS } from "../registry";
@@ -21,7 +21,7 @@ function NavLink({ to, children, active, pal, right }) {
     <Link to={to} aria-current={active ? "page" : undefined}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
-        display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: tokens.radius.sm,
+        display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: rad.sm,
         ...tokens.type.sm, fontWeight: active ? tokens.weight.medium : tokens.weight.regular,
         color: active ? pal.text : hover ? pal.text : pal.textSecondary,
         background: active ? pal.bgMuted : "transparent",
@@ -40,7 +40,7 @@ function Accordion({ id, title, count, open, onToggle, pal, children }) {
       <button type="button" aria-expanded={open} aria-controls={`nav-${id}`} onClick={onToggle}
         onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
         style={{
-          ...interactiveBase, width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: tokens.radius.sm,
+          ...interactiveBase, width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: rad.sm,
           textAlign: "left", background: hover ? pal.bgSubtle : "transparent",
           ...tokens.type.base, fontWeight: tokens.weight.semibold, color: pal.text, letterSpacing: "-0.01em",
         }}>
@@ -54,7 +54,7 @@ function Accordion({ id, title, count, open, onToggle, pal, children }) {
   );
 }
 
-const sectionOf = (path) => (path.startsWith("/screens") ? "screens" : path.startsWith("/patterns") ? "patterns" : path.startsWith("/components") ? "components" : path.startsWith("/docs") || path.startsWith("/changelog") ? "start" : null);
+const sectionOf = (path) => (path.startsWith("/screens") ? "screens" : path.startsWith("/patterns") ? "patterns" : path.startsWith("/components") ? "components" : path.startsWith("/docs") || path.startsWith("/styles") || path.startsWith("/changelog") ? "start" : null);
 
 export function SideNav({ onNavigate, onCollapse }) {
   const { theme, setSearch, gate, activeId } = useSite();
@@ -80,12 +80,12 @@ export function SideNav({ onNavigate, onCollapse }) {
       </div>
 
       <button type="button" onClick={() => { setSearch(true); onNavigate?.(); }} aria-label="Search"
-        style={{ ...interactiveBase, width: "100%", height: 34, padding: "0 8px 0 10px", borderRadius: tokens.radius.sm, display: "flex", alignItems: "center", gap: 8, background: pal.bgSubtle, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}`, color: pal.textTertiary, ...tokens.type.sm, textAlign: "left" }}>
+        style={{ ...interactiveBase, width: "100%", height: 34, padding: "0 8px 0 10px", borderRadius: rr(radiusFor(34)), display: "flex", alignItems: "center", gap: 8, background: pal.bgSubtle, boxShadow: `inset 0 0 0 1px ${pal.borderSubtle}`, color: pal.textTertiary, ...tokens.type.sm, textAlign: "left" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         <span style={{ flex: 1 }}>Search</span>
         <span className="nav-kbd" style={{ display: "inline-flex" }}><Kbd theme={theme}>⌘K</Kbd></span>
       </button>
-      <div style={{ margin: "16px 0 22px", padding: 14, borderRadius: tokens.radius.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
+      <div style={{ margin: "16px 0 22px", padding: 14, borderRadius: rad.md, background: pal.bgSubtle, border: `1px solid ${pal.borderSubtle}` }}>
         <div style={{ ...tokens.type.sm, fontWeight: tokens.weight.semibold, color: pal.text, marginBottom: 4 }}>Use the kit</div>
         <div style={{ ...tokens.type.xs, color: pal.textSecondary, lineHeight: 1.55, marginBottom: 12 }}>Copy the prompt and paste it into your coding agent. It installs the kit and applies it to what you have built.</div>
         <Button theme={theme} variant="primary" size="sm" fullWidth onClick={() => { gate.requestPrompt({ placement: "nav" }); onNavigate?.(); }}>Copy prompt</Button>
@@ -114,18 +114,19 @@ export function SideNav({ onNavigate, onCollapse }) {
         </Accordion>
         <Accordion id="start" title="Get started" open={!!open.start} onToggle={toggle("start")} pal={pal}>
           <NavLink pal={pal} to="/docs/install" active={is("/docs/install")}>Install</NavLink>
+          <NavLink pal={pal} to="/styles" active={is("/styles")}>Styles</NavLink>
           <NavLink pal={pal} to="/docs/theming" active={is("/docs/theming")}>Theming</NavLink>
           <NavLink pal={pal} to="/changelog" active={is("/changelog")}>Changelog</NavLink>
         </Accordion>
       </div>
 
       <a href={REPO_URL} target="_blank" rel="noreferrer" onMouseEnter={() => setGhHover(true)} onMouseLeave={() => setGhHover(false)}
-        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 16, borderRadius: tokens.radius.sm, ...tokens.type.sm, color: ghHover ? pal.text : pal.textSecondary }}>
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", marginTop: 16, borderRadius: rad.sm, ...tokens.type.sm, color: ghHover ? pal.text : pal.textSecondary }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" /></svg>
         GitHub
       </a>
       <div style={{ padding: "2px 10px 0", ...tokens.type.xs, color: pal.textTertiary, lineHeight: 1.5 }}>
-        Built by <a href="https://chrishalaska.com" target="_blank" rel="noreferrer" style={{ color: pal.textSecondary }}>Chris Halaska</a> and <a href="https://halaska.com" target="_blank" rel="noreferrer" style={{ color: pal.textSecondary }}>Halaska Studio</a>
+        Built by <a href="https://chrishalaska.com" target="_blank" rel="noreferrer" className="tl" style={{ color: pal.textSecondary }}>Chris Halaska</a> and <a href="https://halaska.com" target="_blank" rel="noreferrer" className="tl" style={{ color: pal.textSecondary }}>Halaska Studio</a>
       </div>
     </div>
   );

@@ -2,13 +2,15 @@
 // Everything shown here is read from the kit at runtime, so it cannot drift.
 import { useEffect, useState } from "react";
 import {
-  ACCENT_COLORS, KIT_FONT_PRESETS, ThemeProvider, usePal, tokens, motion, interactiveBase, setKitMotion,
+  KIT_FONT_PRESETS, ThemeProvider, usePal, tokens, motion, interactiveBase, setKitMotion,
   Button, Badge, Progress, SegmentedControl, SwitchToggle, Stack, Text,
 } from "../kit";
 import { useSite, usePageMeta } from "../state";
 import { PageHeader, Section, DetailLayout, Prose } from "../ui/bits";
 import { CodeBlock } from "../ui/CodeBlock";
 import { PreviewFrame } from "../ui/PreviewFrame";
+import { BRAND_COLORS, DEFAULT_SWATCH } from "../ui/Branded";
+import { Link } from "../router";
 
 const SECTIONS = [
   { id: "light-dark", title: "Light and dark" },
@@ -58,13 +60,19 @@ const THEME_CODE = `import { ThemeProvider, Card, Badge, Button, Text } from "./
 // Or set one component on its own.
 <Button theme="dark">Reply to Acme</Button>`;
 
-const ACCENT_CODE = `import { AccentContext, ThemeProvider } from "./halaska-kit";
+const ACCENT_CODE = `import { BrandProvider, ThemeProvider } from "./halaska-kit";
 
-<AccentContext.Provider value="#10b981">
+// color: the primary action, and a trace of its hue in every grey.
+// type: "clean" | "editorial" | "technical"
+// radius: "sharp" | "soft" | "round"
+<BrandProvider color="#10b981" type="clean" radius="round">
   <ThemeProvider theme="light">
     <App />
   </ThemeProvider>
-</AccentContext.Provider>`;
+</BrandProvider>
+
+// To change only the accent and keep the greys neutral:
+// <AccentContext.Provider value="#10b981">…</AccentContext.Provider>`;
 
 const PAL_CODE = `import { usePal, tokens } from "./halaska-kit";
 
@@ -118,8 +126,8 @@ function Swatch({ colour, pal, size = 20 }) {
 }
 
 export function DocsTheming() {
-  usePageMeta("Theming", "Light and dark themes, six colour schemes, the palette, spacing, radius and type tokens, typeface and motion in Halaska UI.");
-  const { theme, accent, setAccent } = useSite();
+  usePageMeta("Theming", "Light and dark themes, brand colour, the palette, spacing, radius and type tokens, typeface and motion in Halaska UI.");
+  const { theme, brand, setBrand } = useSite();
   const pal = usePal(theme);
   const [mode, setMode] = useState("Spring");
   // Motion is global, so put it back when the visitor leaves the page.
@@ -146,27 +154,30 @@ export function DocsTheming() {
       </Section>
 
       <Section id="colour-schemes" title="Colour schemes"
-        lead="The kit uses one accent colour. Violet is the default. Any hex value works, and the hover and tint shades are derived from it.">
+        lead="Greyscale is the default, with a dark primary action and one violet accent. Give the kit a colour and it becomes the primary action, and every grey takes a trace of its hue. Any hex value works.">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10, marginBottom: 16 }}>
-          {ACCENT_COLORS.map((c) => {
-            const current = accent === c.value;
+          {[{ name: "Default", value: null }, ...BRAND_COLORS].map((c) => {
+            const current = brand.color === c.value;
             return (
-              <button key={c.name} type="button" aria-pressed={current} onClick={() => setAccent(c.value)} style={{
+              <button key={c.name} type="button" aria-pressed={current} onClick={() => setBrand({ color: c.value })} style={{
                 ...interactiveBase, display: "flex", alignItems: "center", gap: 10, padding: 10, textAlign: "left",
                 borderRadius: tokens.radius.md, background: pal.bgElevated,
                 border: `1px solid ${current ? pal.text : pal.borderSubtle}`,
                 transition: `border-color ${motion.normal} ${motion.easeInOut}`,
               }}>
-                <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 8, background: c.value, flexShrink: 0 }} />
+                <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 8, background: c.value || DEFAULT_SWATCH, flexShrink: 0 }} />
                 <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                  <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.text }}>{c.name}{c.name === "Violet" ? " · default" : ""}</span>
-                  <span style={{ ...mono, color: pal.textTertiary }}>{c.value}</span>
+                  <span style={{ ...tokens.type.sm, fontWeight: tokens.weight.medium, color: pal.text }}>{c.name}</span>
+                  <span style={{ ...mono, color: pal.textTertiary }}>{c.value || "Greyscale"}</span>
                 </span>
               </button>
             );
           })}
         </div>
         <CodeBlock code={ACCENT_CODE} />
+        <Prose>
+          <p style={{ margin: "12px 0 0" }}>The colour is spread into a tonal scale and each part of the interface takes a tone from it. <Link to="/styles" className="tl" style={{ color: pal.text }}>Styles</Link> shows the scale, the headline styles and the corner styles, and lets you try your own.</p>
+        </Prose>
       </Section>
 
       <Section id="palette" title="Palette"
