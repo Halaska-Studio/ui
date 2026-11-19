@@ -1,0 +1,161 @@
+// The site: a landing page that sells the kit and a browser that documents
+// it. Built from the kit itself; the chrome stays quiet.
+import { useEffect, useMemo, useState } from "react";
+import { ThemeProvider, usePal, injectStyles, tokens, interactiveBase, radiusFor, KIT_TYPE_STYLES, KIT_RADIUS_STYLES, rr } from "./kit";
+import { SiteContext, useSite } from "./state";
+import { useLocation, redirectLegacyHash } from "./router";
+import { useGateController, GateModal, GateToast } from "./email/gate";
+import { SideNav } from "./chrome/SideNav";
+import { Footer } from "./chrome/Footer";
+import { FloatingCopy } from "./chrome/FloatingCopy";
+import { Search } from "./chrome/Search";
+import { FeedbackModal } from "./chrome/Feedback";
+import { patternBySlug } from "./registry";
+import { screenBySlug } from "./data/screens.js";
+import { Landing } from "./pages/Landing";
+import { ComponentPage } from "./pages/ComponentPage";
+import { PatternPage } from "./pages/PatternPage";
+import { ScreenPage } from "./pages/ScreenPage";
+import { PatternsIndex, ScreensIndex, ComponentsIndex } from "./pages/indexes";
+import { DocsInstall } from "./pages/DocsInstall";
+import { DocsTheming } from "./pages/DocsTheming";
+import { Styles } from "./pages/Styles";
+import { BRAND_DEFAULT } from "./ui/Branded";
+import { Changelog } from "./pages/Changelog";
+import { NotFound } from "./pages/NotFound";
+import "./site.css";
+
+const stored = (k, fallback) => { try { return window.localStorage.getItem(k) || fallback; } catch (e) { return fallback; } };
+const keep = (k, v) => { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
+
+function route(path) {
+  const seg = path.split("/").filter(Boolean);
+  if (seg.length === 0) return { page: <Landing />, landing: true };
+  const [a, b] = seg;
+  if (a === "screens") return b ? { page: <ScreenPage slug={b} />, target: screenTarget(b) } : { page: <ScreensIndex /> };
+  if (a === "patterns") return b ? { page: <PatternPage slug={b} />, target: patternTarget(b) } : { page: <PatternsIndex /> };
+  if (a === "components") return b ? { page: <ComponentPage slug={b} /> } : { page: <ComponentsIndex /> };
+  if (a === "docs" && b === "install") return { page: <DocsInstall /> };
+  if (a === "docs" && b === "theming") return { page: <DocsTheming /> };
+  if (a === "docs" && !b) return { page: <DocsInstall /> };
+  if (a === "styles" && !b) return { page: <Styles /> };
+  if (a === "changelog") return { page: <Changelog /> };
+  return { page: <NotFound /> };
+}
+const patternTarget = (slug) => { const p = patternBySlug(slug); return p && { type: "pattern", slug: p.slug, title: p.title, component: p.component, desc: p.desc, useWhen: p.docs.useWhen }; };
+const screenTarget = (slug) => { const s = screenBySlug(slug); return s && { type: "screen", slug: s.slug, name: s.name, component: s.component }; };
+
+// On small screens the sidebar opens as a floating panel above the action
+// bar, in the bar's style. The bar itself turns into the close control.
+function MobileMenu({ open, onClose }) {
+  const { theme } = useSite();
+  const pal = usePal(theme);
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) { setShown(true); return; }
+    const t = setTimeout(() => setShown(false), 300);
+    return () => clearTimeout(t);
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [open, onClose]);
+  if (!shown) return null;
+  return (
+    <div className="site-menu" role="dialog" aria-modal="true" aria-label="Navigation" style={{
+      background: theme === "dark" ? "rgba(17,17,17,0.96)" : "rgba(250,250,250,0.94)",
+      border: `1px solid ${pal.borderSubtle}`, boxShadow: theme === "dark" ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.12)",
+      opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(16px)",
+    }}>
+      <SideNav onNavigate={onClose} />
+    </div>
+  );
+}
+
+// Collapses the left menu to a thin strip, and brings it back.
+function NavCollapse({ open, onChange }) {
+  const { theme } = useSite();
+  const pal = usePal(theme);
+  const [hover, setHover] = useState(false);
+  return (
+    <button type="button" className="nav-collapse" aria-label={open ? "Collapse menu" : "Expand menu"} title={open ? "Collapse menu" : "Expand menu"} aria-expanded={open}
+      onClick={() => onChange(!open)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ ...interactiveBase, width: 28, height: 28, padding: 0, borderRadius: rr(radiusFor(28)), display: "inline-flex", alignItems: "center", justifyContent: "center", background: hover ? pal.bgMuted : "transparent", color: pal.textTertiary }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15" />{open ? <path d="m15.5 10-2 2 2 2" /> : <path d="m14 10 2 2-2 2" />}
+      </svg>
+    </button>
+  );
+}
+
+// The visitor's brand style for previews: colour, headline style, corners.
+// A saved style that is no longer offered falls back to the default.
+const storedBrand = () => {
+  try {
+    const b = { ...BRAND_DEFAULT, ...(JSON.parse(window.localStorage.getItem("halaska:brand") || "null") || {}) };
+    return { ...b, type: KIT_TYPE_STYLES[b.type] ? b.type : BRAND_DEFAULT.type, radius: b.radius in KIT_RADIUS_STYLES ? b.radius : BRAND_DEFAULT.radius };
+  } catch (e) { return BRAND_DEFAULT; }
+};
+
+export default function App() {
+  // The site leads with light. Dark is the visitor's choice in the action bar, and it is remembered.
+  const [theme, setThemeState] = useState(() => (stored("halaska:theme", null) === "dark" ? "dark" : "light"));
+  const [brand, setBrandState] = useState(storedBrand);
+  const [search, setSearch] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { placement } while the Send feedback dialog is open
+  const [drawer, setDrawer] = useState(false);
+  const [activeId, setActiveId] = useState(null); // the index block in view, for the nav highlight
+  const [navOpen, setNavOpenState] = useState(() => stored("halaska:nav", "open") !== "closed");
+  const setNavOpen = (open) => { setNavOpenState(open); keep("halaska:nav", open ? "open" : "closed"); };
+  const gate = useGateController();
+  const { path } = useLocation();
+  useEffect(() => { injectStyles(); redirectLegacyHash(); }, []);
+  const setTheme = (t) => { setThemeState(t); keep("halaska:theme", t); };
+  const setBrand = (patch) => setBrandState((b) => { const next = { ...b, ...patch }; keep("halaska:brand", JSON.stringify(next)); return next; });
+  const site = useMemo(() => ({ theme, setTheme, brand, setBrand, search, setSearch, feedback, setFeedback, gate, menuOpen: drawer, setMenuOpen: setDrawer, activeId, setActiveId }), [theme, brand, search, feedback, gate, drawer, activeId]);
+  const { page, landing, target } = route(path);
+  return (
+    <SiteContext.Provider value={site}>
+        <ThemeProvider theme={theme}>
+          <Shell theme={theme}>
+            <div className={navOpen ? "site-shell" : "site-shell nav-closed"}>
+              <nav className="site-nav" aria-label="Site">
+                {navOpen ? <SideNav onCollapse={<NavCollapse open onChange={setNavOpen} />} /> : <NavCollapse open={false} onChange={setNavOpen} />}
+              </nav>
+              <main style={{ minWidth: 0 }}>
+                {page}
+                <Footer />
+              </main>
+            </div>
+            <MobileMenu open={drawer} onClose={() => setDrawer(false)} />
+            <FloatingCopy target={target} />
+            <GateToast />
+            <GateModal />
+            <FeedbackModal />
+            <Search />
+          </Shell>
+        </ThemeProvider>
+    </SiteContext.Provider>
+  );
+}
+
+// Sets the chrome's CSS variables from the kit's palette so site.css and the
+// kit agree on colour in both themes.
+function Shell({ theme, children }) {
+  const pal = usePal(theme);
+  useEffect(() => {
+    document.body.style.background = pal.bg;
+    document.documentElement.style.colorScheme = theme;
+    // The browser's own chrome (mobile address bar) takes the page colour.
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", pal.bg);
+  }, [pal.bg, theme]);
+  return (
+    <div className="site" style={{
+      "--s-bg": pal.bg, "--s-text": pal.text, "--s-text-3": pal.textTertiary, "--s-border": pal.borderSubtle,
+      "--s-accent-bg": pal.accentBg, "--s-bg-muted": pal.bgMuted, "--s-text-2": pal.textSecondary, "--s-glass": theme === "dark" ? "rgba(10,10,10,0.8)" : "rgba(255,255,255,0.8)",
+    }}>{children}</div>
+  );
+}

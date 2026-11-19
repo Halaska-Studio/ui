@@ -1,0 +1,67 @@
+# Halaska UI
+
+![The Chat example screen, built entirely from the kit](docs/after.png)
+
+A single-file React UI kit for AI products, built on shadcn/ui foundations. Made for founders building with coding agents. It gets a prototype most of the way to looking designed without a designer in the loop. 40 UX patterns for the moments every AI product has to get right (thinking, streaming, plans, approvals, tool activity, receipts, recovery) and 90 styled components underneath them.
+
+Live: **https://ui.halaska.com**
+
+![Before and after: drag the divider between the screen as a coding agent left it and the same screen with the kit applied](docs/before-after.png)
+
+## Use it
+
+You don't install anything by hand.
+
+1. Open https://ui.halaska.com, press **Copy prompt**, and leave an email (one update a month when new patterns land). The prompt lands on your clipboard.
+2. Paste the prompt into Claude Code, Cursor, Codex, Windsurf, or any agent that can fetch a file, as the first message in the project you want to improve.
+3. The agent downloads the kit, wires it in, and applies it to what you've already built, screen by screen.
+
+Prefer to do it yourself:
+
+```bash
+curl -o src/halaska-kit.jsx https://ui.halaska.com/halaska-kit.jsx
+```
+
+```jsx
+import { Button, Card, Orb, PlanPreviewPattern, usePal, tokens } from "./halaska-kit";
+```
+
+Dependencies: `react` and `react-dom`. No Tailwind, no CSS setup, no chart library. The file starts with `"use client"` and self-injects its fonts and keyframes.
+
+Agent guide: https://ui.halaska.com/install.md. API reference: https://ui.halaska.com/llms.txt (TypeScript shim at `/halaska-kit.d.ts`).
+
+## What's inside
+
+- **Complete example screens**: a Chat screen and a Board screen, each built only from the kit.
+- **40 UX patterns** in six groups: Agentic navigation, Conversation core, Trust & transparency, Agentic control, Output & generative UI, Ambient & beyond chat. Eight of them are prop-driven (`ThinkingTracePattern`, `StreamingAnswerPattern`, `PlanPreviewPattern`, `ApprovalCardPattern`, `AgentStatusPattern`, `HandoffPattern`, `ActionReceiptPattern`, `ErrorRepairPattern`); the rest are reference implementations to copy and adapt.
+- **Components**: agent surfaces (task list, question card, reasoning steps, trace waterfall, chat input, message, conversation, chat history), generative UI (result cards, document agent, media generation), content (attachment, marker, tables, charts, frames), and the shadcn base: forms, feedback, layout, navigation and overlays.
+- **Foundations**: Geist type, 1px icons, an 8px spacing scale, iOS-style radii, light and dark themes, a swappable accent, and runtime switches for typeface (`setKitFont`) and motion (`setKitMotion`).
+
+## Repository layout
+
+```
+halaska-kit/
+  halaska-kit-v1.0.jsx   the kit: tokens, components, patterns (one file, react + react-dom only)
+  src/site/              the website: landing page, component, pattern and screen pages, docs
+    data/                catalogue, pattern guidance, screens, shadcn/ui parity table, changelog
+    examples/            one real file per component and pattern; the site shows the code it runs
+    pages/ ui/ chrome/   the three page templates, the preview frame, header, nav and search
+  scripts/               generates llms.txt, the .d.ts shim, site data and the pre-rendered pages
+```
+
+## Run the site locally
+
+```bash
+cd halaska-kit
+npm install
+npm run dev
+```
+
+## Feedback
+
+- Bugs, broken components, and missing patterns: [open a GitHub issue](https://github.com/Halaska-Studio/ui/issues/new).
+- Design questions about your own prototype: book a short call with the studio from the "Need a hand with yours?" card on https://ui.halaska.com (it links to https://halaska.com/book).
+
+## Licence
+
+MIT. Use it in anything. Built by [Chris Halaska](https://chrishalaska.com) and [Halaska Studio](https://halaska.com), an AI-first product design studio.

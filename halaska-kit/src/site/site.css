@@ -1,0 +1,118 @@
+/* The studio's display face, for the landing headline only. Licensed, so the
+   file lives outside the repo and ships with the deploy. */
+@font-face { font-family: 'FK Raster Roman Compact'; src: url('/fonts/FKRasterRomanCompact-Smooth.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+.hero-title { font-family: 'FK Raster Roman Compact', var(--halaska-sans, 'Geist'), system-ui, sans-serif; font-weight: 400; letter-spacing: 0; line-height: 1.2; }
+@media (max-width: 620px) { .hero-title { line-height: 1.32; } }
+
+/* Layout and responsive rules for the site chrome only. Colours come from the
+   kit's palette through CSS variables set on .site by App.jsx. */
+:root { --hdr: 0px; --nav: 264px; }
+html, body { margin: 0; padding: 0; }
+* { box-sizing: border-box; }
+body { -webkit-font-smoothing: antialiased; }
+.site { min-height: 100vh; background: var(--s-bg); color: var(--s-text); font-family: var(--halaska-sans, 'Geist'), -apple-system, system-ui, sans-serif; transition: background 0.35s ease, color 0.35s ease; }
+.site a { color: inherit; text-decoration: none; }
+.site ::selection { background: var(--s-accent-bg); }
+
+.site-shell { display: grid; grid-template-columns: var(--nav) minmax(0, 1fr); }
+.site-nav { position: sticky; top: var(--hdr); height: calc(100vh - var(--hdr)); overflow-y: auto; padding: 16px 12px 24px 12px; border-right: 1px solid var(--s-border); scrollbar-width: thin; }
+.site-main { min-width: 0; display: flex; justify-content: center; gap: 56px; padding: 44px 48px 160px; }
+.site-article { width: 100%; max-width: 780px; min-width: 0; }
+.site-article.wide { max-width: 1040px; }
+.site-rail { display: none; width: 180px; flex-shrink: 0; position: sticky; top: calc(var(--hdr) + 44px); align-self: flex-start; max-height: calc(100vh - var(--hdr) - 80px); overflow-y: auto; }
+@media (min-width: 1320px) { .site-rail { display: block; } }
+
+.site-landing { max-width: 1120px; margin: 0 auto; padding: 0 32px 160px; }
+
+/* Keyboard hints mean nothing on a phone. */
+@media (max-width: 900px) { .nav-kbd { display: none !important; } }
+
+/* Mobile menu: a floating panel above the action bar, in the bar's style. */
+.site-menu { position: fixed; top: 12px; left: 12px; right: 12px; bottom: 84px; z-index: 790; overflow-y: auto; padding: 16px 14px 24px;
+  border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); scrollbar-width: thin;
+  transition: opacity 0.3s cubic-bezier(0.2, 0, 0, 1), transform 0.35s cubic-bezier(0.2, 0, 0, 1); }
+
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.grid-names { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 2px 16px; }
+.masonry { column-count: 3; column-gap: 16px; }
+.masonry > * { break-inside: avoid; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--s-border); border-radius: 12px; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table-wrap th, .table-wrap td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--s-border); vertical-align: top; }
+.table-wrap tr:last-child td { border-bottom: none; }
+.table-wrap th { font-weight: 500; color: var(--s-text-3); font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .masonry { column-count: 2; }
+}
+@media (max-width: 900px) {
+  .site-shell { grid-template-columns: minmax(0, 1fr); }
+  .site-nav { display: none; }
+  .site-main { padding: 28px 16px 160px; }
+  .site-landing { padding: 0 16px 160px; }
+}
+@media (max-width: 620px) {
+  .masonry { column-count: 1; }
+  .stack-sm { flex-direction: column !important; align-items: stretch !important; }
+}
+
+/* Screens in the mobile layout sit side by side when there is room. */
+@media (min-width: 900px) {
+  .screens-mobile { flex-direction: row !important; align-items: flex-start; gap: 40px !important; }
+  .screens-mobile > * { flex: 1 1 0; min-width: 0; }
+}
+
+/* Controls that only make sense with room to spare. */
+@media (max-width: 560px) { .hide-phone { display: none !important; } }
+
+/* Collapsible left menu */
+.site-shell.nav-closed { grid-template-columns: 45px minmax(0, 1fr); }
+.site-shell.nav-closed .site-nav { padding: 16px 8px; overflow: hidden; }
+@media (max-width: 900px) { .site-shell.nav-closed { grid-template-columns: minmax(0, 1fr); } }
+
+/* Action bar: the menu button and the short label only show on small screens. */
+.bar-sm { display: none !important; }
+@media (max-width: 900px) { .bar-sm { display: inline-flex !important; } .bar-lg { display: none !important; } }
+
+/* Text links. The underline draws in from the left on hover and retracts
+   the same way; the hit state dims for the press. Inline colours win over
+   the sheet, hence the !important on the hover and active colours. */
+.site .tl, .site .tl-link { transition: color 0.15s ease, opacity 0.15s ease; }
+.site .tl { position: relative; display: inline-block; }
+.site .tl::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; pointer-events: none;
+  transform: scaleX(0); transform-origin: left; transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1); }
+.site .tl:hover, .site .tl-link:hover, .site .tl-link:hover .tl { color: var(--s-text) !important; }
+.site .tl:hover::after, .site .tl-link:hover .tl::after { transform: scaleX(1); }
+.site .tl:active, .site .tl-link:active { color: var(--s-text) !important; opacity: 0.55; transition-duration: 0.05s; }
+@media (prefers-reduced-motion: reduce) { .site .tl::after { transition: none; } }
+
+/* Pill links (jump chips, "built from" chips). */
+.site .chip { transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease; }
+.site .chip:hover { background: var(--s-bg-muted) !important; color: var(--s-text) !important; }
+.site .chip:active { opacity: 0.6; transition-duration: 0.05s; }
+
+/* The pattern reel on the landing page: one pattern at a time, cycling. */
+.reel-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; padding: 0 4px; }
+.reel-tabs::-webkit-scrollbar { display: none; }
+.reel-tab { position: relative; flex-shrink: 0; }
+.reel-tab::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 1px; background: var(--s-text); transform: scaleX(0); transform-origin: left; }
+.reel-tab[data-on="true"]::after { animation: reel-fill var(--reel-ms, 7000ms) linear both; }
+.reel-tab[data-on="true"][data-paused="true"]::after { animation-play-state: paused; }
+@keyframes reel-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes site-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .reel-tab[data-on="true"]::after { animation: none; transform: scaleX(1); } }
+
+/* Action bar: on narrow screens the copy, search and theme controls step
+   aside while a style group (colour, headline, corners) is open. */
+.bar-rest { overflow: hidden; max-width: 460px; transition: max-width 0.35s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease; }
+@media (max-width: 760px) { .bar-rest[data-collapsed="true"] { max-width: 0; opacity: 0; } }
+.bar-tray { scrollbar-width: none; }
+.bar-tray::-webkit-scrollbar { display: none; }
+@media (max-width: 760px) { .bar-other[data-collapsed="true"] { width: 0 !important; margin: 0 !important; opacity: 0 !important; overflow: hidden; pointer-events: none; } }
+
+/* Styles page: option cards and the tonal scales */
+.style-opts { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.tone-row { display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); gap: 3px; }
+@media (max-width: 700px) { .tone-row { grid-template-columns: repeat(9, minmax(0, 1fr)); row-gap: 14px; } }
+.roles { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 700px) { .roles { grid-template-columns: minmax(0, 1fr); } }

@@ -1,0 +1,32 @@
+{
+  "name": "halaska-kit",
+  "version": "1.0.0",
+  "description": "UX patterns and styled components for AI products \u2014 one file, react + react-dom only.",
+  "author": "Halaska Studio",
+  "license": "MIT",
+  "main": "src/components/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/prerender.mjs",
+    "preview": "vite preview",
+    "prebuild": "node scripts/fetch-assets.mjs && node scripts/generate-api.mjs && node scripts/extract-source.mjs && node scripts/generate-site-data.mjs && cp halaska-kit-v1.0.jsx public/halaska-kit.jsx",
+    "predev": "node scripts/extract-source.mjs && node scripts/generate-site-data.mjs"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "shadcn",
+    "ui-kit",
+    "react",
+    "design-system",
+    "claude",
+    "prototyping",
+    "components"
+  ]
+}

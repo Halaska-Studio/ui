@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/((?!assets/|api/|.*\\.[a-zA-Z0-9]+$).*)",
+      "destination": "/"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/screens/canvas",
+      "destination": "/screens",
+      "permanent": true
+    }
+  ]
+}

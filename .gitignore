@@ -1,0 +1,40 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+.astro/
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+.vercel
+.turbo
+coverage/
+.cache/
+
+# local tooling and generated files
+.claude/
+*.zip
+halaska-kit/public/halaska-kit.jsx
+halaska-kit/public/halaska-kit.d.ts
+halaska-kit/public/llms.txt
+halaska-kit/public/source-map.json
+
+# internal working notes (never published)
+docs/internal/
+
+# project notes for the studio's own coding agents (not published)
+CLAUDE.md
+
+# licensed web font: deployed from the local folder, never published in the repo
+halaska-kit/public/fonts/FKRaster*
+
+# npm package: generated from the kit on prepack
+halaska-kit/npm/dist/
+halaska-kit/npm/halaska-kit.jsx
+halaska-kit/npm/README.md
+halaska-kit/npm/LICENSE
+halaska-kit/npm/*.tgz
